@@ -1,3 +1,2 @@
-struct PrivoSDK {
-    var text = "Hello, World!"
-}
+public let sdkText = "Hello from Privo SDK!"
+

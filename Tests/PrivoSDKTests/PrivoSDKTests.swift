@@ -6,6 +6,6 @@
             // This is an example of a functional test case.
             // Use XCTAssert and related functions to verify your tests produce the correct
             // results.
-            XCTAssertEqual(PrivoSDK().text, "Hello, World!")
+            XCTAssertEqual(sdkText, "Hello from Privo SDK!")
         }
     }
