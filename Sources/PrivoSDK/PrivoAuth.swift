@@ -31,7 +31,8 @@ public class PrivoAuth {
         print("Show Auth")
         _ = rootView.sheet(isPresented: $presentingAuth) {
             AuthView(isPresented: self.$presentingAuth)
+        }.onAppear {
+            self.presentingAuth = true;
         }
-        presentingAuth = true;
     }
 }
