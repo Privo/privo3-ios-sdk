@@ -27,11 +27,11 @@ struct AuthView: View {
 public class PrivoAuth {
     public init() {}
     @State var presentingAuth = false
-    public func show(rootView: AnyView) -> some View {
+    public func show(rootView: AnyView) {
         print("Show Auth")
-        presentingAuth = true;
-        return rootView.sheet(isPresented: $presentingAuth) {
+        _ = rootView.sheet(isPresented: $presentingAuth) {
             AuthView(isPresented: self.$presentingAuth)
         }
+        presentingAuth = true;
     }
 }
