@@ -5,11 +5,33 @@
 //  Created by alex slobodeniuk on 01.06.2021.
 //
 
-import Foundation
+import SwiftUI
+
+struct AuthView: View {
+  @Binding var isPresented: Bool
+  
+  var body: some View {
+    VStack(spacing: 50) {
+      Text("Information view.")
+        .font(.largeTitle)
+      
+      Button(action: {
+        isPresented = false
+      }, label: {
+        Text("Close")
+      })
+    }
+  }
+}
 
 public class PrivoAuth {
     public init() {}
-    public func show() {
+    @State var presentingAuth = false
+    public func show(rootView: AnyView) -> some View {
         print("Show Auth")
+        presentingAuth = true;
+        return rootView.sheet(isPresented: $presentingAuth) {
+            AuthView(isPresented: self.$presentingAuth)
+        }
     }
 }
