@@ -14,11 +14,12 @@ struct ModalAuthView: View {
   
   var body: some View {
     VStack() {
-        VStack(alignment: .trailing) {
+        HStack() {
+            Spacer()
             Button(action: {
               isPresented = false
             }, label: {
-                Image(systemName: "xmark.circle")
+                Image(systemName: "xmark").font(.largeTitle).foregroundColor(.gray)
             })
         }
       Webview(url: authRedirectUrl)
