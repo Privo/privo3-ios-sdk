@@ -7,18 +7,20 @@
 
 import SwiftUI
 
-let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=ama")!
+let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=ama&redirect_uri=localhost%3A3000")!
 
 struct ModalAuthView: View {
   @Binding var isPresented: Bool
   
   var body: some View {
-    VStack(spacing: 10) {
-      Button(action: {
-        isPresented = false
-      }, label: {
-        Text("Close")
-      })
+    VStack() {
+        VStack(alignment: .trailing) {
+            Button(action: {
+              isPresented = false
+            }, label: {
+                Image(systemName: "xmark.circle")
+            })
+        }
       Webview(url: authRedirectUrl)
     }
   }
