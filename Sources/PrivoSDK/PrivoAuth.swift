@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AuthView: View {
+struct ModalAuthView: View {
   @Binding var isPresented: Bool
   
   var body: some View {
@@ -24,15 +24,26 @@ struct AuthView: View {
   }
 }
 
+public struct PrivoAuthView<Label> : View where Label : View {
+    @State var presentingAuth = false
+    let label: Label
+    let onFinish: (() -> Void)?
+    public init(@ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil ) {
+        self.label = label()
+        self.onFinish = onFinish
+    }
+    public var body: some View {
+        Button {
+            presentingAuth = true
+        } label: {
+            label
+        }.sheet(isPresented: $presentingAuth) {
+            ModalAuthView(isPresented: self.$presentingAuth)
+        }
+    }
+}
+
 public class PrivoAuth {
     public init() {}
     @State var presentingAuth = false
-    public func show(rootView: AnyView) {
-        print("Show Auth")
-        _ = rootView.sheet(isPresented: $presentingAuth) {
-            AuthView(isPresented: self.$presentingAuth)
-        }.onAppear {
-            self.presentingAuth = true;
-        }
-    }
 }
