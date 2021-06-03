@@ -19,7 +19,7 @@ struct ModalAuthView: View {
             Button(action: {
               isPresented = false
             }, label: {
-                Image(systemName: "xmark").foregroundColor(.black).padding(5)
+                Image(systemName: "xmark").font(.system(size: 24.0, weight: .bold)).foregroundColor(.black).padding(5)
             })
         }
       Webview(url: authRedirectUrl)
