@@ -7,7 +7,9 @@
 
 import SwiftUI
 
-let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=ama&redirect_uri=localhost%3A3000")!
+// client_id === mobile; data key_id =
+
+let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
 
 struct ModalAuthView: View {
   @Binding var isPresented: Bool
