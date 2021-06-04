@@ -32,7 +32,6 @@ struct Webview: UIViewRepresentable {
             super.init(coder: coder)
         }
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            print(message)
             guard let dict = message.body as? [String : AnyObject] else {
                 onPrivoEvent?(nil)
                 return
