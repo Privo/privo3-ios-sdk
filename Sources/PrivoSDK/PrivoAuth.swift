@@ -9,7 +9,7 @@ import SwiftUI
 
 // client_id === mobile; data key_id =
 
-let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&service_identifier=PRIVOLOCK&redirect_uri=")!
+let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
 
 
 struct ModalAuthView: View {
