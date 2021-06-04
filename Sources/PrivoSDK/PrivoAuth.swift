@@ -25,7 +25,10 @@ struct ModalAuthView: View {
                 Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
             })
         }
-        Webview(url: authRedirectUrl, onPrivoEvent: {data in print(data)})
+        Webview(url: authRedirectUrl, onPrivoEvent: {data in
+            print(data)
+            isPresented = false
+        })
     }
   }
 }
