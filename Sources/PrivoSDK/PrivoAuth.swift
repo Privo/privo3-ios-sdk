@@ -9,8 +9,7 @@ import SwiftUI
 
 // client_id === mobile; data key_id =
 
-//let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
-let authRedirectUrl = URL(string: "https://a11855f0eef3.ngrok.io/")!
+let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
 
 
 struct ModalAuthView: View {
@@ -26,7 +25,7 @@ struct ModalAuthView: View {
                 Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
             })
         }
-      Webview(url: authRedirectUrl)
+        Webview(url: authRedirectUrl, onPrivoEvent: {data in print(data)})
     }
   }
 }
