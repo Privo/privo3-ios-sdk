@@ -6,6 +6,10 @@
 //
 
 public struct PrivoSettings {
-    public let serviceIdentifier: String;
+    public let serviceIdentifier: String
     public let envType: EnviromentType
+    public init(serviceIdentifier: String, envType: EnviromentType) {
+        self.serviceIdentifier = serviceIdentifier
+        self.envType = envType
+    }
 }
