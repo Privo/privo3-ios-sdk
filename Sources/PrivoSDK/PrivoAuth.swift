@@ -7,23 +7,26 @@
 
 import SwiftUI
 
-let authRedirectUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&service_identifier=privolock&redirect_uri=")!
-
 struct ModalAuthView: View {
   @Binding var isPresented: Bool
+  var closeIcon: Image?
+  let onPrivoEvent: ([String : AnyObject]?) -> Void;
   
   var body: some View {
-    VStack() {
+    let serviceIdentifier = Privo.shared.settings.serviceIdentifier;
+    var url = Privo.shared.configuration.authUrl
+    url.appendQueryParam(name: "service_identifier", value: serviceIdentifier)
+    return VStack() {
         HStack() {
             Spacer()
             Button(action: {
               isPresented = false
             }, label: {
-                Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
+                self.closeIcon ?? (Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5) as! Image)
             })
         }
-        Webview(url: authRedirectUrl, onPrivoEvent: {data in
-            print(data)
+        Webview(url: url, onPrivoEvent: {data in
+            self.onPrivoEvent(data)
             isPresented = false
         })
     }
@@ -33,10 +36,12 @@ struct ModalAuthView: View {
 public struct PrivoAuthView<Label> : View where Label : View {
     @State var presentingAuth = false
     let label: Label
-    let onFinish: (() -> Void)?
-    public init(@ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil ) {
+    var closeIcon: Image?
+    let onFinish: ((String?) -> Void)?
+    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: Image? = nil ) {
         self.label = label()
         self.onFinish = onFinish
+        self.closeIcon = closeIcon
     }
     public var body: some View {
         Button {
@@ -44,7 +49,16 @@ public struct PrivoAuthView<Label> : View where Label : View {
         } label: {
             label
         }.sheet(isPresented: $presentingAuth) {
-            ModalAuthView(isPresented: self.$presentingAuth)
+            ModalAuthView(isPresented: self.$presentingAuth, onPrivoEvent: { event in
+                if let accessId = event?["accessId"] as? String {
+                    Privo.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
+                        let token = resp?.data
+                        self.onFinish?(token)
+                    }
+                } else {
+                    self.onFinish?(nil)
+                }
+            })
         }
     }
 }
