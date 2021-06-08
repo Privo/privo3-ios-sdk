@@ -13,8 +13,8 @@ struct ModalAuthView: View {
   let onPrivoEvent: ([String : AnyObject]?) -> Void;
   
   var body: some View {
-    let serviceIdentifier = Privo.shared.settings.serviceIdentifier;
-    var url = Privo.shared.configuration.authUrl
+    let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier;
+    var url = PrivoInternal.shared.configuration.authUrl
     url.appendQueryParam(name: "service_identifier", value: serviceIdentifier)
     return VStack() {
         HStack() {
@@ -22,7 +22,11 @@ struct ModalAuthView: View {
             Button(action: {
               isPresented = false
             }, label: {
-                self.closeIcon ?? (Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5) as! Image)
+                if (self.closeIcon != nil) {
+                    self.closeIcon
+                } else {
+                    Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
+                }
             })
         }
         Webview(url: url, onPrivoEvent: {data in
@@ -51,7 +55,7 @@ public struct PrivoAuthView<Label> : View where Label : View {
         }.sheet(isPresented: $presentingAuth) {
             ModalAuthView(isPresented: self.$presentingAuth, onPrivoEvent: { event in
                 if let accessId = event?["accessId"] as? String {
-                    Privo.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
+                    PrivoInternal.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
                         let token = resp?.data
                         self.onFinish?(token)
                     }
