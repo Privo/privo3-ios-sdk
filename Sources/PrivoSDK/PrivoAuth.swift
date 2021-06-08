@@ -13,9 +13,9 @@ struct ModalAuthView: View {
   let onPrivoEvent: ([String : AnyObject]?) -> Void;
   
   var body: some View {
-    let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier;
-    var url = PrivoInternal.shared.configuration.authUrl
-    url.appendQueryParam(name: "service_identifier", value: serviceIdentifier)
+    // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
+    let url = PrivoInternal.shared.configuration.authUrl
+    // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
     return VStack() {
         HStack() {
             Spacer()
