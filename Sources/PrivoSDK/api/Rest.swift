@@ -34,7 +34,7 @@ class Rest {
     }
     func renewToken(oldToken: String, sessionId: String, completionHandler: @escaping (String?) -> Void) {
         let loginUrl = String(format: "%@/login/token?session_id=%@", PrivoInternal.shared.configuration.authBaseUrl.absoluteString,sessionId)
-        AF.request(loginUrl, method: .post, parameters: oldToken).responseDecodable(of: LoginResponse.self) { r in
+        AF.request(loginUrl, method: .post, parameters: nil, encoding: BodyStringEncoding(body: oldToken)).responseDecodable(of: LoginResponse.self) { r in
             let token = r.value?.token
             completionHandler(token)
         }
