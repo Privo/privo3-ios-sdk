@@ -14,7 +14,7 @@ struct ModalAuthView: View {
   
   var body: some View {
     // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
-    let url = PrivoInternal.shared.configuration.authUrl
+    let url = PrivoInternal.shared.configuration.authStartUrl
     // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
     return VStack() {
         HStack() {
@@ -42,6 +42,7 @@ public struct PrivoAuthView<Label> : View where Label : View {
     let label: Label
     var closeIcon: Image?
     let onFinish: ((String?) -> Void)?
+    private let acessIdKey = "accessId"
     public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: Image? = nil ) {
         self.label = label()
         self.onFinish = onFinish
@@ -54,9 +55,12 @@ public struct PrivoAuthView<Label> : View where Label : View {
             label
         }.sheet(isPresented: $presentingAuth) {
             ModalAuthView(isPresented: self.$presentingAuth, onPrivoEvent: { event in
-                if let accessId = event?["accessId"] as? String {
+                if let accessId = event?[acessIdKey] as? String {
                     PrivoInternal.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
                         let token = resp?.data
+                        if (token != nil) {
+                            UserDefaults.standard.set(token, forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+                        }
                         self.onFinish?(token)
                     }
                 } else {
@@ -69,4 +73,23 @@ public struct PrivoAuthView<Label> : View where Label : View {
 
 public class PrivoAuth {
     public init() {}
+    public func getLastToken() -> String? {
+        UserDefaults.standard.string(forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+    }
+    public func renewToken(completionHandler: @escaping (String?) -> Void) {
+        if let oldToken = getLastToken() {
+            PrivoInternal.shared.rest.getAuthSessionId { sessionId in
+                if let sessionId = sessionId {
+                    PrivoInternal.shared.rest.renewToken(oldToken: oldToken, sessionId: sessionId, completionHandler: completionHandler)
+                } else {
+                    completionHandler(nil)
+                }
+            }
+        } else {
+            completionHandler(nil)
+        }
+    }
+    public func cleanLastToken() -> Void {
+        UserDefaults.standard.removeObject(forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+    }
 }

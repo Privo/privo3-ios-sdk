@@ -8,26 +8,38 @@ import Foundation
 
 class Configuration {
     let type: EnviromentType
-    let authUrl: URL
+    let authBaseUrl: URL
+    let authStartUrl: URL
     let tmpStorageUrl: URL
+    let tokenStorageKey: String
     init (type: EnviromentType) {
         self.type = type
         switch type {
         case .Local:
-            self.authUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
+            self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo")!
+            self.authStartUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.tmpStorageUrl = URL(string: "https://helper-svc-dev.privo.com/rest/api/v1.0/storage")!
+            self.tokenStorageKey = "privo-token-local"
         case .Dev:
-            self.authUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
+            self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo")!
+            self.authStartUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.tmpStorageUrl = URL(string: "https://helper-svc-dev.privo.com/rest/api/v1.0/storage")!
+            self.tokenStorageKey = "privo-token-dev"
         case .Int:
-            self.authUrl = URL(string: "https://auth-int.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
+            self.authBaseUrl = URL(string: "https://auth-int.privo.com/api/v1.0/privo")!
+            self.authStartUrl = URL(string: "https://auth-int.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.tmpStorageUrl = URL(string: "https://helper-svc-int.privo.com/rest/api/v1.0/storage")!
+            self.tokenStorageKey = "privo-token-int"
         case .Test:
-            self.authUrl = URL(string: "https://auth-test.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
+            self.authBaseUrl = URL(string: "https://auth-test.privo.com/api/v1.0/privo")!
+            self.authStartUrl = URL(string: "https://auth-test.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.tmpStorageUrl = URL(string: "https://helper-svc-test.privo.com/rest/api/v1.0/storage")!
+            self.tokenStorageKey = "privo-token-test"
         case .Prod:
-            self.authUrl = URL(string: "https://auth.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
+            self.authBaseUrl = URL(string: "https://auth.privo.com/api/v1.0/privo")!
+            self.authStartUrl = URL(string: "https://auth.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.tmpStorageUrl = URL(string: "https://helper-svc.privo.com/rest/api/v1.0/storage")!
+            self.tokenStorageKey = "privo-token"
         }
     }
     
