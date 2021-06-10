@@ -8,6 +8,6 @@
 import Foundation
 
 public struct TokenValidity {
-    let token: String
-    let isValid: Bool
+    public let token: String
+    public let isValid: Bool
 }
