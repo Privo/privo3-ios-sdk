@@ -43,7 +43,7 @@ public struct PrivoAuthView<Label> : View where Label : View {
     let label: Label
     var closeIcon: Image?
     let onFinish: ((String?) -> Void)?
-    private let acessIdKey = "accessId"
+    private let accessIdKey = "accessId"
     public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: Image? = nil ) {
         self.label = label()
         self.onFinish = onFinish
@@ -56,7 +56,7 @@ public struct PrivoAuthView<Label> : View where Label : View {
             label
         }.sheet(isPresented: $presentingAuth) {
             ModalAuthView(isPresented: self.$presentingAuth, onPrivoEvent: { event in
-                if let accessId = event?[acessIdKey] as? String {
+                if let accessId = event?[accessIdKey] as? String {
                     PrivoInternal.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
                         let token = resp?.data
                         if (token != nil) {
