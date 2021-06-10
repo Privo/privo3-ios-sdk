@@ -33,7 +33,7 @@ struct ModalAuthView: View {
         Webview(url: url, onPrivoEvent: {data in
             self.onPrivoEvent(data)
             isPresented = false
-        })
+        }).KeyboardAwarePadding()
     }
   }
 }
@@ -67,7 +67,7 @@ public struct PrivoAuthView<Label> : View where Label : View {
                 } else {
                     self.onFinish?(nil)
                 }
-            }).KeyboardAwarePadding()
+            })
         }
     }
 }
