@@ -1,7 +1,9 @@
 
 public class Privo {
-    public static let shared = Privo();
+    public static let shared = Privo()
+    private init () {}
+    public static func initialize (settings: PrivoSettings) {
+        PrivoInternal.initialize(settings: settings)
+    }
     public let auth = PrivoAuth();
-    public let sdkText = "Hello from Privo SDK!" //TODO: Remove me later
-
 }

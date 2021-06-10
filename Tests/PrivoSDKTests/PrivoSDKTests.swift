@@ -6,6 +6,7 @@
             // This is an example of a functional test case.
             // Use XCTAssert and related functions to verify your tests produce the correct
             // results.
-            XCTAssertEqual(Privo.shared.sdkText, "Hello from Privo SDK!")
+            Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+            XCTAssertEqual(PrivoInternal.shared.configuration.type, .Dev)
         }
     }
