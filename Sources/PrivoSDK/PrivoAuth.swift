@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import JWTDecode
 
 struct ModalAuthView: View {
   @Binding var isPresented: Bool
@@ -73,14 +74,30 @@ public struct PrivoAuthView<Label> : View where Label : View {
 
 public class PrivoAuth {
     public init() {}
-    public func getLastToken() -> String? {
-        UserDefaults.standard.string(forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+    public func getToken() -> String? {
+        if let token = UserDefaults.standard.string(forKey: PrivoInternal.shared.configuration.tokenStorageKey) {
+            if let jwt = try? decode(jwt: token) {
+                if let exp = jwt.expiresAt {
+                    if exp > Date() {
+                        return token
+                    }
+                }
+            }
+        }
+        cleanToken()
+        return nil
     }
-    public func renewToken(completionHandler: @escaping (String?) -> Void) {
-        if let oldToken = getLastToken() {
+    public func checkTokenValid(completionHandler: @escaping (TokenValidity?) -> Void) {
+        if let oldToken = getToken() {
             PrivoInternal.shared.rest.getAuthSessionId { sessionId in
                 if let sessionId = sessionId {
-                    PrivoInternal.shared.rest.renewToken(oldToken: oldToken, sessionId: sessionId, completionHandler: completionHandler)
+                    PrivoInternal.shared.rest.renewToken(oldToken: oldToken, sessionId: sessionId) { token in
+                        if let token = token {
+                            completionHandler(TokenValidity(token: token, isValid: true))
+                        } else {
+                            completionHandler(TokenValidity(token: oldToken, isValid: false))
+                        }
+                    }
                 } else {
                     completionHandler(nil)
                 }
@@ -89,7 +106,7 @@ public class PrivoAuth {
             completionHandler(nil)
         }
     }
-    public func cleanLastToken() -> Void {
+    public func cleanToken() -> Void {
         UserDefaults.standard.removeObject(forKey: PrivoInternal.shared.configuration.tokenStorageKey)
     }
 }
