@@ -8,7 +8,6 @@ struct Webview: UIViewRepresentable {
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
         let webview = WKWebView()
-        webview.translatesAutoresizingMaskIntoConstraints = false
         let request = URLRequest(url: self.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
         return webview

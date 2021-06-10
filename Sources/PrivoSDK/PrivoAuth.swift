@@ -67,7 +67,7 @@ public struct PrivoAuthView<Label> : View where Label : View {
                 } else {
                     self.onFinish?(nil)
                 }
-            })
+            }).KeyboardAwarePadding()
         }
     }
 }
