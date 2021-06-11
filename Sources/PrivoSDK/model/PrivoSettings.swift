@@ -8,8 +8,10 @@
 public struct PrivoSettings {
     public let serviceIdentifier: String
     public let envType: EnviromentType
-    public init(serviceIdentifier: String, envType: EnviromentType) {
+    public let siteId: String?
+    public init(serviceIdentifier: String, envType: EnviromentType, siteId: String? = nil) {
         self.serviceIdentifier = serviceIdentifier
         self.envType = envType
+        self.siteId = siteId
     }
 }
