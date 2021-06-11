@@ -61,6 +61,10 @@ struct Webview: UIViewRepresentable {
             print("didReceiveAuthenticationChallenge")
             completionHandler(.performDefaultHandling, nil)
         }
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            print("decisionHandler")
+            decisionHandler(.allow)
+        }
     }
 }
 
