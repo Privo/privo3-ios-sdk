@@ -31,7 +31,7 @@ struct ModalWebView: View {
         Webview(url: url, onPrivoEvent: {data in
             self.onPrivoEvent(data)
             isPresented = false
-        }).KeyboardAwarePadding()
+        })
     }
   }
 }

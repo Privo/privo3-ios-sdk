@@ -63,6 +63,7 @@ struct Webview: UIViewRepresentable {
         }
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             print("decisionHandler")
+            print(navigationAction.request.url)
             decisionHandler(.allow)
         }
     }
