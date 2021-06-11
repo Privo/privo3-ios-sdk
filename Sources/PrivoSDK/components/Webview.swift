@@ -1,25 +1,37 @@
 import SwiftUI
 import WebKit
 
+struct WebviewConfig {
+    let url: URL
+    var finishCriteria: String?
+    var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
+    var onFinish: (() -> Void)?
+}
+
 struct Webview: UIViewRepresentable {
     
-    let url: URL
-    let onPrivoEvent: ([String : AnyObject]?) -> Void;
-    let navigationHelper = WebViewNavigationHelper()
+    let config: WebviewConfig
+    private let navigationHelper = WebViewNavigationHelper()
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
         let webview = WKWebView()
-        webview.navigationDelegate = navigationHelper
-        let contentController = ContentController(onPrivoEvent)
-        webview.configuration.userContentController.add(contentController, name: "privo")
-        
-        let request = URLRequest(url: self.url, cachePolicy: .returnCacheDataElseLoad)
+        if let finishCriteria = config.finishCriteria,
+           let onFinish = config.onFinish {
+            navigationHelper.finishCriteria = finishCriteria
+            navigationHelper.onFinish = onFinish
+            webview.navigationDelegate = navigationHelper
+        }
+        if let onPrivoEvent = config.onPrivoEvent {
+            let contentController = ContentController(onPrivoEvent)
+            webview.configuration.userContentController.add(contentController, name: "privo")
+        }
+        let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
         return webview
     }
 
     func updateUIView(_ webview: WKWebView, context: UIViewRepresentableContext<Webview>) {
-        let request = URLRequest(url: self.url, cachePolicy: .returnCacheDataElseLoad)
+        let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
     }
     
@@ -45,25 +57,17 @@ struct Webview: UIViewRepresentable {
     }
     
     class WebViewNavigationHelper: NSObject, WKNavigationDelegate {
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            print("webview didFinishNavigation")
-        }
+        var finishCriteria: String?
+        var onFinish: (() -> Void)?
         
-        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-            print("didStartProvisionalNavigation")
-        }
-        
-        func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-            print("webviewDidCommit")
-        }
-        
-        func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-            print("didReceiveAuthenticationChallenge")
-            completionHandler(.performDefaultHandling, nil)
-        }
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            print("decisionHandler")
-            print(navigationAction.request.url)
+            if let url = navigationAction.request.url?.absoluteString,
+               let finishCriteria = finishCriteria,
+               let onFinish = onFinish {
+                if  url.contains(finishCriteria) {
+                    onFinish()
+                }
+            }
             decisionHandler(.allow)
         }
     }
