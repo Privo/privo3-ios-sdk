@@ -14,29 +14,28 @@ struct ModalWebView: View {
   var closeIcon: Image?
   var backgraund: Color?
   
-  var body: some View {
-    return ZStack(){
-        //BackgroundClearView().blur(radius: 20)
-        VStack() {
-            HStack() {
-                Spacer()
-                Button(action: {
-                  isPresented = false
-                }, label: {
-                    if (self.closeIcon != nil) {
-                        self.closeIcon
-                    } else {
-                        Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
-                    }
-                })
-            }
-            Webview(config: config)
-        }
-    }.overlay(
-        backgraund
-    )
+    var body: some View {
+      return
+          //BackgroundClearView().blur(radius: 20)
+          VStack() {
+              HStack() {
+                  Spacer()
+                  Button(action: {
+                    isPresented = false
+                  }, label: {
+                      if (self.closeIcon != nil) {
+                          self.closeIcon
+                      } else {
+                          Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
+                      }
+                  })
+              }
+              Webview(config: config)
+          }.overlay(
+            Color.red.opacity(0.5)
+          )
+    }
   }
-}
 
 public struct PrivoAuthView<Label> : View where Label : View {
     @State var presentingAuth = false
