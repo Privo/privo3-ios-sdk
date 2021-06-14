@@ -15,6 +15,7 @@ struct ModalWebView: View {
   
   var body: some View {
     return ZStack(){
+        //BackgroundClearView().blur(radius: 20)
         VStack() {
             HStack() {
                 Spacer()
@@ -30,8 +31,9 @@ struct ModalWebView: View {
             }
             Webview(config: config)
         }
+    }.overlay(
         BackgroundClearView().blur(radius: 20)
-    }
+    )
   }
 }
 

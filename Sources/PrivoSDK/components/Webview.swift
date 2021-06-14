@@ -15,6 +15,9 @@ struct Webview: UIViewRepresentable {
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
         let webview = WKWebView()
+        webview.isOpaque = false
+        webview.backgroundColor = .clear
+        webview.scrollView.backgroundColor = .clear
         if let finishCriteria = config.finishCriteria,
            let onFinish = config.onFinish {
             navigationHelper.finishCriteria = finishCriteria
