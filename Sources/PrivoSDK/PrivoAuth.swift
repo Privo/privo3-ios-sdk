@@ -12,7 +12,7 @@ struct ModalWebView: View {
   @Binding var isPresented: Bool
   let config: WebviewConfig
   var closeIcon: Image?
-  var backgraund: Image?
+  var backgraund: Color?
   
   var body: some View {
     return ZStack(){
@@ -41,15 +41,15 @@ struct ModalWebView: View {
 public struct PrivoAuthView<Label> : View where Label : View {
     @State var presentingAuth = false
     let label: Label
-    var closeIcon: Image?
-    var backgraund: Image?
+    var closeIcon: Label?
+    var backgraund: Color?
     let onFinish: ((String?) -> Void)?
     private let accessIdKey = "accessId"
-    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: Image? = nil, backgraund: Image? = nil ) {
+    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: (() -> Label)? = nil, backgraund: (() -> Color)? = nil ) {
         self.label = label()
+        self.closeIcon = closeIcon?()
+        self.backgraund = backgraund?()
         self.onFinish = onFinish
-        self.closeIcon = closeIcon
-        self.backgraund = backgraund
     }
     public var body: some View {
         // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
