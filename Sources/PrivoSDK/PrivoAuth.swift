@@ -45,14 +45,14 @@ public struct PrivoAuthView<Label> : View where Label : View {
     }
     public var body: some View {
         // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
-        let url = PrivoInternal.shared.configuration.authStartUrl
+        let url = PrivoInternal.configuration.authStartUrl
         // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
         let config = WebviewConfig(url: url, onPrivoEvent: { event in
             if let accessId = event?[accessIdKey] as? String {
-                PrivoInternal.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
+                PrivoInternal.rest.getValueFromTMPStorage(key: accessId) { resp in
                     let token = resp?.data
                     if (token != nil) {
-                        UserDefaults.standard.set(token, forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+                        UserDefaults.standard.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
                     }
                     presentingAuth = false
                     self.onFinish?(token)
@@ -86,8 +86,8 @@ public struct PrivoRegisterView<Label> : View where Label : View {
         self._presentingRegister = isPresented
     }
     public var body: some View {
-        let siteId = PrivoInternal.shared.settings.siteId;
-        var url = PrivoInternal.shared.configuration.lgsRegistrationUrl
+        let siteId = PrivoInternal.settings.siteId;
+        var url = PrivoInternal.configuration.lgsRegistrationUrl
         if let siteId = siteId {
             url.appendQueryParam(name: siteIdKey, value: siteId)
         }
@@ -105,7 +105,7 @@ public struct PrivoRegisterView<Label> : View where Label : View {
 public class PrivoAuth {
     public init() {}
     public func getToken() -> String? {
-        if let token = UserDefaults.standard.string(forKey: PrivoInternal.shared.configuration.tokenStorageKey) {
+        if let token = UserDefaults.standard.string(forKey: PrivoInternal.configuration.tokenStorageKey) {
             if let jwt = try? decode(jwt: token) {
                 if let exp = jwt.expiresAt {
                     if exp > Date() {
@@ -119,9 +119,9 @@ public class PrivoAuth {
     }
     public func checkTokenValid(completionHandler: @escaping (TokenValidity?) -> Void) {
         if let oldToken = getToken() {
-            PrivoInternal.shared.rest.getAuthSessionId { sessionId in
+            PrivoInternal.rest.getAuthSessionId { sessionId in
                 if let sessionId = sessionId {
-                    PrivoInternal.shared.rest.renewToken(oldToken: oldToken, sessionId: sessionId) { token in
+                    PrivoInternal.rest.renewToken(oldToken: oldToken, sessionId: sessionId) { token in
                         if let token = token {
                             completionHandler(TokenValidity(token: token, isValid: true))
                         } else {
@@ -137,6 +137,6 @@ public class PrivoAuth {
         }
     }
     public func cleanToken() -> Void {
-        UserDefaults.standard.removeObject(forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+        UserDefaults.standard.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
 }

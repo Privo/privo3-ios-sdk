@@ -10,14 +10,14 @@ import Foundation
 
 class Rest {
     func getValueFromTMPStorage(key: String, completionHandler: @escaping (TmpStorageString?) -> Void) {
-        var tmpStorageURL = PrivoInternal.shared.configuration.tmpStorageUrl
+        var tmpStorageURL = PrivoInternal.configuration.tmpStorageUrl
         tmpStorageURL.appendPathComponent(key)
         AF.request(tmpStorageURL).responseDecodable(of: TmpStorageString.self) { response in
             completionHandler(response.value)
         }
     }
     func getAuthSessionId(completionHandler: @escaping (String?) -> Void) {
-        let authStartUrl = PrivoInternal.shared.configuration.authStartUrl
+        let authStartUrl = PrivoInternal.configuration.authStartUrl
         let sessionIdKey = "session_id"
         AF.request(authStartUrl).response() { r in
             if let redirectUrl = r.response?.url {
@@ -33,7 +33,7 @@ class Rest {
         }
     }
     func renewToken(oldToken: String, sessionId: String, completionHandler: @escaping (String?) -> Void) {
-        let loginUrl = String(format: "%@/login/token?session_id=%@", PrivoInternal.shared.configuration.authBaseUrl.absoluteString,sessionId)
+        let loginUrl = String(format: "%@/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
         AF.request(loginUrl, method: .post, parameters: nil, encoding: BodyStringEncoding(body: oldToken)).responseDecodable(of: LoginResponse.self) { r in
             let token = r.value?.token
             completionHandler(token)
