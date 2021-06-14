@@ -28,7 +28,7 @@ struct ModalWebView: View {
             })
         }
         Webview(config: config)
-    }
+    }.opacity(0.5).background(BackgroundClearView())
   }
 }
 
