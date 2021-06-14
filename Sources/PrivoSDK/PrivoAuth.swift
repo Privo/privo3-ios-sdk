@@ -8,15 +8,12 @@
 import SwiftUI
 import JWTDecode
 
-struct ModalAuthView: View {
+struct ModalWebView: View {
   @Binding var isPresented: Bool
+  let config: WebviewConfig
   var closeIcon: Image?
-  let onPrivoEvent: ([String : AnyObject]?) -> Void;
   
   var body: some View {
-    // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
-    let url = PrivoInternal.shared.configuration.authStartUrl
-    // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
     return VStack() {
         HStack() {
             Spacer()
@@ -30,10 +27,7 @@ struct ModalAuthView: View {
                 }
             })
         }
-        Webview(url: url, onPrivoEvent: {data in
-            self.onPrivoEvent(data)
-            isPresented = false
-        })
+        Webview(config: config)
     }
   }
 }
@@ -43,31 +37,67 @@ public struct PrivoAuthView<Label> : View where Label : View {
     let label: Label
     var closeIcon: Image?
     let onFinish: ((String?) -> Void)?
-    private let acessIdKey = "accessId"
+    private let accessIdKey = "accessId"
     public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: Image? = nil ) {
         self.label = label()
         self.onFinish = onFinish
         self.closeIcon = closeIcon
     }
     public var body: some View {
-        Button {
+        // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
+        let url = PrivoInternal.shared.configuration.authStartUrl
+        // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
+        let config = WebviewConfig(url: url, onPrivoEvent: { event in
+            if let accessId = event?[accessIdKey] as? String {
+                PrivoInternal.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
+                    let token = resp?.data
+                    if (token != nil) {
+                        UserDefaults.standard.set(token, forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+                    }
+                    presentingAuth = false
+                    self.onFinish?(token)
+                }
+            } else {
+                presentingAuth = false
+                self.onFinish?(nil)
+            }
+            
+        })
+        return Button {
             presentingAuth = true
         } label: {
             label
         }.sheet(isPresented: $presentingAuth) {
-            ModalAuthView(isPresented: self.$presentingAuth, onPrivoEvent: { event in
-                if let accessId = event?[acessIdKey] as? String {
-                    PrivoInternal.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
-                        let token = resp?.data
-                        if (token != nil) {
-                            UserDefaults.standard.set(token, forKey: PrivoInternal.shared.configuration.tokenStorageKey)
-                        }
-                        self.onFinish?(token)
-                    }
-                } else {
-                    self.onFinish?(nil)
-                }
-            })
+            ModalWebView(isPresented: self.$presentingAuth,  config: config)
+        }
+    }
+}
+
+public struct PrivoRegisterView<Label> : View where Label : View {
+    @Binding var presentingRegister: Bool
+    let label: Label
+    var closeIcon: Image?
+    let onFinish: (() -> Void)?
+    private let siteIdKey = "siteId"
+    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: Image? = nil ) {
+        self.label = label()
+        self.onFinish = onFinish
+        self.closeIcon = closeIcon
+        self._presentingRegister = isPresented
+    }
+    public var body: some View {
+        let siteId = PrivoInternal.shared.settings.siteId;
+        var url = PrivoInternal.shared.configuration.lgsRegistrationUrl
+        if let siteId = siteId {
+            url.appendQueryParam(name: siteIdKey, value: siteId)
+        }
+        let config = WebviewConfig(url: url, finishCriteria: "step=complete", onFinish: onFinish)
+        return Button {
+            presentingRegister = true
+        } label: {
+            label
+        }.sheet(isPresented: $presentingRegister) {
+            ModalWebView(isPresented: self.$presentingRegister, config: config)
         }
     }
 }
