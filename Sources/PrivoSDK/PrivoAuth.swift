@@ -14,21 +14,24 @@ struct ModalWebView: View {
   var closeIcon: Image?
   
   var body: some View {
-    return VStack() {
-        HStack() {
-            Spacer()
-            Button(action: {
-              isPresented = false
-            }, label: {
-                if (self.closeIcon != nil) {
-                    self.closeIcon
-                } else {
-                    Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
-                }
-            })
+    return ZStack(){
+        VStack() {
+            HStack() {
+                Spacer()
+                Button(action: {
+                  isPresented = false
+                }, label: {
+                    if (self.closeIcon != nil) {
+                        self.closeIcon
+                    } else {
+                        Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
+                    }
+                })
+            }
+            Webview(config: config)
         }
-        Webview(config: config)
-    }.background(BackgroundClearView()).blur(radius: 20)
+        BackgroundClearView().blur(radius: 20)
+    }
   }
 }
 
