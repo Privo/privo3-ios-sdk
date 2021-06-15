@@ -5,7 +5,7 @@ struct WebviewConfig {
     let url: URL
     var finishCriteria: String?
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
-    var onFinish: (() -> Void)?
+    var onFinish: ((String) -> Void)?
 }
 
 struct Webview: UIViewRepresentable {
@@ -61,14 +61,14 @@ struct Webview: UIViewRepresentable {
     
     class WebViewNavigationHelper: NSObject, WKNavigationDelegate {
         var finishCriteria: String?
-        var onFinish: (() -> Void)?
+        var onFinish: ((String) -> Void)?
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             if let url = navigationAction.request.url?.absoluteString,
                let finishCriteria = finishCriteria,
                let onFinish = onFinish {
                 if  url.contains(finishCriteria) {
-                    onFinish()
+                    onFinish(url)
                 }
             }
             decisionHandler(.allow)

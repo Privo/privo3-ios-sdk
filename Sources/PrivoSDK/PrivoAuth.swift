@@ -8,46 +8,15 @@
 import SwiftUI
 import JWTDecode
 
-struct ModalWebView: View {
-  @Binding var isPresented: Bool
-  let config: WebviewConfig
-  var closeIcon: Image?
-  var backgraund: Color?
-  
-    var body: some View {
-      return
-          //BackgroundClearView().blur(radius: 20)
-          VStack() {
-              HStack() {
-                  Spacer()
-                  Button(action: {
-                    isPresented = false
-                  }, label: {
-                      if (self.closeIcon != nil) {
-                          self.closeIcon
-                      } else {
-                          Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
-                      }
-                  })
-              }
-              Webview(config: config)
-          }.overlay(
-            Color.red.opacity(0.5)
-          )
-    }
-  }
-
 public struct PrivoAuthView<Label> : View where Label : View {
     @State var presentingAuth = false
     let label: Label
     var closeIcon: Label?
-    var backgraund: Color?
     let onFinish: ((String?) -> Void)?
     private let accessIdKey = "accessId"
-    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: (() -> Label)? = nil, backgraund: (() -> Color)? = nil ) {
+    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: (() -> Label)? = nil) {
         self.label = label()
         self.closeIcon = closeIcon?()
-        self.backgraund = backgraund?()
         self.onFinish = onFinish
     }
     public var body: some View {
@@ -83,22 +52,24 @@ public struct PrivoAuthView<Label> : View where Label : View {
 public struct PrivoRegisterView<Label> : View where Label : View {
     @Binding var presentingRegister: Bool
     let label: Label
-    var closeIcon: Image?
+    var closeIcon: Label?
     let onFinish: (() -> Void)?
     private let siteIdKey = "siteId"
-    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: Image? = nil ) {
+    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Label)? = nil ) {
         self.label = label()
-        self.onFinish = onFinish
-        self.closeIcon = closeIcon
+        self.closeIcon = closeIcon?()
         self._presentingRegister = isPresented
+        self.onFinish = onFinish
     }
     public var body: some View {
-        let siteId = PrivoInternal.settings.siteId;
+        let siteId = PrivoInternal.settings.siteIdentifier; // P2 uses SiteId insterad of siteIdentifier
         var url = PrivoInternal.configuration.lgsRegistrationUrl
         if let siteId = siteId {
             url.appendQueryParam(name: siteIdKey, value: siteId)
         }
-        let config = WebviewConfig(url: url, finishCriteria: "step=complete", onFinish: onFinish)
+        let config = WebviewConfig(url: url, finishCriteria: "step=complete", onFinish: { _ in
+            onFinish?()
+        })
         return Button {
             presentingRegister = true
         } label: {

@@ -16,6 +16,33 @@ class Rest {
             completionHandler(response.value)
         }
     }
+    func addValueToTMPStorage(value: String, ttl: Int? = nil, completionHandler: ((String?) -> Void)? = nil) {
+        let tmpStorageURL = PrivoInternal.configuration.tmpStorageUrl
+        let data = TmpStorageString(data: value, ttl: ttl)
+        AF.request(tmpStorageURL, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: TmpStorageResponse.self) { response in
+            let id = response.value?.id
+            completionHandler?(id)
+        }
+    }
+    func getObjectFromTMPStorage<T: Decodable>(key: String, completionHandler: @escaping (T?) -> Void) {
+        getValueFromTMPStorage(key: key) { response in
+            if let jsonString = response?.data,
+               let jsonData = jsonString.data(using: .utf8),
+               let value = try? JSONDecoder().decode(T.self, from: jsonData) {
+                completionHandler(value)
+            } else {
+                completionHandler(nil)
+            }
+        }
+    }
+    func addObjectToTMPStorage<T: Encodable>(value: T, completionHandler: ((String?) -> Void)? = nil) {
+        if let jsonData = try? JSONEncoder().encode(value) {
+            let jsonString = String(decoding: jsonData, as: UTF8.self)
+            addValueToTMPStorage(value: jsonString, completionHandler: completionHandler)
+        } else {
+            completionHandler?(nil)
+        }
+    }
     func getAuthSessionId(completionHandler: @escaping (String?) -> Void) {
         let authStartUrl = PrivoInternal.configuration.authStartUrl
         let sessionIdKey = "session_id"
