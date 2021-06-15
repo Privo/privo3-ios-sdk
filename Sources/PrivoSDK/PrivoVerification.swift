@@ -16,6 +16,8 @@ public struct PrivoVerificationView<Label> : View where Label : View {
     var closeIcon: Label?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     
+    private let redirectUrl = "localhost"
+    
     public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Label)? = nil, profile: UserVerificationProfile? = nil) {
         if let profile = profile {
             self.profile = profile
@@ -24,14 +26,13 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         self.closeIcon = closeIcon?()
         self.onFinish = onFinish
     }
-    public var body: some View {
-        let redirectUrl = "localhost"
+    func getConfig() -> WebviewConfig {
         var verificationUrl = PrivoInternal.configuration.verificationUrl
         if let stateId = privoStateId {
             verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
         }
         verificationUrl.appendRawPath("/#/intro")
-        let config = WebviewConfig(url: verificationUrl, finishCriteria: redirectUrl, onFinish: { url in
+        return WebviewConfig(url: verificationUrl, finishCriteria: redirectUrl, onFinish: { url in
             if let items = URLComponents(string: url)?.queryItems,
                let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
                 PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
@@ -43,19 +44,25 @@ public struct PrivoVerificationView<Label> : View where Label : View {
                 onFinish?(Array())
             }
         })
-    
-        return Button {
-            if let apiKey = PrivoInternal.settings.apiKey {
-                let data = VerificationData(profile: self.profile, config: VerificationConfig(apiKey: apiKey, siteIdentifier: PrivoInternal.settings.serviceIdentifier), redirectUrl: redirectUrl)
-                PrivoInternal.rest.addObjectToTMPStorage(value: data) { id in
-                    privoStateId = id
-                    presentingVerification = true
-                }
+    }
+    func showView() {
+        if let apiKey = PrivoInternal.settings.apiKey {
+            let data = VerificationData(profile: self.profile, config: VerificationConfig(apiKey: apiKey, siteIdentifier: PrivoInternal.settings.serviceIdentifier), redirectUrl: redirectUrl)
+            PrivoInternal.rest.addObjectToTMPStorage(value: data) { id in
+                privoStateId = id
+                presentingVerification = true
             }
+        }
+    }
+    public var body: some View {
+        return Button {
+            showView()
         } label: {
             label
         }.sheet(isPresented: $presentingVerification) {
-            ModalWebView(isPresented: self.$presentingVerification,  config: config)
+            if (privoStateId != nil) {
+                ModalWebView(isPresented: self.$presentingVerification,  config: getConfig())
+            }
         }
     }
 }
