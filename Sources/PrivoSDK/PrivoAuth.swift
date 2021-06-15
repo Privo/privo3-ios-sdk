@@ -62,11 +62,9 @@ public struct PrivoRegisterView<Label> : View where Label : View {
         self.onFinish = onFinish
     }
     public var body: some View {
-        let siteId = PrivoInternal.settings.siteIdentifier; // P2 uses SiteId insterad of siteIdentifier
+        let siteId = "1"; // TMP, replace it with exchanged serviceIdentifier later (if we are going to use this view)
         var url = PrivoInternal.configuration.lgsRegistrationUrl
-        if let siteId = siteId {
-            url.appendQueryParam(name: siteIdKey, value: siteId)
-        }
+        url.appendQueryParam(name: siteIdKey, value: siteId)
         let config = WebviewConfig(url: url, finishCriteria: "step=complete", onFinish: { _ in
             onFinish?()
         })
