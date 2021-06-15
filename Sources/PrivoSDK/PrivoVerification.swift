@@ -30,6 +30,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         if let stateId = privoStateId {
             verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
         }
+        verificationUrl.appendRawPath("/#/intro")
         let config = WebviewConfig(url: verificationUrl, finishCriteria: redirectUrl, onFinish: { url in
             if let items = URLComponents(string: url)?.queryItems,
                let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {

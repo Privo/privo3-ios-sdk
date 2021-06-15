@@ -28,4 +28,10 @@ extension URL {
         // Returns the url from new url components
         self = urlComponents.url!
     }
+    mutating func appendRawPath(_ value: String) {
+        let nextString = absoluteString + value
+        if let nextURL = URL(string: nextString) {
+            self = nextURL
+        }
+    }
 }
