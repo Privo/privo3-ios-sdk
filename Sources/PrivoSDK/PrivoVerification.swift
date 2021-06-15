@@ -27,7 +27,9 @@ public struct PrivoVerificationView<Label> : View where Label : View {
     public var body: some View {
         let redirectUrl = "localhost"
         var verificationUrl = PrivoInternal.configuration.verificationUrl
-        verificationUrl.appendQueryParam(name: "privo_state_id", value: redirectUrl)
+        if let stateId = privoStateId {
+            verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
+        }
         let config = WebviewConfig(url: verificationUrl, finishCriteria: redirectUrl, onFinish: { url in
             if let items = URLComponents(string: url)?.queryItems,
                let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
