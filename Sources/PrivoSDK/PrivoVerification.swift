@@ -54,7 +54,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
     var closeIcon: Image?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     
-    private let redirectUrl = "localhost"
+    private let redirectUrl = "https://localhost"
     
     public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Image)? = nil, profile: UserVerificationProfile? = nil) {
         if let profile = profile {
