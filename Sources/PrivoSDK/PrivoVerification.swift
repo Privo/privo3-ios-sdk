@@ -13,25 +13,13 @@ private struct PrivoVerificationState {
     var privoStateId: String? = nil
 }
 
-public struct PrivoVerificationView<Label> : View where Label : View {
-    @State private var state = PrivoVerificationState()
+private struct VerificationModal : View {
+    @Binding fileprivate var state: PrivoVerificationState
+    
+    fileprivate let redirectUrl: String
+    fileprivate let onFinish: ((Array<VerificationEvent>) -> Void)?
 
-    public var profile: UserVerificationProfile = UserVerificationProfile()
-    let label: Label
-    var closeIcon: Label?
-    let onFinish: ((Array<VerificationEvent>) -> Void)?
-    
-    private let redirectUrl = "localhost"
-    
-    public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Label)? = nil, profile: UserVerificationProfile? = nil) {
-        if let profile = profile {
-            self.profile = profile
-        }
-        self.label = label()
-        self.closeIcon = closeIcon?()
-        self.onFinish = onFinish
-    }
-    func getConfig() -> WebviewConfig {
+    private func getConfig() -> WebviewConfig {
         var verificationUrl = PrivoInternal.configuration.verificationUrl
         if let stateId = state.privoStateId {
             verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
@@ -50,6 +38,30 @@ public struct PrivoVerificationView<Label> : View where Label : View {
             }
         })
     }
+    
+    public var body: some View {
+        ModalWebView(isPresented: $state.presentingVerification,  config: getConfig())
+    }
+}
+
+public struct PrivoVerificationView<Label> : View where Label : View {
+    @State private var state = PrivoVerificationState()
+
+    public var profile: UserVerificationProfile = UserVerificationProfile()
+    let label: Label
+    var closeIcon: Label?
+    let onFinish: ((Array<VerificationEvent>) -> Void)?
+    
+    private let redirectUrl = "localhost"
+    
+    public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Label)? = nil, profile: UserVerificationProfile? = nil) {
+        if let profile = profile {
+            self.profile = profile
+        }
+        self.label = label()
+        self.closeIcon = closeIcon?()
+        self.onFinish = onFinish
+    }
     func showView() {
         if let apiKey = PrivoInternal.settings.apiKey {
             let data = VerificationData(profile: self.profile, config: VerificationConfig(apiKey: apiKey, siteIdentifier: PrivoInternal.settings.serviceIdentifier), redirectUrl: redirectUrl)
@@ -65,7 +77,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         } label: {
             label
         }.sheet(isPresented: $state.presentingVerification) {
-            ModalWebView(isPresented: $state.presentingVerification,  config: getConfig())
+            VerificationModal(state: $state, redirectUrl: redirectUrl, onFinish: onFinish)
         }
     }
 }
