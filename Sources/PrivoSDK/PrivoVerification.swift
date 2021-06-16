@@ -21,6 +21,7 @@ private struct VerificationModal : View {
 
     private func getConfig() -> WebviewConfig {
         var verificationUrl = PrivoInternal.configuration.verificationUrl
+        verificationUrl.appendRawPath("/index.html")
         if let stateId = state.privoStateId {
             verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
         }
