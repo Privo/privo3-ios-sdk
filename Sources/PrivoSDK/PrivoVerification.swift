@@ -7,9 +7,14 @@
 
 import SwiftUI
 
+
+private struct PrivoVerificationState {
+    var presentingVerification = false
+    var privoStateId: String? = nil
+}
+
 public struct PrivoVerificationView<Label> : View where Label : View {
-    @State private var presentingVerification = false
-    @State private var privoStateId: String? = nil
+    @State private var state = PrivoVerificationState()
 
     public var profile: UserVerificationProfile = UserVerificationProfile()
     let label: Label
@@ -28,7 +33,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
     }
     func getConfig() -> WebviewConfig {
         var verificationUrl = PrivoInternal.configuration.verificationUrl
-        if let stateId = privoStateId {
+        if let stateId = state.privoStateId {
             verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
         }
         verificationUrl.appendRawPath("/#/intro")
@@ -36,11 +41,11 @@ public struct PrivoVerificationView<Label> : View where Label : View {
             if let items = URLComponents(string: url)?.queryItems,
                let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
                 PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
-                    presentingVerification = false
+                    state.presentingVerification = false
                     onFinish?(events ?? Array())
                 }
             } else {
-                presentingVerification = false
+                state.presentingVerification = false
                 onFinish?(Array())
             }
         })
@@ -49,8 +54,8 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         if let apiKey = PrivoInternal.settings.apiKey {
             let data = VerificationData(profile: self.profile, config: VerificationConfig(apiKey: apiKey, siteIdentifier: PrivoInternal.settings.serviceIdentifier), redirectUrl: redirectUrl)
             PrivoInternal.rest.addObjectToTMPStorage(value: data) { id in
-                privoStateId = id
-                presentingVerification = true
+                state.privoStateId = id
+                state.presentingVerification = true
             }
         }
     }
@@ -59,8 +64,8 @@ public struct PrivoVerificationView<Label> : View where Label : View {
             showView()
         } label: {
             label
-        }.sheet(isPresented: $presentingVerification) {
-            ModalWebView(isPresented: self.$presentingVerification,  config: getConfig())
+        }.sheet(isPresented: $state.presentingVerification) {
+            ModalWebView(isPresented: $state.presentingVerification,  config: getConfig())
         }
     }
 }
