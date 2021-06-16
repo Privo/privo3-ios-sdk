@@ -60,9 +60,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         } label: {
             label
         }.sheet(isPresented: $presentingVerification) {
-            if (privoStateId != nil) {
-                ModalWebView(isPresented: self.$presentingVerification,  config: getConfig())
-            }
+            ModalWebView(isPresented: self.$presentingVerification,  config: getConfig())
         }
     }
 }
