@@ -27,7 +27,7 @@ private struct VerificationModal : View {
             verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
         }
         verificationUrl.appendRawPath("/#/intro")
-        return WebviewConfig(url: verificationUrl, closeIcon: closeIcon, finishCriteria: redirectUrl, onFinish: { url in
+        return WebviewConfig(url: verificationUrl, showCloseIcon: false, finishCriteria: redirectUrl, onFinish: { url in
             if let items = URLComponents(string: url)?.queryItems,
                let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
                 PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in

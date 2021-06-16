@@ -3,8 +3,8 @@ import WebKit
 
 struct WebviewConfig {
     let url: URL
-    let closeIcon: Image?
-    let showCloseIcon = true
+    var closeIcon: Image?
+    var showCloseIcon = true
     var finishCriteria: String?
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
     var onFinish: ((String) -> Void)?
