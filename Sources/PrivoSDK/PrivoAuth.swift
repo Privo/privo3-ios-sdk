@@ -11,10 +11,10 @@ import JWTDecode
 public struct PrivoAuthView<Label> : View where Label : View {
     @State var presentingAuth = false
     let label: Label
-    var closeIcon: Label?
+    var closeIcon: Image?
     let onFinish: ((String?) -> Void)?
     private let accessIdKey = "accessId"
-    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: (() -> Label)? = nil) {
+    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: (() -> Image)? = nil) {
         self.label = label()
         self.closeIcon = closeIcon?()
         self.onFinish = onFinish
@@ -23,7 +23,7 @@ public struct PrivoAuthView<Label> : View where Label : View {
         // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
         let url = PrivoInternal.configuration.authStartUrl
         // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
-        let config = WebviewConfig(url: url, onPrivoEvent: { event in
+        let config = WebviewConfig(url: url, closeIcon: closeIcon, onPrivoEvent: { event in
             if let accessId = event?[accessIdKey] as? String {
                 PrivoInternal.rest.getValueFromTMPStorage(key: accessId) { resp in
                     let token = resp?.data
@@ -52,10 +52,10 @@ public struct PrivoAuthView<Label> : View where Label : View {
 public struct PrivoRegisterView<Label> : View where Label : View {
     @Binding var presentingRegister: Bool
     let label: Label
-    var closeIcon: Label?
+    var closeIcon: Image?
     let onFinish: (() -> Void)?
     private let siteIdKey = "siteId"
-    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Label)? = nil ) {
+    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Image)? = nil ) {
         self.label = label()
         self.closeIcon = closeIcon?()
         self._presentingRegister = isPresented
@@ -65,7 +65,7 @@ public struct PrivoRegisterView<Label> : View where Label : View {
         let siteId = "1"; // TMP, replace it with exchanged serviceIdentifier later (if we are going to use this view)
         var url = PrivoInternal.configuration.lgsRegistrationUrl
         url.appendQueryParam(name: siteIdKey, value: siteId)
-        let config = WebviewConfig(url: url, finishCriteria: "step=complete", onFinish: { _ in
+        let config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
             onFinish?()
         })
         return Button {

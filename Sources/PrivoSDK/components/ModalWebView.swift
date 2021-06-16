@@ -10,23 +10,24 @@ import SwiftUI
 struct ModalWebView: View {
   @Binding var isPresented: Bool
   let config: WebviewConfig
-  var closeIcon: Image?
   
     var body: some View {
       return
           VStack() {
-              HStack() {
-                  Spacer()
-                  Button(action: {
-                    isPresented = false
-                  }, label: {
-                      if (self.closeIcon != nil) {
-                          self.closeIcon
-                      } else {
-                          Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
-                      }
-                  })
-              }
+            if (self.config.showCloseIcon) {
+                HStack() {
+                    Spacer()
+                    Button(action: {
+                      isPresented = false
+                    }, label: {
+                      if (self.config.closeIcon != nil) {
+                          self.config.closeIcon
+                        } else {
+                            Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
+                        }
+                    })
+                }
+            }
               Webview(config: config)
           }
     }

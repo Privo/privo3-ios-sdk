@@ -18,6 +18,7 @@ private struct VerificationModal : View {
     
     fileprivate let redirectUrl: String
     fileprivate let onFinish: ((Array<VerificationEvent>) -> Void)?
+    fileprivate let closeIcon: Image?
 
     private func getConfig() -> WebviewConfig {
         var verificationUrl = PrivoInternal.configuration.verificationUrl
@@ -26,7 +27,7 @@ private struct VerificationModal : View {
             verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
         }
         verificationUrl.appendRawPath("/#/intro")
-        return WebviewConfig(url: verificationUrl, finishCriteria: redirectUrl, onFinish: { url in
+        return WebviewConfig(url: verificationUrl, closeIcon: closeIcon, finishCriteria: redirectUrl, onFinish: { url in
             if let items = URLComponents(string: url)?.queryItems,
                let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
                 PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
@@ -50,12 +51,12 @@ public struct PrivoVerificationView<Label> : View where Label : View {
 
     public var profile: UserVerificationProfile = UserVerificationProfile()
     let label: Label
-    var closeIcon: Label?
+    var closeIcon: Image?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     
     private let redirectUrl = "localhost"
     
-    public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Label)? = nil, profile: UserVerificationProfile? = nil) {
+    public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Image)? = nil, profile: UserVerificationProfile? = nil) {
         if let profile = profile {
             self.profile = profile
         }
@@ -78,7 +79,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         } label: {
             label
         }.sheet(isPresented: $state.presentingVerification) {
-            VerificationModal(state: $state, redirectUrl: redirectUrl, onFinish: onFinish)
+            VerificationModal(state: $state, redirectUrl: redirectUrl, onFinish: onFinish, closeIcon: closeIcon)
         }
     }
 }
