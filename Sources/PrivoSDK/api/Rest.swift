@@ -17,8 +17,7 @@ class Rest {
         }
     }
     func addValueToTMPStorage(value: String, ttl: Int? = nil, completionHandler: ((String?) -> Void)? = nil) {
-        var tmpStorageURL = PrivoInternal.configuration.tmpStorageUrl
-        tmpStorageURL.appendRawPath("/put")
+        let tmpStorageURL = PrivoInternal.configuration.tmpStorageUrl.withPath("/put")!
         let data = TmpStorageString(data: value, ttl: ttl)
         AF.request(tmpStorageURL, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: TmpStorageResponse.self) { response in
             let id = response.value?.id

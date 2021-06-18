@@ -19,11 +19,11 @@ public struct PrivoAuthView<Label> : View where Label : View {
         self.closeIcon = closeIcon?()
         self.onFinish = onFinish
     }
-    public var body: some View {
+    func getConfig() -> WebviewConfig {
         // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
         let url = PrivoInternal.configuration.authStartUrl
         // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
-        let config = WebviewConfig(url: url, closeIcon: closeIcon, onPrivoEvent: { event in
+        return WebviewConfig(url: url, closeIcon: closeIcon, onPrivoEvent: { event in
             if let accessId = event?[accessIdKey] as? String {
                 PrivoInternal.rest.getValueFromTMPStorage(key: accessId) { resp in
                     let token = resp?.data
@@ -39,12 +39,15 @@ public struct PrivoAuthView<Label> : View where Label : View {
             }
             
         })
+    }
+    public var body: some View {
+        
         return Button {
             presentingAuth = true
         } label: {
             label
         }.sheet(isPresented: $presentingAuth) {
-            ModalWebView(isPresented: self.$presentingAuth,  config: config)
+            ModalWebView(isPresented: self.$presentingAuth,  config: getConfig())
         }
     }
 }
@@ -61,19 +64,20 @@ public struct PrivoRegisterView<Label> : View where Label : View {
         self._presentingRegister = isPresented
         self.onFinish = onFinish
     }
-    public var body: some View {
+    func getConfig() -> WebviewConfig {
         let siteId = "1"; // TMP, replace it with exchanged serviceIdentifier later (if we are going to use this view)
-        var url = PrivoInternal.configuration.lgsRegistrationUrl
-        url.appendQueryParam(name: siteIdKey, value: siteId)
-        let config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
+        let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: siteId)!
+        return WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
             onFinish?()
         })
+    }
+    public var body: some View {
         return Button {
             presentingRegister = true
         } label: {
             label
         }.sheet(isPresented: $presentingRegister) {
-            ModalWebView(isPresented: self.$presentingRegister, config: config)
+            ModalWebView(isPresented: self.$presentingRegister, config: getConfig())
         }
     }
 }

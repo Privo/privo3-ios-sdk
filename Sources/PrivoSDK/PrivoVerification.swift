@@ -20,29 +20,32 @@ private struct VerificationModal : View {
     fileprivate let onFinish: ((Array<VerificationEvent>) -> Void)?
     fileprivate let closeIcon: Image?
 
-    private func getConfig() -> WebviewConfig {
-        var verificationUrl = PrivoInternal.configuration.verificationUrl
-        verificationUrl.appendRawPath("/index.html")
-        if let stateId = state.privoStateId {
-            verificationUrl.appendQueryParam(name: "privo_state_id", value: stateId)
-        }
-        verificationUrl.appendRawPath("/#/intro")
-        return WebviewConfig(url: verificationUrl, showCloseIcon: false, finishCriteria: redirectUrl, onFinish: { url in
-            if let items = URLComponents(string: url)?.queryItems,
-               let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
-                PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
+    private func getConfig() -> WebviewConfig? {
+        if let stateId = state.privoStateId,
+           let verificationUrl = PrivoInternal.configuration.verificationUrl
+                .withPath("/index.html")?
+                .withQueryParam(name: "privo_state_id", value: stateId)?
+                .withPath("/#/intro") {
+            return WebviewConfig(url: verificationUrl, showCloseIcon: false, finishCriteria: redirectUrl, onFinish: { url in
+                if let items = URLComponents(string: url)?.queryItems,
+                   let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
+                    PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
+                        state.presentingVerification = false
+                        onFinish?(events ?? Array())
+                    }
+                } else {
                     state.presentingVerification = false
-                    onFinish?(events ?? Array())
+                    onFinish?(Array())
                 }
-            } else {
-                state.presentingVerification = false
-                onFinish?(Array())
-            }
-        })
+            })
+        }
+        return nil
     }
     
     public var body: some View {
-        ModalWebView(isPresented: $state.presentingVerification,  config: getConfig())
+        if let config = getConfig() {
+            ModalWebView(isPresented: $state.presentingVerification,  config:config)
+        }
     }
 }
 
@@ -54,7 +57,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
     var closeIcon: Image?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     
-    private let redirectUrl = "https://localhost"
+    private let redirectUrl = PrivoInternal.configuration.verificationUrl.withPath("/#/verification-loading")!.absoluteString
     
     public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Image)? = nil, profile: UserVerificationProfile? = nil) {
         if let profile = profile {

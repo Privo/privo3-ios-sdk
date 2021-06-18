@@ -26,13 +26,10 @@ struct Webview: UIViewRepresentable {
             navigationHelper.onFinish = onFinish
             webview.navigationDelegate = navigationHelper
         }
-        let userContentController = WKUserContentController()
-        testScripts(userContentController)
-        webview.configuration.userContentController = userContentController
-        //if let onPrivoEvent = config.onPrivoEvent {
-            // let contentController = ContentController(onPrivoEvent)
-            // webview.configuration.userContentController.add(contentController, name: "privo")
-        //}
+        if let onPrivoEvent = config.onPrivoEvent {
+            let contentController = ContentController(onPrivoEvent)
+            webview.configuration.userContentController.add(contentController, name: "privo")
+        }
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
         return webview
@@ -41,19 +38,6 @@ struct Webview: UIViewRepresentable {
     func updateUIView(_ webview: WKWebView, context: UIViewRepresentableContext<Webview>) {
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
-    }
-    
-    func testScripts(_ contentController: WKUserContentController) {
-        let script =    """
-                        alert("Ops! We can inject JS!!!");
-                        console.log("Ops! We can inject JS!!!")
-                        var script = document.createElement('script');
-                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=default&#038;ver=1.3.8';
-                        script.type = 'text/javascript';
-                        document.getElementsByTagName('head')[0].appendChild(script);
-                        """
-        let userScript = WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true)
-        contentController.addUserScript(userScript)
     }
     
     class ContentController: WKUserContentController, WKScriptMessageHandler {
