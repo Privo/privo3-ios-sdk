@@ -16,7 +16,6 @@ private struct PrivoVerificationState {
 private struct VerificationModal : View {
     @Binding fileprivate var state: PrivoVerificationState
     
-    fileprivate let redirectUrl: String
     fileprivate let onFinish: ((Array<VerificationEvent>) -> Void)?
     fileprivate let closeIcon: Image?
 
@@ -26,7 +25,7 @@ private struct VerificationModal : View {
                 .withPath("/index.html")?
                 .withQueryParam(name: "privo_state_id", value: stateId)?
                 .withPath("/#/intro") {
-            return WebviewConfig(url: verificationUrl, showCloseIcon: false, finishCriteria: redirectUrl, onFinish: { url in
+            return WebviewConfig(url: verificationUrl, showCloseIcon: false, finishCriteria: "verification-loading", onFinish: { url in
                 if let items = URLComponents(string: url)?.queryItems,
                    let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
                     PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
@@ -82,7 +81,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         } label: {
             label
         }.sheet(isPresented: $state.presentingVerification) {
-            VerificationModal(state: $state, redirectUrl: redirectUrl, onFinish: onFinish, closeIcon: closeIcon)
+            VerificationModal(state: $state, onFinish: onFinish, closeIcon: closeIcon)
         }
     }
 }
