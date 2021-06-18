@@ -27,9 +27,11 @@ struct Webview: UIViewRepresentable {
             webview.navigationDelegate = navigationHelper
         }
         if let onPrivoEvent = config.onPrivoEvent {
-            let contentController = ContentController(onPrivoEvent)
-            webview.configuration.userContentController.add(contentController, name: "privo")
-            testScripts(webview)
+            // let contentController = ContentController(onPrivoEvent)
+            let userContentController = WKUserContentController()
+            testScripts(userContentController)
+            webview.configuration.userContentController = userContentController
+            // webview.configuration.userContentController.add(contentController, name: "privo")
         }
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
@@ -41,12 +43,13 @@ struct Webview: UIViewRepresentable {
         webview.load(request)
     }
     
-    func testScripts(_ webview: WKWebView) {
+    func testScripts(_ contentController: WKUserContentController) {
         let script =    """
                         alert("Ops! We can inject JS!!!");
+                        console.log("Ops! We can inject JS!!!")
                         """
         let userScript = WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true)
-        webview.configuration.userContentController.addUserScript(userScript)
+        contentController.addUserScript(userScript)
     }
     
     class ContentController: WKUserContentController, WKScriptMessageHandler {
