@@ -67,7 +67,6 @@ struct Webview: UIViewRepresentable {
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
-            print("!!!!!!!!!!!!!!TEST!!!")
             if let url = navigationAction.request.url?.absoluteString,
                let finishCriteria = finishCriteria,
                let onFinish = onFinish {

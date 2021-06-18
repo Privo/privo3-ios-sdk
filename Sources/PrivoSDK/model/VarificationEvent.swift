@@ -4,7 +4,7 @@
 //
 //  Created by alex slobodeniuk on 14.06.2021.
 //
-
+import AnyCodable
 
 public enum VerificationEventType: String, Decodable {
     case verifyInitialized = "verify-initialized"
@@ -17,7 +17,7 @@ public enum VerificationEventType: String, Decodable {
 
 public struct VerificationEvent: Decodable, Hashable {
     public let event: VerificationEventType
-    public let result: [String: String]? // [String: Any]
+    public let result: [String: AnyCodable]? // [String: Any]
     public let data: String?
     public let errorCode: String?
     public let errorMessage: String?
