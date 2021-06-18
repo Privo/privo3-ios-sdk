@@ -29,6 +29,7 @@ struct Webview: UIViewRepresentable {
         if let onPrivoEvent = config.onPrivoEvent {
             let contentController = ContentController(onPrivoEvent)
             webview.configuration.userContentController.add(contentController, name: "privo")
+            testScripts(webview)
         }
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
@@ -38,6 +39,14 @@ struct Webview: UIViewRepresentable {
     func updateUIView(_ webview: WKWebView, context: UIViewRepresentableContext<Webview>) {
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
+    }
+    
+    func testScripts(_ webview: WKWebView) {
+        let script =    """
+                        alert("Ops! We can inject JS!!!");
+                        """
+        let userScript = WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+        webview.configuration.userContentController.addUserScript(userScript)
     }
     
     class ContentController: WKUserContentController, WKScriptMessageHandler {
