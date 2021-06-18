@@ -66,6 +66,7 @@ struct Webview: UIViewRepresentable {
         var onFinish: ((String) -> Void)?
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            decisionHandler(.allow)
             if let url = navigationAction.request.url?.absoluteString,
                let finishCriteria = finishCriteria,
                let onFinish = onFinish {
@@ -73,7 +74,6 @@ struct Webview: UIViewRepresentable {
                     onFinish(url)
                 }
             }
-            decisionHandler(.allow)
         }
     }
 }
