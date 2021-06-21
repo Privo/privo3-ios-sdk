@@ -14,6 +14,7 @@ struct Webview: UIViewRepresentable {
     
     let config: WebviewConfig
     private let navigationHelper = WebViewNavigationHelper()
+    private let uiHelper = WebViewUIHelper()
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
         let webview = WKWebView()
@@ -30,6 +31,7 @@ struct Webview: UIViewRepresentable {
             let contentController = ContentController(onPrivoEvent)
             webview.configuration.userContentController.add(contentController, name: "privo")
         }
+        webview.uiDelegate = uiHelper
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
         return webview
@@ -61,7 +63,7 @@ struct Webview: UIViewRepresentable {
         }
     }
     
-    class WebViewNavigationHelper: NSObject, WKNavigationDelegate {
+    class WebViewNavigationHelper: NSObject, WKNavigationDelegate, WKUIDelegate {
         var finishCriteria: String?
         var onFinish: ((String) -> Void)?
         
@@ -75,6 +77,34 @@ struct Webview: UIViewRepresentable {
                 }
             }
         }
+        func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+            if navigationAction.targetFrame == nil {
+                webView.load(navigationAction.request)
+            }
+            return nil
+        }
+    }
+    class WebViewUIHelper: NSObject,  WKUIDelegate {
+        
+        func printWebViewPage(_ webView: WKWebView) {
+            let webviewPrint = webView.viewPrintFormatter()
+            let printInfo = UIPrintInfo(dictionary: nil)
+            printInfo.jobName = "page"
+            printInfo.outputType = .general
+            let printController = UIPrintInteractionController.shared
+            printController.printInfo = printInfo
+            printController.showsNumberOfCopies = false
+            printController.printFormatter = webviewPrint
+            printController.present(animated: true, completionHandler: nil)
+        }
+
+        func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+            if navigationAction.targetFrame == nil {
+                printWebViewPage(webView)
+            }
+            return nil
+        }
     }
 }
+
 
