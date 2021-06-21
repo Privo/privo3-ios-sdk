@@ -17,7 +17,11 @@ struct Webview: UIViewRepresentable {
     private let uiHelper = WebViewUIHelper()
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
-        let webview = WKWebView()
+        let wkPreferences = WKPreferences()
+        wkPreferences.javaScriptCanOpenWindowsAutomatically = true
+        let configuration = WKWebViewConfiguration()
+        configuration.preferences = wkPreferences
+        let webview = WKWebView(frame: .zero, configuration: configuration)
         webview.isOpaque = false
         webview.backgroundColor = .clear
         webview.scrollView.backgroundColor = .clear
