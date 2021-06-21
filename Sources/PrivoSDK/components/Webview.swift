@@ -104,7 +104,10 @@ struct Webview: UIViewRepresentable {
 
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if navigationAction.targetFrame == nil {
-                printWebViewPage(webView)
+                // printWebViewPage(webView)
+                if let targetURL = navigationAction.request.url {
+                    UIApplication.shared.open(targetURL)
+                }
             }
             return nil
         }
