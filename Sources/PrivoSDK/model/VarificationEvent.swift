@@ -4,7 +4,6 @@
 //
 //  Created by alex slobodeniuk on 14.06.2021.
 //
-import AnyCodable
 
 public enum VerificationEventType: String, Decodable {
     case verifyInitialized = "verify-initialized"
