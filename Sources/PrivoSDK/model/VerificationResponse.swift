@@ -24,7 +24,7 @@ public enum VerificationOutcome: Int, Decodable {
     case Purged
 }
 
-public struct VerificationResponse: Decodable {
+public struct VerificationResponse: Decodable, Hashable {
     public let verified: Bool
     public let transactionID: String
     public let verificationMethod: VerificationMethodType
