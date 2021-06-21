@@ -17,7 +17,7 @@ public enum VerificationEventType: String, Decodable {
 
 public struct VerificationEvent: Decodable, Hashable {
     public let event: VerificationEventType
-    public let result: [String: AnyCodable]? // [String: Any]
+    public let result: VerificationResponse?
     public let data: String?
     public let errorCode: String?
     public let errorMessage: String?
