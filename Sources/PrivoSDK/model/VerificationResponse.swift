@@ -14,7 +14,7 @@ public enum VerificationMethodType: Int, Decodable {
     case SSN = 5
     case CorporateEmail = 13
     case PrintForm = 15
-    case PayPal = 20
+    case PayPal = 10
 }
 public enum VerificationOutcome: Int, Decodable {
     case Pass = 1
@@ -26,16 +26,16 @@ public enum VerificationOutcome: Int, Decodable {
 
 public struct VerificationResponse: Decodable, Hashable {
     public let verified: Bool
+    public let requestID: String
     public let transactionID: String
     public let verificationMethod: VerificationMethodType
     public let matchOutcome: VerificationOutcome
+    public let requestTimestamp: Date
+    public let locale: String
     public let matchCode: String?
-    public let requestID: String
     public let redirectUrl: String?
     public let message: String?
     public let partnerDefinedUniqueID: String?
-    public let requestTimestamp: Date
-    public let locale: String
         //Applicable to offline methods only
     public let identificationNumber: String?
     public let attemptId: Int?
