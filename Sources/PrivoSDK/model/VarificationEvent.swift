@@ -15,7 +15,7 @@ public enum VerificationEventType: String, Decodable {
     case verifyDone = "verify-done"
 }
 
-public struct VerificationResult {
+public struct VerificationResult: Decodable, Hashable {
     public let verificationResponse: VerificationResponse
 }
 
