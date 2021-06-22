@@ -81,12 +81,6 @@ struct Webview: UIViewRepresentable {
                 }
             }
         }
-        func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-            if navigationAction.targetFrame == nil {
-                webView.load(navigationAction.request)
-            }
-            return nil
-        }
     }
     class WebViewUIHelper: NSObject,  WKUIDelegate {
         
@@ -106,7 +100,7 @@ struct Webview: UIViewRepresentable {
             if navigationAction.targetFrame == nil {
                 // printWebViewPage(webView)
                 if let targetURL = navigationAction.request.url {
-                    // UIApplication.shared.open(targetURL)
+                    UIApplication.shared.open(targetURL)
                 }
             }
             return nil
