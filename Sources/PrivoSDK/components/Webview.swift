@@ -40,6 +40,10 @@ struct Webview: UIViewRepresentable {
         webview.load(request)
         return webview
     }
+
+    
+    func updateUIView(_ webview: WKWebView, context: UIViewRepresentableContext<Webview>) {
+    }
     
     class ContentController: WKUserContentController, WKScriptMessageHandler {
         let onPrivoEvent: (([String : AnyObject]?) -> Void)?
