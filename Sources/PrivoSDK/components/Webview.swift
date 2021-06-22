@@ -106,7 +106,7 @@ struct Webview: UIViewRepresentable {
             if navigationAction.targetFrame == nil {
                 // printWebViewPage(webView)
                 if let targetURL = navigationAction.request.url {
-                    UIApplication.shared.open(targetURL)
+                    // UIApplication.shared.open(targetURL)
                 }
             }
             return nil
