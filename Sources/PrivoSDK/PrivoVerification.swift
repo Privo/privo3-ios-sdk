@@ -28,7 +28,7 @@ private struct VerificationModal : View {
             return WebviewConfig(
                 url: verificationUrl,
                 showCloseIcon: false,
-                newWindowDialogText: "Reminder, you will need to navigate back to this screen to complete the verification process once the form has been printed, completed and saved.",
+                newWindowDialogText: "You will need to navigate back to this screen to complete the verification process once the form has been printed, completed and saved.",
                 finishCriteria: "verification-loading",
                 onFinish: { url in
                     if let items = URLComponents(string: url)?.queryItems,

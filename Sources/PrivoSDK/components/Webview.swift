@@ -104,7 +104,7 @@ struct Webview: UIViewRepresentable {
                 if let targetURL = navigationAction.request.url,
                    let dialogText = newWindowDialogText {
                     UIApplication.shared.showAlert(
-                        title:nil,
+                        title:"Reminder",
                         message: dialogText,
                         acceptText: "Ok",
                         cancelText: "Cancel",
