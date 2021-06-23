@@ -6,13 +6,13 @@
 //
 
 public struct UserVerificationProfile: Encodable {
-    public let firstName: String?
-    public let lastName: String?
-    public let birthDate: String?
-    public let email: String?
-    public let postalCode: String?
-    public let phone: String?
-    public let partnerDefinedUniqueID: String?
+    public var firstName: String?
+    public var lastName: String?
+    public var birthDate: String?
+    public var email: String?
+    public var postalCode: String?
+    public var phone: String?
+    public var partnerDefinedUniqueID: String?
     public init(firstName: String? = nil, lastName: String? = nil, birthDate: String? = nil, email: String? = nil, postalCode: String? = nil, phone: String? = nil, partnerDefinedUniqueID: String? = nil) {
         self.firstName = firstName
         self.lastName = lastName
