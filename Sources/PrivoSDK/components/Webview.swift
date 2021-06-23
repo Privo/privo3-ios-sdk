@@ -5,6 +5,7 @@ struct WebviewConfig {
     let url: URL
     var closeIcon: Image?
     var showCloseIcon = true
+    var newWindowDialogText: String?
     var finishCriteria: String?
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
     var onFinish: ((String) -> Void)?
@@ -82,6 +83,7 @@ struct Webview: UIViewRepresentable {
         }
     }
     class WebViewUIHelper: NSObject,  WKUIDelegate {
+        var newWindowDialogText: String?
         
         func printWebViewPage(_ webView: WKWebView) {
             let webviewPrint = webView.viewPrintFormatter()
@@ -98,8 +100,18 @@ struct Webview: UIViewRepresentable {
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if navigationAction.targetFrame == nil {
                 // printWebViewPage(webView)
-                if let targetURL = navigationAction.request.url {
-                    UIApplication.shared.open(targetURL)
+                if let targetURL = navigationAction.request.url,
+                   let dialogText = newWindowDialogText,
+                   let keyWindow = UIApplication.shared.windows.filter({$0.isKeyWindow}).first
+                    {
+                    keyWindow.showAlert(
+                        title:nil,
+                        message: dialogText,
+                        acceptText: "Ok",
+                        cancelText: "Cancel",
+                        acceptAction: {
+                            UIApplication.shared.open(targetURL)
+                        })
                 }
             }
             return nil

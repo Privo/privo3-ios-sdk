@@ -25,18 +25,23 @@ private struct VerificationModal : View {
                 .withPath("/index.html")?
                 .withQueryParam(name: "privo_state_id", value: stateId)?
                 .withPath("/#/intro") {
-            return WebviewConfig(url: verificationUrl, showCloseIcon: false, finishCriteria: "verification-loading", onFinish: { url in
-                if let items = URLComponents(string: url)?.queryItems,
-                   let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
-                    PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
+            return WebviewConfig(
+                url: verificationUrl,
+                showCloseIcon: false,
+                newWindowDialogText: "Reminder, you will need to navigate back to this screen to complete the verification process once the form has been printed, completed and saved.",
+                finishCriteria: "verification-loading",
+                onFinish: { url in
+                    if let items = URLComponents(string: url)?.queryItems,
+                       let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
+                        PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
+                            state.presentingVerification = false
+                            onFinish?(events ?? Array())
+                        }
+                    } else {
                         state.presentingVerification = false
-                        onFinish?(events ?? Array())
+                        onFinish?(Array())
                     }
-                } else {
-                    state.presentingVerification = false
-                    onFinish?(Array())
-                }
-            })
+                })
         }
         return nil
     }
