@@ -36,6 +36,7 @@ struct Webview: UIViewRepresentable {
             let contentController = ContentController(onPrivoEvent)
             webview.configuration.userContentController.add(contentController, name: "privo")
         }
+        uiHelper.newWindowDialogText = config.newWindowDialogText
         webview.uiDelegate = uiHelper
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
