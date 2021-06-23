@@ -7,7 +7,17 @@
 
 import UIKit
 
-extension UIWindow {
+extension UIApplication {
+    public func topMostViewController() -> UIViewController? {
+        let keyWindow = UIApplication.shared.windows.filter {$0.isKeyWindow}.first
+        if var topController = keyWindow?.rootViewController {
+            while let presentedViewController = topController.presentedViewController {
+                topController = presentedViewController
+            }
+            return topController
+        }
+        return nil
+    }
     public func showAlert(title: String?, message: String?, acceptText: String, cancelText: String, acceptAction: @escaping () -> Void) {
 
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -21,6 +31,6 @@ extension UIWindow {
         alertController.addAction(primaryButton)
         alertController.addAction(cancelButton)
 
-        self.rootViewController?.present(alertController, animated: true)
+        self.topMostViewController()?.present(alertController, animated: true)
     }
 }

@@ -102,10 +102,8 @@ struct Webview: UIViewRepresentable {
             if navigationAction.targetFrame == nil {
                 // printWebViewPage(webView)
                 if let targetURL = navigationAction.request.url,
-                   let dialogText = newWindowDialogText,
-                   let keyWindow = UIApplication.shared.windows.filter({$0.isKeyWindow}).first
-                    {
-                    keyWindow.showAlert(
+                   let dialogText = newWindowDialogText {
+                    UIApplication.shared.showAlert(
                         title:nil,
                         message: dialogText,
                         acceptText: "Ok",
