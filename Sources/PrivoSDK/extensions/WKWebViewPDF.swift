@@ -50,9 +50,11 @@ extension UIPrintPageRenderer {
         UIGraphicsBeginPDFContextToData(pdfData, self.paperRect, nil)
         self.prepare(forDrawingPages: NSMakeRange(0, self.numberOfPages))
         let printRect = UIGraphicsGetPDFContextBounds()
-        for pdfPage in 0...(self.numberOfPages - 1) {
-            UIGraphicsBeginPDFPage()
-            self.drawPage(at: pdfPage, in: printRect)
+        if (self.numberOfPages > 0) {
+            for pdfPage in 0...(self.numberOfPages - 1) {
+                UIGraphicsBeginPDFPage()
+                self.drawPage(at: pdfPage, in: printRect)
+            }
         }
         UIGraphicsEndPDFContext();
         return pdfData
