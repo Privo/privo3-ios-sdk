@@ -85,6 +85,7 @@ struct Webview: UIViewRepresentable {
     }
     class WebViewUIHelper: NSObject,  WKUIDelegate {
         var newWindowDialogText: String?
+        private let loadingHelper = WebViewLoadingHelper()
         
         func printWebViewPage(_ webView: WKWebView) {
             let webviewPrint = webView.viewPrintFormatter()
@@ -101,6 +102,7 @@ struct Webview: UIViewRepresentable {
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if navigationAction.targetFrame == nil {
                 // printWebViewPage(webView)
+                /*
                 if let targetURL = navigationAction.request.url,
                    let dialogText = newWindowDialogText {
                     UIApplication.shared.showAlert(
@@ -112,8 +114,22 @@ struct Webview: UIViewRepresentable {
                             UIApplication.shared.open(targetURL)
                         })
                 }
+                 */
+                let newWebView = WKWebView(frame: webView.bounds, configuration: configuration)
+                newWebView.isHidden = true
+                newWebView.navigationDelegate = loadingHelper
+                webView.addSubview(newWebView)
+                webView.load(navigationAction.request)
             }
             return nil
+        }
+        class WebViewLoadingHelper: NSObject, WKNavigationDelegate {
+            
+            func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+                print("Finished navigating to url \(webView.url)")
+                let pdfFilePath = webView.exportAsPdfFromWebView()
+                print(pdfFilePath)
+            }
         }
     }
 }
