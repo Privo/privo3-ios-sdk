@@ -119,7 +119,7 @@ struct Webview: UIViewRepresentable {
                 newWebView.isHidden = true
                 newWebView.navigationDelegate = loadingHelper
                 webView.addSubview(newWebView)
-                webView.load(navigationAction.request)
+                newWebView.load(navigationAction.request)
             }
             return nil
         }
