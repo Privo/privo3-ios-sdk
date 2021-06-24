@@ -109,10 +109,12 @@ struct Webview: UIViewRepresentable {
         class WebViewLoadingHelper: NSObject, WKNavigationDelegate {
             var pdfName: String?
             func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-                if let pdfFilePath = webView.exportAsPdfFromWebView(name: pdfName ?? "privo.pdf") {
-                    webView.removeFromSuperview()
-                    let activityViewController = UIActivityViewController(activityItems: [pdfFilePath], applicationActivities: nil)
-                    UIApplication.shared.topMostViewController()?.present(activityViewController, animated: true, completion: nil)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    if let pdfFilePath = webView.exportAsPdfFromWebView(name: self?.pdfName ?? "privo.pdf") {
+                        webView.removeFromSuperview()
+                        let activityViewController = UIActivityViewController(activityItems: [pdfFilePath], applicationActivities: nil)
+                        UIApplication.shared.topMostViewController()?.present(activityViewController, animated: true, completion: nil)
+                    }
                 }
             }
         }
