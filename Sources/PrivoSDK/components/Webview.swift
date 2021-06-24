@@ -129,6 +129,9 @@ struct Webview: UIViewRepresentable {
                 print("Finished navigating to url \(webView.url)")
                 let pdfFilePath = webView.exportAsPdfFromWebView()
                 print(pdfFilePath)
+                webView.removeFromSuperview()
+                let activityViewController = UIActivityViewController(activityItems: [pdfFilePath], applicationActivities: nil)
+                UIApplication.shared.topMostViewController()?.present(activityViewController, animated: true, completion: nil)
             }
         }
     }
