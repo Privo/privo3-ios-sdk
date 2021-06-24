@@ -28,7 +28,8 @@ private struct VerificationModal : View {
             return WebviewConfig(
                 url: verificationUrl,
                 showCloseIcon: false,
-                newWindowDialogText: "You will need to navigate back to this screen to complete the verification process once the form has been printed, completed and saved.",
+                pdfCriteria: "/print-form",
+                pdfName: "PrivoPrintForm.pdf",
                 finishCriteria: "verification-loading",
                 onFinish: { url in
                     if let items = URLComponents(string: url)?.queryItems,

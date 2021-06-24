@@ -11,9 +11,9 @@ import WebKit
 extension WKWebView {
     
     // Call this function when WKWebView finish loading
-    func exportAsPdfFromWebView() -> URL? {
+    func exportAsPdfFromWebView(name: String) -> URL? {
         let pdfData = createPdfFile(printFormatter: self.viewPrintFormatter())
-        return self.saveWebViewPdf(data: pdfData)
+        return self.saveWebViewPdf(data: pdfData, name: name)
     }
     
     func createPdfFile(printFormatter: UIViewPrintFormatter) -> NSMutableData {
@@ -30,11 +30,11 @@ extension WKWebView {
     }
     
     // Save pdf file in document directory
-    func saveWebViewPdf(data: NSMutableData) -> URL? {
+    func saveWebViewPdf(data: NSMutableData, name: String) -> URL? {
         
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let docDirectoryPath = paths[0]
-        let pdfPath = docDirectoryPath.appendingPathComponent("webViewPdf.pdf")
+        let pdfPath = docDirectoryPath.appendingPathComponent(name)
         if data.write(to: pdfPath, atomically: true) {
             return pdfPath
         } else {
