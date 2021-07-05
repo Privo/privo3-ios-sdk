@@ -70,6 +70,7 @@ struct Webview: UIViewRepresentable {
         var finishCriteria: String?
         var onFinish: ((String) -> Void)?
         
+        private let fileManager = FileManager()
         private var lastFileDestinationURL: URL?
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -105,13 +106,10 @@ struct Webview: UIViewRepresentable {
             let fileName = temporaryDir + suggestedFilename
             let url = URL(fileURLWithPath: fileName)
             lastFileDestinationURL = url
+            try? fileManager.removeItem(at: url)
             completionHandler(url)
         }
 
-        @available(iOS 14.5, *)
-        public func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
-            print(error)
-        }
         @available(iOS 14.5, *)
         public func downloadDidFinish(_ download: WKDownload) {
             if let url = lastFileDestinationURL {
