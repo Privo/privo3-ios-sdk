@@ -82,10 +82,16 @@ struct Webview: UIViewRepresentable {
         }
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
             if let mimeType = navigationResponse.response.mimeType {
+                if (mimeType.lowercased().contains("pdf")) {
+                    decisionHandler(.download)
+                } else {
+                    decisionHandler(.allow)
+                }
                 print(mimeType)
                 print(navigationResponse.response)
+            } else {
+                decisionHandler(.allow)
             }
-            decisionHandler(.allow)
         }
     }
     class WebViewUIHelper: NSObject,  WKUIDelegate {
