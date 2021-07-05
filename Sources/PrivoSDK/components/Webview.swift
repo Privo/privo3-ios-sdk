@@ -109,6 +109,10 @@ struct Webview: UIViewRepresentable {
         }
 
         @available(iOS 14.5, *)
+        public func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
+            print(error)
+        }
+        @available(iOS 14.5, *)
         public func downloadDidFinish(_ download: WKDownload) {
             if let url = lastFileDestinationURL {
                 let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
