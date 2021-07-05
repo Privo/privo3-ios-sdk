@@ -80,6 +80,13 @@ struct Webview: UIViewRepresentable {
                 }
             }
         }
+        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+            if let mimeType = navigationResponse.response.mimeType {
+                print(mimeType)
+                print(navigationResponse.response)
+            }
+            decisionHandler(.allow)
+        }
     }
     class WebViewUIHelper: NSObject,  WKUIDelegate {
         var pdfCriteria: String?
