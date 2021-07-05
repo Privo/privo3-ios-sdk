@@ -70,6 +70,8 @@ struct Webview: UIViewRepresentable {
         var finishCriteria: String?
         var onFinish: ((String) -> Void)?
         
+        private var lastFileDestinationURL: URL?
+        
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
             if let url = navigationAction.request.url?.absoluteString,
@@ -102,13 +104,16 @@ struct Webview: UIViewRepresentable {
             let temporaryDir = NSTemporaryDirectory()
             let fileName = temporaryDir + "/" + suggestedFilename
             let url = URL(fileURLWithPath: fileName)
-            print(url)
+            lastFileDestinationURL = url
             completionHandler(url)
         }
 
         @available(iOS 14.5, *)
         public func downloadDidFinish(_ download: WKDownload) {
-            print("Test")
+            if let url = lastFileDestinationURL {
+                let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                UIApplication.shared.topMostViewController()?.present(activityViewController, animated: true, completion: nil)
+            }
         }
     }
     /*
