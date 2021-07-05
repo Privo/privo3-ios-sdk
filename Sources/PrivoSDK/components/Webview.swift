@@ -14,7 +14,7 @@ struct Webview: UIViewRepresentable {
     
     let config: WebviewConfig
     private let navigationHelper = WebViewNavigationHelper()
-    private let uiHelper = WebViewUIHelper()
+    // private let uiHelper = WebViewUIHelper()
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
         let wkPreferences = WKPreferences()
@@ -35,7 +35,7 @@ struct Webview: UIViewRepresentable {
             let contentController = ContentController(onPrivoEvent)
             webview.configuration.userContentController.add(contentController, name: "privo")
         }
-        webview.uiDelegate = uiHelper
+        // webview.uiDelegate = uiHelper
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
         return webview
@@ -66,7 +66,7 @@ struct Webview: UIViewRepresentable {
         }
     }
     
-    class WebViewNavigationHelper: NSObject, WKNavigationDelegate, WKUIDelegate {
+    class WebViewNavigationHelper: NSObject, WKNavigationDelegate, WKUIDelegate, WKDownloadDelegate {
         var finishCriteria: String?
         var onFinish: ((String) -> Void)?
         
@@ -83,17 +83,34 @@ struct Webview: UIViewRepresentable {
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
             if let mimeType = navigationResponse.response.mimeType {
                 if (mimeType.lowercased().contains("pdf")) {
-                    decisionHandler(.download)
-                } else {
-                    decisionHandler(.allow)
+                    if #available(iOS 14.5, *) {
+                        decisionHandler(.download)
+                    } else {
+                        decisionHandler(.cancel)
+                    }
                 }
-                print(mimeType)
-                print(navigationResponse.response)
-            } else {
-                decisionHandler(.allow)
             }
+            decisionHandler(.allow)
+        }
+        @available(iOS 14.5, *)
+        public func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
+            download.delegate = self
+        }
+        @available(iOS 14.5, *)
+        public func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
+            let temporaryDir = NSTemporaryDirectory()
+            let fileName = temporaryDir + "/" + suggestedFilename
+            let url = URL(fileURLWithPath: fileName)
+            print(url)
+            completionHandler(url)
+        }
+
+        @available(iOS 14.5, *)
+        public func downloadDidFinish(_ download: WKDownload) {
+            print("Test")
         }
     }
+    /*
     class WebViewUIHelper: NSObject,  WKUIDelegate {
         var pdfCriteria: String?
         var pdfName: String?
@@ -101,7 +118,6 @@ struct Webview: UIViewRepresentable {
 
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if navigationAction.targetFrame == nil{
-                /*
                 if let url = navigationAction.request.url,
                    let pdfCriteria = pdfCriteria {
                     if  url.absoluteString.contains(pdfCriteria) {
@@ -113,11 +129,9 @@ struct Webview: UIViewRepresentable {
                         newWebView.load(navigationAction.request)
                     }
                 }
- */
             }
             return nil
         }
-        /*
         class WebViewLoadingHelper: NSObject, WKNavigationDelegate {
             var pdfName: String?
             func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -130,8 +144,9 @@ struct Webview: UIViewRepresentable {
                 }
             }
         }
-         */
+         
     }
+ */
 }
 
 
