@@ -88,6 +88,7 @@ struct Webview: UIViewRepresentable {
                     } else {
                         decisionHandler(.cancel)
                     }
+                    return
                 }
             }
             decisionHandler(.allow)
