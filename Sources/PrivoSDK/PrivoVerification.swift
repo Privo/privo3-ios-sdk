@@ -28,8 +28,6 @@ private struct VerificationModal : View {
             return WebviewConfig(
                 url: verificationUrl,
                 showCloseIcon: false,
-                pdfCriteria: "/print-form",
-                pdfName: "PrivoPrintForm.pdf",
                 finishCriteria: "verification-loading",
                 onFinish: { url in
                     if let items = URLComponents(string: url)?.queryItems,

@@ -5,8 +5,6 @@ struct WebviewConfig {
     let url: URL
     var closeIcon: Image?
     var showCloseIcon = true
-    var pdfCriteria: String?
-    var pdfName: String?
     var finishCriteria: String?
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
     var onFinish: ((String) -> Void)?
@@ -37,8 +35,6 @@ struct Webview: UIViewRepresentable {
             let contentController = ContentController(onPrivoEvent)
             webview.configuration.userContentController.add(contentController, name: "privo")
         }
-        uiHelper.pdfCriteria = config.pdfCriteria
-        uiHelper.pdfName = config.pdfName
         webview.uiDelegate = uiHelper
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
@@ -88,10 +84,11 @@ struct Webview: UIViewRepresentable {
     class WebViewUIHelper: NSObject,  WKUIDelegate {
         var pdfCriteria: String?
         var pdfName: String?
-        private let loadingHelper = WebViewLoadingHelper()
+        //private let loadingHelper = WebViewLoadingHelper()
 
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if navigationAction.targetFrame == nil{
+                /*
                 if let url = navigationAction.request.url,
                    let pdfCriteria = pdfCriteria {
                     if  url.absoluteString.contains(pdfCriteria) {
@@ -103,9 +100,11 @@ struct Webview: UIViewRepresentable {
                         newWebView.load(navigationAction.request)
                     }
                 }
+ */
             }
             return nil
         }
+        /*
         class WebViewLoadingHelper: NSObject, WKNavigationDelegate {
             var pdfName: String?
             func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -118,6 +117,7 @@ struct Webview: UIViewRepresentable {
                 }
             }
         }
+         */
     }
 }
 
