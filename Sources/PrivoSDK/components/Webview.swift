@@ -102,7 +102,7 @@ struct Webview: UIViewRepresentable {
         @available(iOS 14.5, *)
         public func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
             let temporaryDir = NSTemporaryDirectory()
-            let fileName = temporaryDir + "/" + suggestedFilename
+            let fileName = temporaryDir + suggestedFilename
             let url = URL(fileURLWithPath: fileName)
             lastFileDestinationURL = url
             completionHandler(url)
