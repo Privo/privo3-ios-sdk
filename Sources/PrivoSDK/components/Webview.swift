@@ -156,15 +156,13 @@ struct Webview: UIViewRepresentable {
                 printController.printInfo = printInfo
                 printController.showsNumberOfCopies = false
                 printController.printFormatter = webviewPrint
-                printController.present(animated: true, completionHandler: { _,_,_ in
-                    webView.removeFromSuperview()
+                printController.present(animated: true, completionHandler: { [weak webView] _,_,_ in
+                    webView?.removeFromSuperview()
                 })
             }
             
             func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                    self?.printWebViewPage(webView)
-                }
+                self.printWebViewPage(webView)
             }
         }
          
