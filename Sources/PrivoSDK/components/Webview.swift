@@ -16,7 +16,6 @@ struct Webview: UIViewRepresentable {
     let config: WebviewConfig
     private let navigationHelper = WebViewNavigationHelper()
     private let printHelper = WebViewPrintHelper()
-    // private let uiHelper = WebViewUIHelper()
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
         let wkPreferences = WKPreferences()
@@ -41,7 +40,6 @@ struct Webview: UIViewRepresentable {
             printHelper.printCriteria = printCriteria
             webview.uiDelegate = printHelper
         }
-        // webview.uiDelegate = uiHelper
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
         return webview
