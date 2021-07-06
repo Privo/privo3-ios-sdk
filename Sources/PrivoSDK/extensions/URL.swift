@@ -9,23 +9,29 @@ import Foundation
 
 extension URL {
 
-    mutating func appendQueryParam(name: String, value: String?) {
+    func withQueryParam(name: String, value: String?) -> URL? {
+        if var urlComponents = URLComponents(string: self.absoluteString) {
+            // Create array of existing query items
+            var queryItems: [URLQueryItem] = urlComponents.queryItems ??  []
 
-        guard var urlComponents = URLComponents(string: absoluteString) else { return }
+            // Create query item
+            let queryItem = URLQueryItem(name: name, value: value)
 
-        // Create array of existing query items
-        var queryItems: [URLQueryItem] = urlComponents.queryItems ??  []
+            // Append the new query item in the existing query items array
+            queryItems.append(queryItem)
 
-        // Create query item
-        let queryItem = URLQueryItem(name: name, value: value)
+            // Append updated query items array in the url component object
+            urlComponents.queryItems = queryItems
 
-        // Append the new query item in the existing query items array
-        queryItems.append(queryItem)
+            // Returns the url from new url components
+            return urlComponents.url
+        } else {
+            return nil
+        }
 
-        // Append updated query items array in the url component object
-        urlComponents.queryItems = queryItems
-
-        // Returns the url from new url components
-        self = urlComponents.url!
+    }
+    func withPath(_ value: String) -> URL?  {
+        let nextString = absoluteString + value
+        return URL(string: nextString)
     }
 }

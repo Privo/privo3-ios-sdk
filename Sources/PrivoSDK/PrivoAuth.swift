@@ -8,51 +8,27 @@
 import SwiftUI
 import JWTDecode
 
-struct ModalWebView: View {
-  @Binding var isPresented: Bool
-  let config: WebviewConfig
-  var closeIcon: Image?
-  
-  var body: some View {
-    return VStack() {
-        HStack() {
-            Spacer()
-            Button(action: {
-              isPresented = false
-            }, label: {
-                if (self.closeIcon != nil) {
-                    self.closeIcon
-                } else {
-                    Image(systemName: "xmark").font(.system(size: 20.0, weight: .bold)).foregroundColor(.black).padding(5)
-                }
-            })
-        }
-        Webview(config: config)
-    }
-  }
-}
-
 public struct PrivoAuthView<Label> : View where Label : View {
     @State var presentingAuth = false
     let label: Label
     var closeIcon: Image?
     let onFinish: ((String?) -> Void)?
     private let accessIdKey = "accessId"
-    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: Image? = nil ) {
+    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: (() -> Image)? = nil) {
         self.label = label()
+        self.closeIcon = closeIcon?()
         self.onFinish = onFinish
-        self.closeIcon = closeIcon
     }
-    public var body: some View {
+    func getConfig() -> WebviewConfig {
         // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
-        let url = PrivoInternal.shared.configuration.authStartUrl
+        let url = PrivoInternal.configuration.authStartUrl
         // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
-        let config = WebviewConfig(url: url, onPrivoEvent: { event in
+        return WebviewConfig(url: url, closeIcon: closeIcon, onPrivoEvent: { event in
             if let accessId = event?[accessIdKey] as? String {
-                PrivoInternal.shared.rest.getValueFromTMPStorage(key: accessId) { resp in
+                PrivoInternal.rest.getValueFromTMPStorage(key: accessId) { resp in
                     let token = resp?.data
                     if (token != nil) {
-                        UserDefaults.standard.set(token, forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+                        UserDefaults.standard.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
                     }
                     presentingAuth = false
                     self.onFinish?(token)
@@ -63,12 +39,15 @@ public struct PrivoAuthView<Label> : View where Label : View {
             }
             
         })
+    }
+    public var body: some View {
+        
         return Button {
             presentingAuth = true
         } label: {
             label
         }.sheet(isPresented: $presentingAuth) {
-            ModalWebView(isPresented: self.$presentingAuth,  config: config)
+            ModalWebView(isPresented: self.$presentingAuth,  config: getConfig())
         }
     }
 }
@@ -79,25 +58,26 @@ public struct PrivoRegisterView<Label> : View where Label : View {
     var closeIcon: Image?
     let onFinish: (() -> Void)?
     private let siteIdKey = "siteId"
-    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: Image? = nil ) {
+    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Image)? = nil ) {
         self.label = label()
-        self.onFinish = onFinish
-        self.closeIcon = closeIcon
+        self.closeIcon = closeIcon?()
         self._presentingRegister = isPresented
+        self.onFinish = onFinish
+    }
+    func getConfig() -> WebviewConfig {
+        let siteId = "1"; // TMP, replace it with exchanged serviceIdentifier later (if we are going to use this view)
+        let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: siteId)!
+        return WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
+            onFinish?()
+        })
     }
     public var body: some View {
-        let siteId = PrivoInternal.shared.settings.siteId;
-        var url = PrivoInternal.shared.configuration.lgsRegistrationUrl
-        if let siteId = siteId {
-            url.appendQueryParam(name: siteIdKey, value: siteId)
-        }
-        let config = WebviewConfig(url: url, finishCriteria: "step=complete", onFinish: onFinish)
         return Button {
             presentingRegister = true
         } label: {
             label
         }.sheet(isPresented: $presentingRegister) {
-            ModalWebView(isPresented: self.$presentingRegister, config: config)
+            ModalWebView(isPresented: self.$presentingRegister, config: getConfig())
         }
     }
 }
@@ -105,7 +85,7 @@ public struct PrivoRegisterView<Label> : View where Label : View {
 public class PrivoAuth {
     public init() {}
     public func getToken() -> String? {
-        if let token = UserDefaults.standard.string(forKey: PrivoInternal.shared.configuration.tokenStorageKey) {
+        if let token = UserDefaults.standard.string(forKey: PrivoInternal.configuration.tokenStorageKey) {
             if let jwt = try? decode(jwt: token) {
                 if let exp = jwt.expiresAt {
                     if exp > Date() {
@@ -119,9 +99,9 @@ public class PrivoAuth {
     }
     public func checkTokenValid(completionHandler: @escaping (TokenValidity?) -> Void) {
         if let oldToken = getToken() {
-            PrivoInternal.shared.rest.getAuthSessionId { sessionId in
+            PrivoInternal.rest.getAuthSessionId { sessionId in
                 if let sessionId = sessionId {
-                    PrivoInternal.shared.rest.renewToken(oldToken: oldToken, sessionId: sessionId) { token in
+                    PrivoInternal.rest.renewToken(oldToken: oldToken, sessionId: sessionId) { token in
                         if let token = token {
                             completionHandler(TokenValidity(token: token, isValid: true))
                         } else {
@@ -137,6 +117,6 @@ public class PrivoAuth {
         }
     }
     public func cleanToken() -> Void {
-        UserDefaults.standard.removeObject(forKey: PrivoInternal.shared.configuration.tokenStorageKey)
+        UserDefaults.standard.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
 }
