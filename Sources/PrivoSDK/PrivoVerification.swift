@@ -28,6 +28,7 @@ private struct VerificationModal : View {
             return WebviewConfig(
                 url: verificationUrl,
                 showCloseIcon: false,
+                printCriteria: "/print",
                 finishCriteria: "verification-loading",
                 onFinish: { url in
                     if let items = URLComponents(string: url)?.queryItems,

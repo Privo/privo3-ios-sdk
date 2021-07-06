@@ -5,6 +5,7 @@ struct WebviewConfig {
     let url: URL
     var closeIcon: Image?
     var showCloseIcon = true
+    var printCriteria: String?
     var finishCriteria: String?
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
     var onFinish: ((String) -> Void)?
@@ -14,6 +15,7 @@ struct Webview: UIViewRepresentable {
     
     let config: WebviewConfig
     private let navigationHelper = WebViewNavigationHelper()
+    private let printHelper = WebViewPrintHelper()
     // private let uiHelper = WebViewUIHelper()
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
@@ -34,6 +36,10 @@ struct Webview: UIViewRepresentable {
         if let onPrivoEvent = config.onPrivoEvent {
             let contentController = ContentController(onPrivoEvent)
             webview.configuration.userContentController.add(contentController, name: "privo")
+        }
+        if let printCriteria = config.printCriteria {
+            printHelper.printCriteria = printCriteria
+            webview.uiDelegate = printHelper
         }
         // webview.uiDelegate = uiHelper
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
@@ -118,43 +124,52 @@ struct Webview: UIViewRepresentable {
             }
         }
     }
-    /*
-    class WebViewUIHelper: NSObject,  WKUIDelegate {
-        var pdfCriteria: String?
-        var pdfName: String?
-        //private let loadingHelper = WebViewLoadingHelper()
+    
+    class WebViewPrintHelper: NSObject,  WKUIDelegate {
+        var printCriteria: String?
+        private let printLoadingHelper = PrintLoadingHelper();
 
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-            if navigationAction.targetFrame == nil{
+            if navigationAction.targetFrame == nil {
                 if let url = navigationAction.request.url,
-                   let pdfCriteria = pdfCriteria {
-                    if  url.absoluteString.contains(pdfCriteria) {
-                        loadingHelper.pdfName = pdfName
-                        let newWebView = WKWebView(frame: webView.bounds, configuration: configuration)
-                        newWebView.isHidden = true
-                        newWebView.navigationDelegate = loadingHelper
-                        webView.addSubview(newWebView)
-                        newWebView.load(navigationAction.request)
-                    }
+                   let printCriteria = printCriteria {
+                    if  url.absoluteString.contains(printCriteria) {
+                       let newWebView = WKWebView(frame: webView.bounds, configuration: configuration)
+                       newWebView.isHidden = true
+                       newWebView.navigationDelegate = printLoadingHelper
+                       webView.addSubview(newWebView)
+                       newWebView.load(navigationAction.request)
+                   }
                 }
+                
             }
             return nil
         }
-        class WebViewLoadingHelper: NSObject, WKNavigationDelegate {
-            var pdfName: String?
+        class PrintLoadingHelper: NSObject, WKNavigationDelegate {
+            
+            func printWebViewPage(_ webView: WKWebView) {
+                let webviewPrint = webView.viewPrintFormatter()
+                let printInfo = UIPrintInfo(dictionary: nil)
+                printInfo.jobName = "page"
+                printInfo.outputType = .general
+                let printController = UIPrintInteractionController.shared
+                printController.printInfo = printInfo
+                printController.showsNumberOfCopies = false
+                printController.printFormatter = webviewPrint
+                printController.present(animated: true, completionHandler: { _,_,_ in
+                    webView.removeFromSuperview()
+                })
+            }
+            
             func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                    if let pdfFilePath = webView.exportAsPdfFromWebView(name: self?.pdfName ?? "privo.pdf") {
-                        webView.removeFromSuperview()
-                        let activityViewController = UIActivityViewController(activityItems: [pdfFilePath], applicationActivities: nil)
-                        UIApplication.shared.topMostViewController()?.present(activityViewController, animated: true, completion: nil)
-                    }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.printWebViewPage(webView)
                 }
             }
         }
          
     }
- */
+ 
 }
 
 
