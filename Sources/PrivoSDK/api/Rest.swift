@@ -66,5 +66,18 @@ class Rest {
             completionHandler(token)
         }
     }
+    
+    func processAgStatus(data: AgStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        let url = String(format: "%@/status/ag-id", PrivoInternal.configuration.ageGateUrl.absoluteString)
+        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+            completionHandler(r.value)
+        }
+    }
+    func processDirthDate(data: BirthDateStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateUrl.absoluteString)
+        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+            completionHandler(r.value)
+        }
+    }
 
 }
