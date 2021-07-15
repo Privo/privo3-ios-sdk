@@ -24,7 +24,7 @@ struct DeviceFingerprint: Decodable, Encodable {
         let name: String
         let version: String
     }
-    let deviceId: String
+    let idForVendor: String
     let deviceInfo: DeviceInfo
     let browserInfo: BrowserInfo
     
@@ -43,7 +43,7 @@ struct DeviceFingerprint: Decodable, Encodable {
                                      colorDepth: 32,
                                      pixelRatio: Double(UIScreen.main.scale))
         self.browserInfo = BrowserInfo(name: "WKWebView", version: "1")
-        self.deviceId = UIDevice.current.identifierForVendor!.uuidString
+        self.idForVendor = UIDevice.current.identifierForVendor!.uuidString
     }
 }
 
