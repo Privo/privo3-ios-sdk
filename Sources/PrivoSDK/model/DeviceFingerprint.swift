@@ -23,6 +23,7 @@ struct DeviceFingerprint: Decodable, Encodable {
     struct BrowserInfo: Decodable, Encodable {
         let name: String
         let version: String
+        let plugins: [String]
     }
     struct GPU: Decodable, Encodable {
     }
@@ -48,7 +49,7 @@ struct DeviceFingerprint: Decodable, Encodable {
                                      screenHeight: Int(UIScreen.main.bounds.height),
                                      colorDepth: 32,
                                      pixelRatio: Double(UIScreen.main.scale))
-        self.browserInfo = BrowserInfo(name: "WKWebView", version: "1")
+        self.browserInfo = BrowserInfo(name: "WKWebView", version: "1", plugins: [])
         self.gpu = GPU()
         self.fonts = Fonts()
         self.idForVendor = UIDevice.current.identifierForVendor!.uuidString
