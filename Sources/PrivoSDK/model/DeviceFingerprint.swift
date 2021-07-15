@@ -26,17 +26,20 @@ struct DeviceFingerprint: Decodable, Encodable {
     }
     struct GPU: Decodable, Encodable {
     }
+    struct Fonts: Decodable, Encodable {
+    }
     let idForVendor: String
-    let deviceInfo: DeviceInfo
+    let devInfo: DeviceInfo
     let browserInfo: BrowserInfo
     let gpu: GPU
+    let fonts: Fonts
     
     init () throws {
         var isMobile = true
         #if os(macOS)
             isMobile = false
         #endif
-        self.deviceInfo = DeviceInfo(isMobile: isMobile,
+        self.devInfo = DeviceInfo(isMobile: isMobile,
                                      devModel: UIDevice.current.model,
                                      devVendor: "Apple",
                                      osName: UIDevice.current.systemName,
@@ -47,6 +50,7 @@ struct DeviceFingerprint: Decodable, Encodable {
                                      pixelRatio: Double(UIScreen.main.scale))
         self.browserInfo = BrowserInfo(name: "WKWebView", version: "1")
         self.gpu = GPU()
+        self.fonts = Fonts()
         self.idForVendor = UIDevice.current.identifierForVendor!.uuidString
     }
 }
