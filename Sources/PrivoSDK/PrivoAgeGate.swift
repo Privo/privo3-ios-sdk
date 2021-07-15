@@ -8,12 +8,41 @@ import Foundation
 import UIKit
 
 public class PrivoAgeGate {
-    private let AG_ID = "agId";
-    // private let FP_ID = "fpId";
+    private let AG_ID = "privoAgId";
+    private let FP_ID = "privoFpId";
     private let dateFormatter = DateFormatter()
 
     public init() {
         dateFormatter.dateFormat = "yyyy-MM-dd"
+    }
+    
+    private func getFpId(completionHandler: @escaping (String?) -> Void) {
+        if let fpId = UserDefaults.standard.string(forKey: FP_ID) {
+            completionHandler(fpId)
+        } else {
+            if let fingerprint = try? DeviceFingerprint() {
+                PrivoInternal.rest.generateFingerprint(fingerprint: fingerprint) { r in
+                    if let id = r?.id {
+                        UserDefaults.standard.set(id, forKey: self.FP_ID)
+                        completionHandler(r?.id)
+                    } else {
+                        completionHandler(nil)
+                    }
+                }
+            } else {
+                completionHandler(nil)
+            }
+        }
+    }
+    private func getFpStatus(extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        getFpId() { fpId in
+            if let fpId = fpId {
+                let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, fpId: fpId, birthDate: nil, extUserId: extUserId, countryCode: countryCode)
+                PrivoInternal.rest.processFpStatus(data: record, completionHandler: completionHandler)
+            } else {
+                completionHandler(nil)
+            }
+        }
     }
     
     public func getAgeStatus(extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
@@ -29,16 +58,20 @@ public class PrivoAgeGate {
                 }
             }
         } else {
-            completionHandler(nil)
+            getFpStatus(extUserId: extUserId,countryCode: countryCode,completionHandler: completionHandler)
         }
     }
-    public func getAgeStatusByBirthDate(birthDate: Date? = nil, extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
-        let deviceId = UIDevice.current.identifierForVendor?.uuidString
-        let textDate = dateFormatter.string(from: birthDate)
-        let record = BirthDateStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,deviceId: deviceId, birthDate: textDate, extUserId: extUserId, countryCode: countryCode)
-        PrivoInternal.rest.processDirthDate(data: record) { r in
-            UserDefaults.standard.set(data.agId, forKey: self.AG_ID)
-            completionHandler(r)
+    
+    public func getAgeStatusByBirthDate(birthDate: Date, extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        let textDate = dateFormatter.string(from: birthDate);
+        getFpId() { fpId in
+            if let fpId = fpId {
+                let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, fpId: fpId, birthDate: textDate, extUserId: extUserId, countryCode: countryCode)
+                PrivoInternal.rest.processBirthDate(data: record, completionHandler: completionHandler)
+            } else {
+                completionHandler(nil)
+            }
         }
+
     }
 }

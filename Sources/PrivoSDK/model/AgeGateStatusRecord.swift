@@ -13,10 +13,10 @@ struct AgStatusRecord: Decodable, Encodable, Hashable {
     let extUserId: String?
     let countryCode: String?
 }
-struct BirthDateStatusRecord: Decodable, Encodable, Hashable {
+struct FpStatusRecord: Decodable, Encodable, Hashable {
     let serviceIdentifier: String
-    let deviceId: String
-    let birthDate: String
+    let fpId: String
+    let birthDate: String? // "2021-03-04"
     let extUserId: String?
     let countryCode: String?
 }

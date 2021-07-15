@@ -19,7 +19,7 @@ class Configuration {
         self.type = type
         switch type {
         case .Local:
-            self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo")!
+            self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification-dev.privo.com/vw")!
             self.tmpStorageUrl = URL(string: "https://helper-svc-dev.privo.com/rest/api/v1.0/storage")!
@@ -27,7 +27,7 @@ class Configuration {
             self.ageGateUrl = URL(string: "https://agegate-dev.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token-local"
         case .Dev:
-            self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo")!
+            self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification-dev.privo.com/vw")!
             self.tmpStorageUrl = URL(string: "https://helper-svc-dev.privo.com/rest/api/v1.0/storage")!
@@ -35,7 +35,7 @@ class Configuration {
             self.ageGateUrl = URL(string: "https://agegate-dev.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token-dev"
         case .Int:
-            self.authBaseUrl = URL(string: "https://auth-int.privo.com/api/v1.0/privo")!
+            self.authBaseUrl = URL(string: "https://auth-int.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth-int.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification-int.privo.com/vw")!
             self.tmpStorageUrl = URL(string: "https://helper-svc-int.privo.com/rest/api/v1.0/storage")!
@@ -43,7 +43,7 @@ class Configuration {
             self.ageGateUrl = URL(string: "https://agegate-int.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token-int"
         case .Test:
-            self.authBaseUrl = URL(string: "https://auth-test.privo.com/api/v1.0/privo")!
+            self.authBaseUrl = URL(string: "https://auth-test.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth-test.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification-test.privo.com/vw")!
             self.tmpStorageUrl = URL(string: "https://helper-svc-test.privo.com/rest/api/v1.0/storage")!
@@ -51,7 +51,7 @@ class Configuration {
             self.ageGateUrl = URL(string: "https://agegate-test.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token-test"
         case .Prod:
-            self.authBaseUrl = URL(string: "https://auth.privo.com/api/v1.0/privo")!
+            self.authBaseUrl = URL(string: "https://auth.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification.privo.com/vw")!
             self.tmpStorageUrl = URL(string: "https://helper-svc.privo.com/rest/api/v1.0/storage")!
