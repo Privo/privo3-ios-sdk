@@ -24,9 +24,12 @@ struct DeviceFingerprint: Decodable, Encodable {
         let name: String
         let version: String
     }
+    struct GPU: Decodable, Encodable {
+    }
     let idForVendor: String
     let deviceInfo: DeviceInfo
     let browserInfo: BrowserInfo
+    let gpu: GPU
     
     init () throws {
         var isMobile = true
@@ -43,6 +46,7 @@ struct DeviceFingerprint: Decodable, Encodable {
                                      colorDepth: 32,
                                      pixelRatio: Double(UIScreen.main.scale))
         self.browserInfo = BrowserInfo(name: "WKWebView", version: "1")
+        self.gpu = GPU()
         self.idForVendor = UIDevice.current.identifierForVendor!.uuidString
     }
 }
