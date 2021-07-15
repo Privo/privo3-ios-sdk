@@ -60,10 +60,35 @@ class Rest {
         }
     }
     func renewToken(oldToken: String, sessionId: String, completionHandler: @escaping (String?) -> Void) {
-        let loginUrl = String(format: "%@/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
+        let loginUrl = String(format: "%@/privo/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
         AF.request(loginUrl, method: .post, parameters: nil, encoding: BodyStringEncoding(body: oldToken)).responseDecodable(of: LoginResponse.self) { r in
             let token = r.value?.token
             completionHandler(token)
+        }
+    }
+    
+    func processAgStatus(data: AgStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        let url = String(format: "%@/status/ag-id", PrivoInternal.configuration.ageGateUrl.absoluteString)
+        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+            completionHandler(r.value)
+        }
+    }
+    func processFpStatus(data: FpStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        let url = String(format: "%@/status/fp-id", PrivoInternal.configuration.ageGateUrl.absoluteString)
+        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+            completionHandler(r.value)
+        }
+    }
+    func processBirthDate(data: FpStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateUrl.absoluteString)
+        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+            completionHandler(r.value)
+        }
+    }
+    func generateFingerprint(fingerprint: DeviceFingerprint, completionHandler: @escaping (DeviceFingerprintResponse?) -> Void) {
+        let url = String(format: "%@/fp", PrivoInternal.configuration.authBaseUrl.absoluteString)
+        AF.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default).responseDecodable(of: DeviceFingerprintResponse.self ) { r in
+            completionHandler(r.value)
         }
     }
 

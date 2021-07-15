@@ -8,4 +8,5 @@ public class Privo {
         return PrivoInternal.settings
     }
     public static let auth = PrivoAuth();
+    public static let ageGate = PrivoAgeGate();
 }
