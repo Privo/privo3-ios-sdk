@@ -67,7 +67,12 @@ public class PrivoAgeGate {
         getFpId() { fpId in
             if let fpId = fpId {
                 let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, fpId: fpId, birthDate: textDate, extUserId: extUserId, countryCode: countryCode)
-                PrivoInternal.rest.processBirthDate(data: record, completionHandler: completionHandler)
+                PrivoInternal.rest.processBirthDate(data: record) { r in
+                    if let id = r?.ageGateIdentifier {
+                        UserDefaults.standard.set(id, forKey: self.AG_ID)
+                    }
+                    completionHandler(r)
+                }
             } else {
                 completionHandler(nil)
             }
