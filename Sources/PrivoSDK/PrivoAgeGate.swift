@@ -9,7 +9,6 @@ import UIKit
 
 public class PrivoAgeGate {
     private let AG_ID = "privoAgId";
-    private let FP_ID = "privoFpId";
     private let dateFormatter = DateFormatter()
 
     public init() {
@@ -17,21 +16,12 @@ public class PrivoAgeGate {
     }
     
     private func getFpId(completionHandler: @escaping (String?) -> Void) {
-        if let fpId = UserDefaults.standard.string(forKey: FP_ID) {
-            completionHandler(fpId)
-        } else {
-            if let fingerprint = try? DeviceFingerprint() {
-                PrivoInternal.rest.generateFingerprint(fingerprint: fingerprint) { r in
-                    if let id = r?.id {
-                        UserDefaults.standard.set(id, forKey: self.FP_ID)
-                        completionHandler(r?.id)
-                    } else {
-                        completionHandler(nil)
-                    }
-                }
-            } else {
-                completionHandler(nil)
+        if let fingerprint = try? DeviceFingerprint() {
+            PrivoInternal.rest.generateFingerprint(fingerprint: fingerprint) { r in
+                completionHandler(r?.id)
             }
+        } else {
+            completionHandler(nil)
         }
     }
     private func getFpStatus(extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
