@@ -54,7 +54,6 @@ private struct VerificationModal : View {
 }
 
 public struct PrivoVerificationView<Label> : View where Label : View {
-    @State private var state = PrivoVerificationState()
 
     public var profile: UserVerificationProfile?
     let label: Label
@@ -83,7 +82,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
             showView()
         } label: {
             label
-        }.sheet(isPresented: $state.presentingVerification) {
+        }.sheet(isPresented: verification.$state.presentingVerification) {
             VerificationModal(state: verification.$state, closeIcon: closeIcon, onFinish: onFinish)
         }
     }
