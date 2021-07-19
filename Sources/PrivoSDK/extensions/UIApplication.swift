@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 extension UIApplication {
     public func topMostViewController() -> UIViewController? {
@@ -32,5 +33,12 @@ extension UIApplication {
         alertController.addAction(cancelButton)
 
         self.topMostViewController()?.present(alertController, animated: true)
+    }
+    
+    public func showView<Content>(@ViewBuilder content: @escaping () -> Content) where Content : View {
+         let view = content()
+         let viewController = UIHostingController(rootView: view)
+         viewController.modalPresentationStyle = .automatic
+         UIApplication.shared.topMostViewController()?.present(viewController, animated: true, completion: nil)
     }
 }

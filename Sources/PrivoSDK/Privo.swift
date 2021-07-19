@@ -9,4 +9,6 @@ public class Privo {
     }
     public static let auth = PrivoAuth();
     public static let ageGate = PrivoAgeGate();
+    public static let verification = PrivoVerification();
+
 }

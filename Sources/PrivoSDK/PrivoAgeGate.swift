@@ -49,6 +49,11 @@ public class PrivoAgeGate {
         }
 
     }
+    public func verifyStatus(extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        Privo.verification.showVerificationModal { events in
+            
+        }
+    }
 }
 
 fileprivate class InternalAgeGate {
@@ -98,6 +103,14 @@ fileprivate class InternalAgeGate {
             UserDefaults.standard.set(id, forKey: self.FP_ID)
         } else {
             UserDefaults.standard.removeObject(forKey: self.FP_ID)
+        }
+    }
+    fileprivate func getVerificationStatus(events: [VerificationEvent]) -> AgeGateAction? {
+        let aceptedVerification = events.first {$0.result?.verificationResponse.matchOutcome == VerificationOutcome.Pass};
+        if (aceptedVerification != nil) {
+            return AgeGateAction.Allow
+        } else {
+            return nil
         }
     }
 }
