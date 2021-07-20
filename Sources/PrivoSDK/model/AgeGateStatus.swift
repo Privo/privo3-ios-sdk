@@ -15,6 +15,6 @@ public enum AgeGateAction: Int, Decodable, Encodable, Hashable {
 }
 
 public struct AgeGateStatus: Decodable, Encodable, Hashable {
-    public let action: AgeGateAction
-    public let ageGateIdentifier: String
+    public var action: AgeGateAction
+    public var ageGateIdentifier: String
 }
