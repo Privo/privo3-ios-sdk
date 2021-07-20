@@ -85,8 +85,8 @@ public struct PrivoVerificationView<Label> : View where Label : View {
             showView()
         } label: {
             label
-        }.sheet(isPresented: verification.$state.presentingVerification) {
-            VerificationModal(state: verification.$state, closeIcon: closeIcon, onFinish: onFinish)
+        }.sheet(isPresented: $state.presentingVerification) {
+            VerificationModal(state: $state, closeIcon: closeIcon, onFinish: onFinish)
         }
     }
 }
