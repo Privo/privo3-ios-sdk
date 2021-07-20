@@ -60,7 +60,10 @@ private struct VerificationStateView : View {
     fileprivate let onFinish: ((Array<VerificationEvent>) -> Void)?
     
     public var body: some View {
-        VerificationView(state: $state, closeIcon: nil, onFinish: onFinish).onAppear {
+        VerificationView(state: $state, closeIcon: nil, onFinish: { e in
+            self.state.presentingVerification = false
+            onFinish?(e)
+        }).onAppear {
             verification.storeState(profile: profile) { id in
                 self.state.privoStateId = id
                 self.state.presentingVerification = true
