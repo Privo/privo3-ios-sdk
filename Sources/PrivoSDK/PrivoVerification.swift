@@ -8,12 +8,12 @@
 import SwiftUI
 
 
-public struct PrivoVerificationState {
+fileprivate struct PrivoVerificationState {
     var presentingVerification = false
     var privoStateId: String? = nil
 }
 
-private struct VerificationModal : View {
+fileprivate struct VerificationView : View {
     @Binding fileprivate var state: PrivoVerificationState
 
     fileprivate var closeIcon: Image?
@@ -52,9 +52,25 @@ private struct VerificationModal : View {
         }
     }
 }
+private struct VerificationStateView : View {
+    @State private var state = PrivoVerificationState()
+    private let verification = InternalPrivoVerification()
 
-public struct PrivoVerificationView<Label> : View where Label : View {
-    @State fileprivate var state = PrivoVerificationState()
+    fileprivate let profile: UserVerificationProfile?
+    fileprivate let onFinish: ((Array<VerificationEvent>) -> Void)?
+    
+    public var body: some View {
+        VerificationView(state: $state, closeIcon: nil, onFinish: onFinish).onAppear {
+            verification.storeState(profile: profile) { id in
+                self.state.privoStateId = id
+                self.state.presentingVerification = true
+            }
+        }
+    }
+}
+
+public struct PrivoVerificationButton<Label> : View where Label : View {
+    @State private var state = PrivoVerificationState()
     private let verification = InternalPrivoVerification()
 
     public var profile: UserVerificationProfile?
@@ -82,7 +98,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         } label: {
             label
         }.sheet(isPresented: $state.presentingVerification) {
-            VerificationModal(state: $state, closeIcon: closeIcon, onFinish: onFinish)
+            VerificationView(state: $state, closeIcon: closeIcon, onFinish: onFinish)
         }
     }
 }
@@ -90,7 +106,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
 
 public class PrivoVerification {
     public init() {}
-    @State var state = PrivoVerificationState()
+    @State private var state = PrivoVerificationState()
     private let verification = InternalPrivoVerification()
     
     public func showVerificationModal(profile: UserVerificationProfile = UserVerificationProfile(), completion: ((Array<VerificationEvent>) -> Void)?) {
@@ -99,7 +115,7 @@ public class PrivoVerification {
             self?.state.presentingVerification = true
         }
         UIApplication.shared.showView {
-            VerificationModal(state: self.$state, onFinish: completion)
+            VerificationStateView(profile: profile, onFinish: completion)
         }
     }
 }

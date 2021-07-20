@@ -8,7 +8,7 @@
 import SwiftUI
 import JWTDecode
 
-public struct PrivoAuthView<Label> : View where Label : View {
+public struct PrivoAuthButton<Label> : View where Label : View {
     @State var presentingAuth = false
     let label: Label
     var closeIcon: Image?
@@ -52,7 +52,7 @@ public struct PrivoAuthView<Label> : View where Label : View {
     }
 }
 
-public struct PrivoRegisterView<Label> : View where Label : View {
+public struct PrivoRegisterButton<Label> : View where Label : View {
     @Binding var presentingRegister: Bool
     let label: Label
     var closeIcon: Image?
