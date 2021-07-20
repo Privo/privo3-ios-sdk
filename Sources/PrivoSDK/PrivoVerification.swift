@@ -54,15 +54,14 @@ private struct VerificationModal : View {
 }
 
 public struct PrivoVerificationView<Label> : View where Label : View {
-    @Binding fileprivate var state: PrivoVerificationState
+    @State fileprivate var state = PrivoVerificationState()
+    private let verification = InternalPrivoVerification()
 
     public var profile: UserVerificationProfile?
     let label: Label
     var closeIcon: Image?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     
-    private let verification:PrivoVerification
-
     public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Image)? = nil, profile: UserVerificationProfile? = nil) {
         if let profile = profile {
             self.profile = profile
@@ -70,14 +69,11 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         self.label = label()
         self.closeIcon = closeIcon?()
         self.onFinish = onFinish
-        self.verification = PrivoVerification()
-        self._state = self.verification.$state
     }
     func showView() {
-        if let profile = profile {
-            verification.setState(profile: profile)
-        } else {
-            verification.setState()
+        verification.storeState(profile: profile) { id in
+            self.state.privoStateId = id
+            self.state.presentingVerification = true
         }
     }
     public var body: some View {
@@ -95,21 +91,27 @@ public struct PrivoVerificationView<Label> : View where Label : View {
 public class PrivoVerification {
     public init() {}
     @State var state = PrivoVerificationState()
-    private let redirectUrl = PrivoInternal.configuration.verificationUrl.withPath("/#/verification-loading")!.absoluteString
+    private let verification = InternalPrivoVerification()
     
-    fileprivate func setState(profile: UserVerificationProfile = UserVerificationProfile()) -> Void {
-        if let apiKey = PrivoInternal.settings.apiKey {
-            let data = VerificationData(profile: profile, config: VerificationConfig(apiKey: apiKey, siteIdentifier: PrivoInternal.settings.serviceIdentifier), redirectUrl: redirectUrl)
-            PrivoInternal.rest.addObjectToTMPStorage(value: data) { [weak self] id in
-                self?.state.privoStateId = id
-                self?.state.presentingVerification = true
-            }
-        }
-    }
     public func showVerificationModal(profile: UserVerificationProfile = UserVerificationProfile(), completion: ((Array<VerificationEvent>) -> Void)?) {
-        setState(profile: profile)
+        verification.storeState(profile: profile) { [weak self] id in
+            self?.state.privoStateId = id
+            self?.state.presentingVerification = true
+        }
         UIApplication.shared.showView {
             VerificationModal(state: self.$state, onFinish: completion)
         }
     }
+}
+
+fileprivate struct InternalPrivoVerification {
+    private let redirectUrl = PrivoInternal.configuration.verificationUrl.withPath("/#/verification-loading")!.absoluteString
+
+    func storeState(profile: UserVerificationProfile?, completion: @escaping (String?) -> Void ) -> Void {
+        if let apiKey = PrivoInternal.settings.apiKey {
+            let data = VerificationData(profile: profile ?? UserVerificationProfile(), config: VerificationConfig(apiKey: apiKey, siteIdentifier: PrivoInternal.settings.serviceIdentifier), redirectUrl: redirectUrl)
+            PrivoInternal.rest.addObjectToTMPStorage(value: data, completionHandler: completion)
+        }
+    }
+    
 }
