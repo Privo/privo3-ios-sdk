@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-private struct PrivoVerificationState {
+public struct PrivoVerificationState {
     var presentingVerification = false
     var privoStateId: String? = nil
 }
@@ -54,14 +54,15 @@ private struct VerificationModal : View {
 }
 
 public struct PrivoVerificationView<Label> : View where Label : View {
+    @Binding fileprivate var state: PrivoVerificationState
 
     public var profile: UserVerificationProfile?
     let label: Label
     var closeIcon: Image?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     
-    private let verification = PrivoVerification()
-    
+    private let verification:PrivoVerification
+
     public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Image)? = nil, profile: UserVerificationProfile? = nil) {
         if let profile = profile {
             self.profile = profile
@@ -69,6 +70,8 @@ public struct PrivoVerificationView<Label> : View where Label : View {
         self.label = label()
         self.closeIcon = closeIcon?()
         self.onFinish = onFinish
+        self.verification = PrivoVerification()
+        self._state = self.verification.$state
     }
     func showView() {
         if let profile = profile {
@@ -91,7 +94,7 @@ public struct PrivoVerificationView<Label> : View where Label : View {
 
 public class PrivoVerification {
     public init() {}
-    @State fileprivate var state = PrivoVerificationState()
+    @State var state = PrivoVerificationState()
     private let redirectUrl = PrivoInternal.configuration.verificationUrl.withPath("/#/verification-loading")!.absoluteString
     
     fileprivate func setState(profile: UserVerificationProfile = UserVerificationProfile()) -> Void {
