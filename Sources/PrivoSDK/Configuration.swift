@@ -15,8 +15,10 @@ class Configuration {
     let lgsRegistrationUrl: URL
     let ageGateUrl: URL
     let tokenStorageKey: String
+    let privoServiceKey: String
     init (type: EnviromentType) {
         self.type = type
+        self.privoServiceKey = "com.privo.sdk"
         switch type {
         case .Local:
             self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0")!

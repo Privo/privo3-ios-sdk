@@ -53,7 +53,7 @@ struct DeviceFingerprint: Decodable, Encodable {
         self.browserInfo = BrowserInfo(name: "WKWebView", version: "1", plugins: [])
         self.gpu = GPU()
         self.fonts = Fonts(fonts: [])
-        self.idForVendor = UIDevice.current.identifierForVendor!.uuidString
+        self.idForVendor = try! DeviceIdentifier().identifier
     }
 }
 
