@@ -41,4 +41,7 @@ extension UIApplication {
          viewController.modalPresentationStyle = .automatic
          UIApplication.shared.topMostViewController()?.present(viewController, animated: true, completion: nil)
     }
+    public func dismissTopView() {
+        UIApplication.shared.topMostViewController()?.dismiss(animated: true, completion: nil)
+    }
 }

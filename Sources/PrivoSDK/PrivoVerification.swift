@@ -118,7 +118,10 @@ public class PrivoVerification {
             self?.state.presentingVerification = true
         }
         UIApplication.shared.showView {
-            VerificationStateView(profile: profile, onFinish: completion)
+            VerificationStateView(profile: profile) { e in
+                UIApplication.shared.dismissTopView()
+                completion?(e)
+            }
         }
     }
 }
