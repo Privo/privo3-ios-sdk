@@ -15,6 +15,7 @@ public enum VerificationEventType: String, Decodable {
 }
 
 public struct VerificationResult: Decodable, Hashable {
+    public let serviceId: String?
     public let verificationResponse: VerificationResponse
 }
 

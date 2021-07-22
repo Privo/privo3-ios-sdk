@@ -39,6 +39,5 @@ public struct VerificationResponse: Decodable, Hashable {
         //Applicable to offline methods only
     public let identificationNumber: String?
     public let attemptId: Int?
-    public let personWithoutCredentialsServiceId: String?
-    
+    // public let personWithoutCredentialsServiceId: String?
 }

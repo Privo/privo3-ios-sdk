@@ -50,7 +50,7 @@ public class PrivoAgeGate {
 
     }
     public func verifyStatus(extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateAction?) -> Void) {
-        Privo.verification.showVerificationModal { [weak self] events in
+        Privo.verification.showVerificationModal(nil) { [weak self] events in
             let action = self?.ageGate.getVerificationAction(events)
             completionHandler(action)
         }
