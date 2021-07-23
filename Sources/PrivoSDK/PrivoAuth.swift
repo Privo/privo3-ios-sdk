@@ -94,7 +94,7 @@ public class PrivoAuth {
                 }
             }
         }
-        cleanToken()
+        logout()
         return nil
     }
     public func checkTokenValid(completionHandler: @escaping (TokenValidity?) -> Void) {
@@ -116,7 +116,7 @@ public class PrivoAuth {
             completionHandler(nil)
         }
     }
-    public func cleanToken() -> Void {
+    public func logout() -> Void {
         UserDefaults.standard.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
 }
