@@ -49,10 +49,10 @@ public class PrivoAgeGate {
         }
 
     }
-    public func verifyStatus(agId: String, completionHandler: @escaping (AgeGateStatus?) -> Void) {
-        let profile = UserVerificationProfile(partnerDefinedUniqueID: String(format: "AG:%@", agId));
+    public func verifyStatus(ageGateIdentifier: String, completionHandler: @escaping (AgeGateStatus?) -> Void) {
+        let profile = UserVerificationProfile(partnerDefinedUniqueID: String(format: "AG:%@", ageGateIdentifier));
         Privo.verification.showVerificationModal(profile) { [weak self] events in
-            let status = self?.ageGate.getVerificationStatus(events,agId: agId)
+            let status = self?.ageGate.getVerificationStatus(events,ageGateIdentifier: ageGateIdentifier)
             completionHandler(status)
         }
     }
@@ -107,10 +107,10 @@ fileprivate class InternalAgeGate {
             UserDefaults.standard.removeObject(forKey: self.FP_ID)
         }
     }
-    fileprivate func getVerificationStatus(_ events: [VerificationEvent], agId: String) -> AgeGateStatus? {
+    fileprivate func getVerificationStatus(_ events: [VerificationEvent], ageGateIdentifier: String) -> AgeGateStatus? {
         let aceptedVerification = events.first {$0.result?.verificationResponse.matchOutcome == VerificationOutcome.Pass};
         if (aceptedVerification != nil) {
-            return AgeGateStatus(action: AgeGateAction.Allow, ageGateIdentifier: agId)
+            return AgeGateStatus(action: AgeGateAction.Allow, ageGateIdentifier: ageGateIdentifier)
         } else {
             return nil
         }
