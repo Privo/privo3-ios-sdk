@@ -24,7 +24,7 @@ fileprivate struct VerificationView : View {
            let verificationUrl = PrivoInternal.configuration.verificationUrl
                 .withPath("/index.html")?
                 .withQueryParam(name: "privo_state_id", value: stateId)?
-                .withPath("/#/intro") {
+                .withPath("#/intro") {
             return WebviewConfig(
                 url: verificationUrl,
                 showCloseIcon: false,
