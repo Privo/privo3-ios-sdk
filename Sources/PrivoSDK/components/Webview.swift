@@ -16,20 +16,14 @@ struct Webview: UIViewRepresentable {
     let config: WebviewConfig
     private let printHelper = WebViewPrintHelper()
     
-    /*
-    if #available(iOS 14.5, *) {
-        private let navigationHelper = WebViewNavigationHelperModern()
-    } else {
-        private let navigationHelper = WebViewNavigationHelper()
-    }
- */
+    private var navigationHelper: WebViewNavigationHelper
     
-    func initNavigationDelegat(_ webview: WKWebView, delegate: WebViewNavigationHelper) {
-        if let finishCriteria = config.finishCriteria,
-           let onFinish = config.onFinish {
-            delegate.finishCriteria = finishCriteria
-            delegate.onFinish = onFinish
-            webview.navigationDelegate = delegate
+    init (config: WebviewConfig) {
+        self.config = config
+        if #available(iOS 14.5, *) {
+            self.navigationHelper = WebViewNavigationHelperModern()
+        } else {
+            self.navigationHelper = WebViewNavigationHelper()
         }
     }
 
@@ -42,10 +36,11 @@ struct Webview: UIViewRepresentable {
         webview.isOpaque = false
         webview.backgroundColor = .clear
         webview.scrollView.backgroundColor = .clear
-        if #available(iOS 14.5, *) {
-            initNavigationDelegat(webview, delegate: WebViewNavigationHelperModern())
-        } else {
-            initNavigationDelegat(webview, delegate: WebViewNavigationHelper())
+        if let finishCriteria = config.finishCriteria,
+           let onFinish = config.onFinish {
+            navigationHelper.finishCriteria = finishCriteria
+            navigationHelper.onFinish = onFinish
+            webview.navigationDelegate = navigationHelper
         }
         if let onPrivoEvent = config.onPrivoEvent {
             let contentController = ContentController(onPrivoEvent)
@@ -85,7 +80,7 @@ struct Webview: UIViewRepresentable {
         }
     }
     
-    class WebViewNavigationHelper: NSObject, WKNavigationDelegate, WKUIDelegate {
+    class WebViewNavigationHelper: NSObject, WKNavigationDelegate {
         var finishCriteria: String?
         var onFinish: ((String) -> Void)?
         
