@@ -12,8 +12,8 @@ public enum VerificationMethodType: Int, Decodable {
     case DriversLicense = 2
     case Phone = 4
     case SSN = 5
-    case CorporateEmail = 13
-    case PrintForm = 15
+    case CorporateEmail = 6
+    case PrintForm = 7
     case PayPal = 10
 }
 public enum VerificationOutcome: Int, Decodable {

@@ -14,8 +14,24 @@ struct WebviewConfig {
 struct Webview: UIViewRepresentable {
     
     let config: WebviewConfig
-    private let navigationHelper = WebViewNavigationHelper()
     private let printHelper = WebViewPrintHelper()
+    
+    /*
+    if #available(iOS 14.5, *) {
+        private let navigationHelper = WebViewNavigationHelperModern()
+    } else {
+        private let navigationHelper = WebViewNavigationHelper()
+    }
+ */
+    
+    func initNavigationDelegat(_ webview: WKWebView, delegate: WebViewNavigationHelper) {
+        if let finishCriteria = config.finishCriteria,
+           let onFinish = config.onFinish {
+            delegate.finishCriteria = finishCriteria
+            delegate.onFinish = onFinish
+            webview.navigationDelegate = delegate
+        }
+    }
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
         let wkPreferences = WKPreferences()
@@ -26,11 +42,10 @@ struct Webview: UIViewRepresentable {
         webview.isOpaque = false
         webview.backgroundColor = .clear
         webview.scrollView.backgroundColor = .clear
-        if let finishCriteria = config.finishCriteria,
-           let onFinish = config.onFinish {
-            navigationHelper.finishCriteria = finishCriteria
-            navigationHelper.onFinish = onFinish
-            webview.navigationDelegate = navigationHelper
+        if #available(iOS 14.5, *) {
+            initNavigationDelegat(webview, delegate: WebViewNavigationHelperModern())
+        } else {
+            initNavigationDelegat(webview, delegate: WebViewNavigationHelper())
         }
         if let onPrivoEvent = config.onPrivoEvent {
             let contentController = ContentController(onPrivoEvent)
@@ -70,12 +85,12 @@ struct Webview: UIViewRepresentable {
         }
     }
     
-    class WebViewNavigationHelper: NSObject, WKNavigationDelegate, WKUIDelegate, WKDownloadDelegate {
+    class WebViewNavigationHelper: NSObject, WKNavigationDelegate, WKUIDelegate {
         var finishCriteria: String?
         var onFinish: ((String) -> Void)?
         
-        private let fileManager = FileManager()
-        private var lastFileDestinationURL: URL?
+        let fileManager = FileManager()
+        var lastFileDestinationURL: URL?
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
@@ -100,11 +115,14 @@ struct Webview: UIViewRepresentable {
             }
             decisionHandler(.allow)
         }
-        @available(iOS 14.5, *)
+    }
+    
+    @available(iOS 14.5, *)
+    class WebViewNavigationHelperModern: WebViewNavigationHelper, WKDownloadDelegate {
+
         public func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
             download.delegate = self
         }
-        @available(iOS 14.5, *)
         public func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
             let temporaryDir = NSTemporaryDirectory()
             let fileName = temporaryDir + suggestedFilename
@@ -114,7 +132,6 @@ struct Webview: UIViewRepresentable {
             completionHandler(url)
         }
 
-        @available(iOS 14.5, *)
         public func downloadDidFinish(_ download: WKDownload) {
             if let url = lastFileDestinationURL {
                 let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)

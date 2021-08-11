@@ -24,7 +24,7 @@ fileprivate struct VerificationView : View {
            let verificationUrl = PrivoInternal.configuration.verificationUrl
                 .withPath("/index.html")?
                 .withQueryParam(name: "privo_state_id", value: stateId)?
-                .withPath("/#/intro") {
+                .withPath("#/intro") {
             return WebviewConfig(
                 url: verificationUrl,
                 showCloseIcon: false,
@@ -109,14 +109,8 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
 
 public class PrivoVerification {
     public init() {}
-    @State private var state = PrivoVerificationState()
-    private let verification = InternalPrivoVerification()
     
     public func showVerificationModal(_ profile: UserVerificationProfile?, completion: ((Array<VerificationEvent>) -> Void)?) {
-        verification.storeState(profile: profile) { [weak self] id in
-            self?.state.privoStateId = id
-            self?.state.presentingVerification = true
-        }
         UIApplication.shared.showView {
             VerificationStateView(profile: profile) { e in
                 UIApplication.shared.dismissTopView()
