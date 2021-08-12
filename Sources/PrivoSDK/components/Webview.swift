@@ -20,11 +20,14 @@ struct Webview: UIViewRepresentable {
     
     init (config: WebviewConfig) {
         self.config = config
+        self.navigationHelper = WebViewNavigationHelper()
+        /*
         if #available(iOS 14.5, *) {
             self.navigationHelper = WebViewNavigationHelperModern()
         } else {
             self.navigationHelper = WebViewNavigationHelper()
         }
+        */
     }
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
@@ -97,9 +100,12 @@ struct Webview: UIViewRepresentable {
                 }
             }
         }
+        // Will be used in future releases
+        /*
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
             if let mimeType = navigationResponse.response.mimeType {
                 if (mimeType.lowercased().contains("pdf")) {
+                    
                     if #available(iOS 14.5, *) {
                         decisionHandler(.download)
                     } else {
@@ -110,8 +116,11 @@ struct Webview: UIViewRepresentable {
             }
             decisionHandler(.allow)
         }
+         */
     }
     
+    // Will be used in future releases
+    /*
     @available(iOS 14.5, *)
     class WebViewNavigationHelperModern: WebViewNavigationHelper, WKDownloadDelegate {
 
@@ -134,6 +143,7 @@ struct Webview: UIViewRepresentable {
             }
         }
     }
+ */
     
     class WebViewPrintHelper: NSObject,  WKUIDelegate {
         var printCriteria: String?
