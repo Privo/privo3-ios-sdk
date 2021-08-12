@@ -101,22 +101,25 @@ struct Webview: UIViewRepresentable {
             }
         }
         // Will be used in future releases
-        /*
+        
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
             if let mimeType = navigationResponse.response.mimeType {
                 if (mimeType.lowercased().contains("pdf")) {
-                    
+                    // Will be used in future releases
+                    /*
                     if #available(iOS 14.5, *) {
                         decisionHandler(.download)
                     } else {
                         decisionHandler(.cancel)
                     }
+                    */
+                    decisionHandler(.cancel)
                     return
                 }
             }
             decisionHandler(.allow)
         }
-         */
+         
     }
     
     // Will be used in future releases
