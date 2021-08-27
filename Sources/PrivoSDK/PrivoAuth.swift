@@ -54,6 +54,7 @@ public struct PrivoAuthButton<Label> : View where Label : View {
 
 public struct PrivoRegisterButton<Label> : View where Label : View {
     @Binding var presentingRegister: Bool
+    @State var config: WebviewConfig?
     let label: Label
     var closeIcon: Image?
     let onFinish: (() -> Void)?
@@ -64,20 +65,32 @@ public struct PrivoRegisterButton<Label> : View where Label : View {
         self._presentingRegister = isPresented
         self.onFinish = onFinish
     }
-    func getConfig() -> WebviewConfig {
-        let siteId = "1"; // TMP, replace it with exchanged serviceIdentifier later (if we are going to use this view)
-        let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: siteId)!
-        return WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
+    func setConfig(_ siteId: Int) {
+        let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
+        config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
             onFinish?()
         })
     }
+    func showView() {
+        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
+        PrivoInternal.rest.getServiceInfo(serviceIdentifier: serviceIdentifier) { serviceInfo in
+            if let siteId = serviceInfo?.p2siteId {
+                setConfig(siteId)
+                presentingRegister = true
+
+            }
+            
+        }
+    }
     public var body: some View {
         return Button {
-            presentingRegister = true
+            showView()
         } label: {
             label
         }.sheet(isPresented: $presentingRegister) {
-            ModalWebView(isPresented: self.$presentingRegister, config: getConfig())
+            if let config = config {
+                ModalWebView(isPresented: self.$presentingRegister, config: config)
+            }
         }
     }
 }
@@ -91,6 +104,8 @@ public class PrivoAuth {
                     if exp > Date() {
                         return token
                     }
+                } else {
+                    return token
                 }
             }
         }

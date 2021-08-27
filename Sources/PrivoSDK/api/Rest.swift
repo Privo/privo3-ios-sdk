@@ -43,6 +43,12 @@ class Rest {
             completionHandler?(nil)
         }
     }
+    func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void) {
+        let url = String(format: "%@/info/svc?service_identifier=%@", PrivoInternal.configuration.authBaseUrl.absoluteString, serviceIdentifier)
+        AF.request(url).responseDecodable(of: ServiceInfo.self) { r in
+            completionHandler(r.value)
+        }
+    }
     func getAuthSessionId(completionHandler: @escaping (String?) -> Void) {
         let authStartUrl = PrivoInternal.configuration.authStartUrl
         let sessionIdKey = "session_id"
