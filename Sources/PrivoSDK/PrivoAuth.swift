@@ -52,9 +52,12 @@ public struct PrivoAuthButton<Label> : View where Label : View {
     }
 }
 
-struct PrivoRegisterView: View {
+private struct PrivoRegisterState {
+    var config: WebviewConfig?
+}
+private struct PrivoRegisterView: View {
     @Binding var presentingRegister: Bool
-    @State var config: WebviewConfig?
+    @State var state = PrivoRegisterState()
     var closeIcon: Image?
     let onFinish: (() -> Void)?
     private let siteIdKey = "siteId"
@@ -66,7 +69,7 @@ struct PrivoRegisterView: View {
     }
     func setConfig(_ siteId: Int) {
         let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
-        config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
+        state.config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
             onFinish?()
         })
     }
@@ -79,8 +82,8 @@ struct PrivoRegisterView: View {
         }
     }
     public var body: some View {
-        if (config != nil) {
-            ModalWebView(isPresented: self.$presentingRegister, config: config!)
+        if (state.config != nil) {
+            ModalWebView(isPresented: self.$presentingRegister, config: state.config!)
         }
     }
 }
