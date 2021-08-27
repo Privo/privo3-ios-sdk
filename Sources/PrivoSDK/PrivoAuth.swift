@@ -65,7 +65,6 @@ private struct PrivoRegisterView: View {
         self.closeIcon = closeIcon
         self._presentingRegister = isPresented
         self.onFinish = onFinish
-        showView()
     }
     func setConfig(_ siteId: Int) {
         let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
@@ -82,8 +81,12 @@ private struct PrivoRegisterView: View {
         }
     }
     public var body: some View {
-        if (state.config != nil) {
-            ModalWebView(isPresented: self.$presentingRegister, config: state.config!)
+        VStack {
+            if state.config != nil {
+                ModalWebView(isPresented: self.$presentingRegister, config: state.config!)
+            }
+        }.onAppear {
+            showView()
         }
     }
 }
