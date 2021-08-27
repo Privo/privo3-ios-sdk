@@ -10,6 +10,6 @@ import Foundation
 struct ServiceInfo: Decodable {
     let serviceIdentifier: String
     let apiKeys: Array<String>?
-    let authMethods: Array<String>?
+    let authMethods: Array<0>?
     let p2siteId: Int?
 }
