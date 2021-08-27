@@ -89,8 +89,8 @@ public struct PrivoRegisterButton<Label> : View where Label : View {
             label
         }.sheet(isPresented: $presentingRegister) {
             VStack {
-                $config.wrappedValue.map {
-                    ModalWebView(isPresented: self.$presentingRegister, config: $0)
+                if (config != nil) {
+                    ModalWebView(isPresented: self.$presentingRegister, config: config!)
                 }
             }
         }
