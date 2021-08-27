@@ -52,18 +52,17 @@ public struct PrivoAuthButton<Label> : View where Label : View {
     }
 }
 
-public struct PrivoRegisterButton<Label> : View where Label : View {
+struct PrivoRegisterView: View {
     @Binding var presentingRegister: Bool
     @State var config: WebviewConfig?
-    let label: Label
     var closeIcon: Image?
     let onFinish: (() -> Void)?
     private let siteIdKey = "siteId"
-    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Image)? = nil ) {
-        self.label = label()
-        self.closeIcon = closeIcon?()
+    public init(isPresented: Binding<Bool>, onFinish: (() -> Void)? = nil, closeIcon: Image? = nil ) {
+        self.closeIcon = closeIcon
         self._presentingRegister = isPresented
         self.onFinish = onFinish
+        showView()
     }
     func setConfig(_ siteId: Int) {
         let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
@@ -76,23 +75,34 @@ public struct PrivoRegisterButton<Label> : View where Label : View {
         PrivoInternal.rest.getServiceInfo(serviceIdentifier: serviceIdentifier) { serviceInfo in
             if let siteId = serviceInfo?.p2siteId {
                 setConfig(siteId)
-                presentingRegister = true
-
             }
-            
         }
     }
     public var body: some View {
+        if (config != nil) {
+            ModalWebView(isPresented: self.$presentingRegister, config: config!)
+        }
+    }
+}
+
+public struct PrivoRegisterButton<Label> : View where Label : View {
+    @Binding var presentingRegister: Bool
+    let label: Label
+    var closeIcon: Image?
+    let onFinish: (() -> Void)?
+    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Image)? = nil ) {
+        self.label = label()
+        self.closeIcon = closeIcon?()
+        self._presentingRegister = isPresented
+        self.onFinish = onFinish
+    }
+    public var body: some View {
         return Button {
-            showView()
+            presentingRegister = true
         } label: {
             label
         }.sheet(isPresented: $presentingRegister) {
-            VStack {
-                if (config != nil) {
-                    ModalWebView(isPresented: self.$presentingRegister, config: config!)
-                }
-            }
+            PrivoRegisterView(isPresented: self.$presentingRegister, onFinish: onFinish, closeIcon: closeIcon)
         }
     }
 }
