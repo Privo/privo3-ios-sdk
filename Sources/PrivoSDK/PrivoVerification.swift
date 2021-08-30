@@ -46,7 +46,7 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
 public class PrivoVerification {
     public init() {}
     
-    public func showVerificationModal(_ profile: UserVerificationProfile?, completion: ((Array<VerificationEvent>) -> Void)?) {
+    public func showVerification(_ profile: UserVerificationProfile?, completion: ((Array<VerificationEvent>) -> Void)?) {
         UIApplication.shared.showView {
             VerificationStateView(profile: profile, onClose: {
                 UIApplication.shared.dismissTopView()
