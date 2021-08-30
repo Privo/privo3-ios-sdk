@@ -52,23 +52,23 @@ public struct PrivoAuthButton<Label> : View where Label : View {
     }
 }
 
-private class PrivoRegisterState: ObservableObject {
-    @Published var config: WebviewConfig?
+private struct PrivoRegisterState {
+    var config: WebviewConfig?
 }
 private struct PrivoRegisterView: View {
-    @Binding var presentingRegister: Bool
-    @EnvironmentObject var state: PrivoRegisterState
+    @Binding var isPresented: Bool
+    @State var config: WebviewConfig?
     var closeIcon: Image?
     let onFinish: (() -> Void)?
     private let siteIdKey = "siteId"
     public init(isPresented: Binding<Bool>, onFinish: (() -> Void)? = nil, closeIcon: Image? = nil ) {
         self.closeIcon = closeIcon
-        self._presentingRegister = isPresented
+        self._isPresented = isPresented
         self.onFinish = onFinish
     }
     func setConfig(_ siteId: Int) {
         let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
-        state.config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
+        config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
             onFinish?()
         })
     }
@@ -82,8 +82,8 @@ private struct PrivoRegisterView: View {
     }
     public var body: some View {
         VStack {
-            if state.config != nil {
-                ModalWebView(isPresented: self.$presentingRegister, config: state.config!)
+            if config != nil {
+                ModalWebView(isPresented: self.$isPresented, config: config!)
             }
         }.onAppear {
             showView()
@@ -91,31 +91,59 @@ private struct PrivoRegisterView: View {
     }
 }
 
+fileprivate struct PrivoRegisterStateView : View {
+    @State var isPresented: Bool = true
+    let onFinish: (() -> Void)?
+    public init(onFinish: (() -> Void)? = nil) {
+        self.onFinish = onFinish
+    }
+    public var body: some View {
+        PrivoRegisterView(isPresented: self.$isPresented.onChange({ presented in
+            if (isPresented == false) {
+                onFinish?()
+            }
+        }), onFinish: onFinish)
+    }
+}
+
 public struct PrivoRegisterButton<Label> : View where Label : View {
-    @Binding var presentingRegister: Bool
+    @Binding var isPresented: Bool
     let label: Label
     var closeIcon: Image?
     let onFinish: (() -> Void)?
     public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Image)? = nil ) {
         self.label = label()
         self.closeIcon = closeIcon?()
-        self._presentingRegister = isPresented
+        self._isPresented = isPresented
         self.onFinish = onFinish
     }
     public var body: some View {
         return Button {
-            presentingRegister = true
+            isPresented = true
         } label: {
             label
-        }.sheet(isPresented: $presentingRegister) {
-            PrivoRegisterView(isPresented: self.$presentingRegister, onFinish: onFinish, closeIcon: closeIcon)
-                .environmentObject(PrivoRegisterState())
+        }.sheet(isPresented: $isPresented) {
+            PrivoRegisterView(isPresented: $isPresented, onFinish: onFinish, closeIcon: closeIcon)
         }
     }
 }
 
 public class PrivoAuth {
     public init() {}
+    public struct AuthDialog {
+        fileprivate init() {}
+        public func hide() { UIApplication.shared.dismissTopView() }
+    }
+    
+    public func showRegister(_ completion: ((AuthDialog) -> Void)?) {
+        let authDialog = AuthDialog()
+        UIApplication.shared.showView {
+            PrivoRegisterStateView() { 
+                completion?(authDialog)
+            }
+        }
+    }
+    
     public func getToken() -> String? {
         if let token = UserDefaults.standard.string(forKey: PrivoInternal.configuration.tokenStorageKey) {
             if let jwt = try? decode(jwt: token) {
