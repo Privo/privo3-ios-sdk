@@ -52,12 +52,12 @@ public struct PrivoAuthButton<Label> : View where Label : View {
     }
 }
 
-private struct PrivoRegisterState {
-    var config: WebviewConfig?
+private class PrivoRegisterState: ObservableObject {
+    @Published var config: WebviewConfig?
 }
 private struct PrivoRegisterView: View {
     @Binding var presentingRegister: Bool
-    @State var state = PrivoRegisterState()
+    @EnvironmentObject var state: PrivoRegisterState
     var closeIcon: Image?
     let onFinish: (() -> Void)?
     private let siteIdKey = "siteId"
@@ -109,6 +109,7 @@ public struct PrivoRegisterButton<Label> : View where Label : View {
             label
         }.sheet(isPresented: $presentingRegister) {
             PrivoRegisterView(isPresented: self.$presentingRegister, onFinish: onFinish, closeIcon: closeIcon)
+                .environmentObject(PrivoRegisterState())
         }
     }
 }
