@@ -9,7 +9,7 @@ import SwiftUI
 import JWTDecode
 
 public struct PrivoAuthButton<Label> : View where Label : View {
-    @State var presentingAuth = false
+    @State var isPresented = false
     let label: Label
     var closeIcon: Image?
     let onFinish: ((String?) -> Void)?
@@ -19,90 +19,17 @@ public struct PrivoAuthButton<Label> : View where Label : View {
         self.closeIcon = closeIcon?()
         self.onFinish = onFinish
     }
-    func getConfig() -> WebviewConfig {
-        // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
-        let url = PrivoInternal.configuration.authStartUrl
-        // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
-        return WebviewConfig(url: url, closeIcon: closeIcon, onPrivoEvent: { event in
-            if let accessId = event?[accessIdKey] as? String {
-                PrivoInternal.rest.getValueFromTMPStorage(key: accessId) { resp in
-                    let token = resp?.data
-                    if (token != nil) {
-                        UserDefaults.standard.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
-                    }
-                    presentingAuth = false
-                    self.onFinish?(token)
-                }
-            } else {
-                presentingAuth = false
-                self.onFinish?(nil)
-            }
-            
-        })
-    }
     public var body: some View {
-        
         return Button {
-            presentingAuth = true
+            isPresented = true
         } label: {
             label
-        }.sheet(isPresented: $presentingAuth) {
-            ModalWebView(isPresented: self.$presentingAuth,  config: getConfig())
+        }.sheet(isPresented: $isPresented) {
+            PrivoAuthView(isPresented: $isPresented, onFinish: { r in
+                isPresented = false
+                onFinish?(r)
+            }, closeIcon: closeIcon)
         }
-    }
-}
-
-private struct PrivoRegisterState {
-    var config: WebviewConfig?
-}
-private struct PrivoRegisterView: View {
-    @Binding var isPresented: Bool
-    @State var config: WebviewConfig?
-    var closeIcon: Image?
-    let onFinish: (() -> Void)?
-    private let siteIdKey = "siteId"
-    public init(isPresented: Binding<Bool>, onFinish: (() -> Void)? = nil, closeIcon: Image? = nil ) {
-        self.closeIcon = closeIcon
-        self._isPresented = isPresented
-        self.onFinish = onFinish
-    }
-    func setConfig(_ siteId: Int) {
-        let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
-        config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
-            onFinish?()
-        })
-    }
-    func showView() {
-        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
-        PrivoInternal.rest.getServiceInfo(serviceIdentifier: serviceIdentifier) { serviceInfo in
-            if let siteId = serviceInfo?.p2siteId {
-                setConfig(siteId)
-            }
-        }
-    }
-    public var body: some View {
-        VStack {
-            if config != nil {
-                ModalWebView(isPresented: self.$isPresented, config: config!)
-            }
-        }.onAppear {
-            showView()
-        }
-    }
-}
-
-fileprivate struct PrivoRegisterStateView : View {
-    @State var isPresented: Bool = true
-    let onFinish: (() -> Void)?
-    public init(onFinish: (() -> Void)? = nil) {
-        self.onFinish = onFinish
-    }
-    public var body: some View {
-        PrivoRegisterView(isPresented: self.$isPresented.onChange({ presented in
-            if (isPresented == false) {
-                onFinish?()
-            }
-        }), onFinish: onFinish)
     }
 }
 
@@ -138,9 +65,23 @@ public class PrivoAuth {
     public func showRegister(_ completion: ((AuthDialog) -> Void)?) {
         let authDialog = AuthDialog()
         UIApplication.shared.showView {
-            PrivoRegisterStateView() { 
+            PrivoRegisterStateView(onClose: {
+                authDialog.hide()
+            }) {
                 completion?(authDialog)
             }
+        }
+    }
+    public func showAuth(_ completion: ((String?) -> Void)?) {
+        let authDialog = AuthDialog()
+
+        UIApplication.shared.showView {
+            PrivoAuthStateView(onClose: {
+                authDialog.hide()
+            }, onFinish: { r in
+                authDialog.hide()
+                completion?(r)
+            })
         }
     }
     
