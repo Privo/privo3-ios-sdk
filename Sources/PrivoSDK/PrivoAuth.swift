@@ -100,15 +100,16 @@ public class PrivoAuth {
         logout()
         return nil
     }
-    public func checkTokenValid(completionHandler: @escaping (TokenValidity?) -> Void) {
+    public func renewToken(completionHandler: @escaping (TokenStatus?) -> Void) {
         if let oldToken = getToken() {
             PrivoInternal.rest.getAuthSessionId { sessionId in
                 if let sessionId = sessionId {
                     PrivoInternal.rest.renewToken(oldToken: oldToken, sessionId: sessionId) { token in
                         if let token = token {
-                            completionHandler(TokenValidity(token: token, isValid: true))
+                            UserDefaults.standard.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
+                            completionHandler(TokenStatus(token: token, isRenewed: true))
                         } else {
-                            completionHandler(TokenValidity(token: oldToken, isValid: false))
+                            completionHandler(TokenStatus(token: oldToken, isRenewed: false))
                         }
                     }
                 } else {
