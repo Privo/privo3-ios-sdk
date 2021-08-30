@@ -17,7 +17,7 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
     var closeIcon: Image?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     
-    public init(@ViewBuilder label: () -> Label, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Image)? = nil, profile: UserVerificationProfile? = nil) {
+    public init(@ViewBuilder label: () -> Label, profile: UserVerificationProfile? = nil, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Image)? = nil) {
         if let profile = profile {
             self.profile = profile
         }
