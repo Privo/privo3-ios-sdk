@@ -10,16 +10,21 @@ import Foundation
 
 class Rest {
     func getValueFromTMPStorage(key: String, completionHandler: @escaping (TmpStorageString?) -> Void) {
-        var tmpStorageURL = PrivoInternal.configuration.tmpStorageUrl
+        var tmpStorageURL = PrivoInternal.configuration.helperUrl
+        tmpStorageURL.appendPathComponent("storage")
         tmpStorageURL.appendPathComponent(key)
         AF.request(tmpStorageURL).responseDecodable(of: TmpStorageString.self) { response in
+            trackPossibleError(response?.error)
             completionHandler(response.value)
         }
     }
     func addValueToTMPStorage(value: String, ttl: Int? = nil, completionHandler: ((String?) -> Void)? = nil) {
-        let tmpStorageURL = PrivoInternal.configuration.tmpStorageUrl.withPath("/put")!
+        var tmpStorageURL = PrivoInternal.configuration.helperUrl
+        tmpStorageURL.appendPathComponent("storage")
+        tmpStorageURL.appendPathComponent("put")
         let data = TmpStorageString(data: value, ttl: ttl)
         AF.request(tmpStorageURL, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: TmpStorageResponse.self) { response in
+            trackPossibleError(response?.error)
             let id = response.value?.id
             completionHandler?(id)
         }
@@ -46,6 +51,7 @@ class Rest {
     func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void) {
         let url = String(format: "%@/info/svc?service_identifier=%@", PrivoInternal.configuration.authBaseUrl.absoluteString, serviceIdentifier)
         AF.request(url).responseDecodable(of: ServiceInfo.self) { r in
+            trackPossibleError(r?.error)
             completionHandler(r.value)
         }
     }
@@ -53,6 +59,7 @@ class Rest {
         let authStartUrl = PrivoInternal.configuration.authStartUrl
         let sessionIdKey = "session_id"
         AF.request(authStartUrl).response() { r in
+            trackPossibleError(r?.error)
             if let redirectUrl = r.response?.url {
                 let components = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: true)
                 if let sessionId = components?.queryItems?.first(where: { $0.name == sessionIdKey })?.value {
@@ -68,6 +75,7 @@ class Rest {
     func renewToken(oldToken: String, sessionId: String, completionHandler: @escaping (String?) -> Void) {
         let loginUrl = String(format: "%@/privo/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
         AF.request(loginUrl, method: .post, parameters: nil, encoding: BodyStringEncoding(body: oldToken)).responseDecodable(of: LoginResponse.self) { r in
+            trackPossibleError(r?.error)
             let token = r.value?.token
             completionHandler(token)
         }
@@ -76,25 +84,42 @@ class Rest {
     func processAgStatus(data: AgStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
         let url = String(format: "%@/status/ag-id", PrivoInternal.configuration.ageGateUrl.absoluteString)
         AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+            trackPossibleError(r?.error)
             completionHandler(r.value)
         }
     }
     func processFpStatus(data: FpStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
         let url = String(format: "%@/status/fp-id", PrivoInternal.configuration.ageGateUrl.absoluteString)
         AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+            trackPossibleError(r?.error)
             completionHandler(r.value)
         }
     }
     func processBirthDate(data: FpStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateUrl.absoluteString)
         AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+            trackPossibleError(r?.error)
             completionHandler(r.value)
         }
     }
     func generateFingerprint(fingerprint: DeviceFingerprint, completionHandler: @escaping (DeviceFingerprintResponse?) -> Void) {
         let url = String(format: "%@/fp", PrivoInternal.configuration.authBaseUrl.absoluteString)
         AF.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default).responseDecodable(of: DeviceFingerprintResponse.self ) { r in
+            trackPossibleError(r?.error)
             completionHandler(r.value)
+        }
+    }
+    func trackPossibleError(error: AFError?) {
+        if let error = error {
+            let description = error.localizedDescription
+            let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: description)
+            sendAnalyticEvent(event)
+        }
+    }
+    func sendAnalyticEvent(event: AnalyticEvent) {
+        var metricsURL = PrivoInternal.configuration.helperUrl
+        metricsURL.appendPathComponent("metrics")
+        AF.request(metricsURL, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response {_ in 
         }
     }
 
