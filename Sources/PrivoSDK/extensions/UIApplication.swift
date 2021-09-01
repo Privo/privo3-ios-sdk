@@ -35,11 +35,14 @@ extension UIApplication {
         self.topMostViewController()?.present(alertController, animated: true)
     }
     
-    public func showView<Content>(@ViewBuilder content: @escaping () -> Content) where Content : View {
-         let view = content()
-         let viewController = UIHostingController(rootView: view)
-         viewController.modalPresentationStyle = .automatic
-         UIApplication.shared.topMostViewController()?.present(viewController, animated: true, completion: nil)
+    public func showView<Content>(_ isTransparent: Bool, @ViewBuilder content: @escaping () -> Content) where Content : View {
+        let view = content()
+        let viewController = UIHostingController(rootView: view)
+        if (isTransparent) {
+            viewController.view.backgroundColor = .clear
+        }
+        viewController.modalPresentationStyle = .automatic
+        UIApplication.shared.topMostViewController()?.present(viewController, animated: true, completion: nil)
     }
     public func dismissTopView() {
         UIApplication.shared.topMostViewController()?.dismiss(animated: true, completion: nil)

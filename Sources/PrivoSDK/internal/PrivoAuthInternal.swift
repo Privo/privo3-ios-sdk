@@ -21,20 +21,23 @@ struct PrivoAuthView: View {
         // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
         let url = PrivoInternal.configuration.authStartUrl
         // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
-        return WebviewConfig(url: url, closeIcon: closeIcon, onPrivoEvent: { event in
-            if let accessId = event?[accessIdKey] as? String {
-                PrivoInternal.rest.getValueFromTMPStorage(key: accessId) { resp in
-                    let token = resp?.data
-                    if (token != nil) {
-                        UserDefaults.standard.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
+        return WebviewConfig(
+            url: url,
+            closeIcon: closeIcon,
+            onPrivoEvent: { event in
+                if let accessId = event?[accessIdKey] as? String {
+                    PrivoInternal.rest.getValueFromTMPStorage(key: accessId) { resp in
+                        let token = resp?.data
+                        if (token != nil) {
+                            UserDefaults.standard.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
+                        }
+                        self.onFinish?(token)
                     }
-                    self.onFinish?(token)
+                } else {
+                    self.onFinish?(nil)
                 }
-            } else {
-                self.onFinish?(nil)
             }
-            
-        })
+        )
     }
     public var body: some View {
         ModalWebView(isPresented: self.$isPresented, config: getConfig())

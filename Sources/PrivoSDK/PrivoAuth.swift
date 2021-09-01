@@ -64,7 +64,7 @@ public class PrivoAuth {
     
     public func showRegister(_ completion: ((AuthDialog) -> Void)?) {
         let authDialog = AuthDialog()
-        UIApplication.shared.showView {
+        UIApplication.shared.showView(false) {
             PrivoRegisterStateView(onClose: {
                 authDialog.hide()
             }) {
@@ -75,7 +75,7 @@ public class PrivoAuth {
     public func showAuth(_ completion: ((String?) -> Void)?) {
         let authDialog = AuthDialog()
 
-        UIApplication.shared.showView {
+        UIApplication.shared.showView(false) {
             PrivoAuthStateView(onClose: {
                 authDialog.hide()
             }, onFinish: { r in

@@ -15,65 +15,80 @@ struct PrivoVerificationState {
 
 struct VerificationView : View {
     @Binding var state: PrivoVerificationState
+    @State var inProgress = true
+    let profile: UserVerificationProfile?
 
     var closeIcon: Image?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
+    private let verification = InternalPrivoVerification()
 
-    private func getConfig() -> WebviewConfig? {
-        if let stateId = state.privoStateId,
-           let verificationUrl = PrivoInternal.configuration.verificationUrl
-                .withPath("/index.html")?
-                .withQueryParam(name: "privo_state_id", value: stateId)?
-                .withPath("#/intro") {
-            return WebviewConfig(
-                url: verificationUrl,
-                showCloseIcon: false,
-                printCriteria: "/print",
-                finishCriteria: "verification-loading",
-                onFinish: { url in
-                    if let items = URLComponents(string: url)?.queryItems,
-                       let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
-                        PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
-                            state.isPresented = false
-                            onFinish?(events ?? Array())
-                        }
-                    } else {
-                        state.isPresented = false
-                        onFinish?(Array())
-                    }
-                })
+    private func finish(_ events: Array<VerificationEvent>?) {
+        state.privoStateId = nil
+        state.isPresented = false
+        inProgress = false
+        onFinish?(events ?? Array())
+    }
+    private func getConfig(_ stateId: String) -> WebviewConfig {
+        let verificationUrl = PrivoInternal.configuration.verificationUrl
+             .withPath("/index.html")?
+             .withQueryParam(name: "privo_state_id", value: stateId)?
+             .withPath("#/intro")
+         return WebviewConfig(
+             url: verificationUrl!,
+             showCloseIcon: false,
+             printCriteria: "/print",
+             finishCriteria: "verification-loading",
+             onFinish: { url in
+                 if let items = URLComponents(string: url)?.queryItems,
+                    let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
+                    inProgress = true
+                     PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
+                        finish(events)
+                     }
+                 } else {
+                    finish(nil)
+                 }
+             })
+    }
+    func showView() {
+        verification.storeState(profile: profile) { id in
+            self.state.isPresented = true
+            self.state.privoStateId = id
+            inProgress = false
         }
-        return nil
     }
     
     public var body: some View {
-        if let config = getConfig() {
-            ModalWebView(isPresented: $state.isPresented,  config:config)
+        LoadingView(isShowing: $inProgress) {
+            VStack {
+                if (state.privoStateId != nil) {
+                    ModalWebView(isPresented: $state.isPresented,  config: getConfig(state.privoStateId!))
+                }
+            }
+        }.onAppear {
+            showView()
         }
     }
 }
 struct VerificationStateView : View {
     @State private var state = PrivoVerificationState()
-    private let verification = InternalPrivoVerification()
 
     let profile: UserVerificationProfile?
     let onClose: () -> Void
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     
     public var body: some View {
-        VerificationView(state: $state.onChange({ s in
-            if (s.isPresented == false) {
-                onClose()
+        VerificationView(
+            state: $state.onChange({ s in
+                if (s.isPresented == false) {
+                    onClose()
+                }
+            }),
+            profile: profile, onFinish: { e in
+                self.state.isPresented = false
+                onFinish?(e)
             }
-        }), onFinish: { e in
-            self.state.isPresented = false
-            onFinish?(e)
-        }).onAppear {
-            verification.storeState(profile: profile) { id in
-                self.state.privoStateId = id
-                self.state.isPresented = true
-            }
-        }
+        )
     }
 }
 

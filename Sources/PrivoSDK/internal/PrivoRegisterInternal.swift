@@ -11,6 +11,7 @@ import SwiftUI
 struct PrivoRegisterView: View {
     @Binding var isPresented: Bool
     @State var config: WebviewConfig?
+    @State var inProgress: Bool = true
     var closeIcon: Image?
     let onFinish: (() -> Void)?
     private let siteIdKey = "siteId"
@@ -19,24 +20,27 @@ struct PrivoRegisterView: View {
         self._isPresented = isPresented
         self.onFinish = onFinish
     }
-    func setConfig(_ siteId: Int) {
-        let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
-        config = WebviewConfig(url: url, closeIcon: closeIcon, finishCriteria: "step=complete", onFinish: { _ in
-            onFinish?()
-        })
-    }
     func showView() {
         let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
         PrivoInternal.rest.getServiceInfo(serviceIdentifier: serviceIdentifier) { serviceInfo in
+            inProgress = false
             if let siteId = serviceInfo?.p2siteId {
-                setConfig(siteId)
+                let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
+                config = WebviewConfig(
+                    url: url,
+                    closeIcon: closeIcon,
+                    finishCriteria: "step=complete",
+                    onFinish: { _ in onFinish?() }
+                )
             }
         }
     }
     public var body: some View {
-        VStack {
-            if config != nil {
-                ModalWebView(isPresented: self.$isPresented, config: config!)
+        LoadingView(isShowing: $inProgress) {
+            VStack {
+                if config != nil {
+                    ModalWebView(isPresented: self.$isPresented, config: config!)
+                }
             }
         }.onAppear {
             showView()

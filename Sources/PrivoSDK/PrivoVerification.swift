@@ -26,10 +26,7 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
         self.onFinish = onFinish
     }
     func showView() {
-        verification.storeState(profile: profile) { id in
-            self.state.privoStateId = id
-            self.state.isPresented = true
-        }
+        self.state.isPresented = true
     }
     public var body: some View {
         return Button {
@@ -37,7 +34,7 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
         } label: {
             label
         }.sheet(isPresented: $state.isPresented) {
-            VerificationView(state: $state, closeIcon: closeIcon, onFinish: onFinish)
+            VerificationView(state: $state, profile: profile, closeIcon: closeIcon, onFinish: onFinish).clearModalBackground()
         }
     }
 }
@@ -47,10 +44,13 @@ public class PrivoVerification {
     public init() {}
     
     public func showVerification(_ profile: UserVerificationProfile?, completion: ((Array<VerificationEvent>) -> Void)?) {
-        UIApplication.shared.showView {
-            VerificationStateView(profile: profile, onClose: {
-                UIApplication.shared.dismissTopView()
-            }) { e in
+        UIApplication.shared.showView(true) {
+            VerificationStateView(
+                profile: profile,
+                onClose: {
+                    UIApplication.shared.dismissTopView()
+                })
+            { e in
                 UIApplication.shared.dismissTopView()
                 completion?(e)
             }
