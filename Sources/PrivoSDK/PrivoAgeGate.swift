@@ -51,7 +51,7 @@ public class PrivoAgeGate {
     }
     public func verifyStatus(ageGateIdentifier: String, completionHandler: @escaping (AgeGateStatus?) -> Void) {
         let profile = UserVerificationProfile(partnerDefinedUniqueID: String(format: "AG:%@", ageGateIdentifier));
-        Privo.verification.showVerificationModal(profile) { [weak self] events in
+        Privo.verification.showVerification(profile) { [weak self] events in
             let status = self?.ageGate.getVerificationStatus(events,ageGateIdentifier: ageGateIdentifier)
             completionHandler(status)
         }

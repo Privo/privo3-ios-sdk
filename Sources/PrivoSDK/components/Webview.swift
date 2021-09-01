@@ -10,24 +10,33 @@ struct WebviewConfig {
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
     var onFinish: ((String) -> Void)?
 }
-
+class WebViewModel: ObservableObject {
+    @Published var isLoading: Bool = true
+}
 struct Webview: UIViewRepresentable {
-    
+    @ObservedObject var viewModel: WebViewModel
     let config: WebviewConfig
     private let printHelper = WebViewPrintHelper()
+    //private var navigationHelper: WebViewNavigationHelper
     
-    private var navigationHelper: WebViewNavigationHelper
-    
+    /*
     init (config: WebviewConfig) {
         self.config = config
-        self.navigationHelper = WebViewNavigationHelper()
-        /*
+        
         if #available(iOS 14.5, *) {
             self.navigationHelper = WebViewNavigationHelperModern()
         } else {
             self.navigationHelper = WebViewNavigationHelper()
         }
-        */
+        
+    }
+     */
+    
+    func makeCoordinator() -> WebViewNavigationHelper {
+        let coordinator = WebViewNavigationHelper(self.viewModel)
+        coordinator.finishCriteria = config.finishCriteria
+        coordinator.onFinish = config.onFinish
+        return coordinator
     }
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
@@ -35,24 +44,24 @@ struct Webview: UIViewRepresentable {
         wkPreferences.javaScriptCanOpenWindowsAutomatically = true
         let configuration = WKWebViewConfiguration()
         configuration.preferences = wkPreferences
+        
         let webview = WKWebView(frame: .zero, configuration: configuration)
         webview.isOpaque = false
         webview.backgroundColor = .clear
         webview.scrollView.backgroundColor = .clear
-        if let finishCriteria = config.finishCriteria,
-           let onFinish = config.onFinish {
-            navigationHelper.finishCriteria = finishCriteria
-            navigationHelper.onFinish = onFinish
-            webview.navigationDelegate = navigationHelper
-        }
+
+        webview.navigationDelegate = context.coordinator
+
         if let onPrivoEvent = config.onPrivoEvent {
             let contentController = ContentController(onPrivoEvent)
             webview.configuration.userContentController.add(contentController, name: "privo")
         }
+        
         if let printCriteria = config.printCriteria {
             printHelper.printCriteria = printCriteria
             webview.uiDelegate = printHelper
         }
+        
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
         return webview
@@ -84,11 +93,17 @@ struct Webview: UIViewRepresentable {
     }
     
     class WebViewNavigationHelper: NSObject, WKNavigationDelegate {
+        private var viewModel: WebViewModel
         var finishCriteria: String?
+        var onLoad: (() -> Void)?
         var onFinish: ((String) -> Void)?
         
         let fileManager = FileManager()
         var lastFileDestinationURL: URL?
+        
+        init(_ viewModel: WebViewModel) {
+            self.viewModel = viewModel
+        }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
@@ -100,7 +115,18 @@ struct Webview: UIViewRepresentable {
                 }
             }
         }
-        // Will be used in future releases
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            viewModel.isLoading = false
+        }
+
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            viewModel.isLoading = true
+        }
+
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            viewModel.isLoading = false
+        }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
             if let mimeType = navigationResponse.response.mimeType {
