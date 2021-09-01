@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct TokenValidity {
+public struct TokenStatus {
     public let token: String
-    public let isValid: Bool
+    public let isRenewed: Bool
 }

@@ -10,24 +10,32 @@ struct WebviewConfig {
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
     var onFinish: ((String) -> Void)?
 }
-
+class WebViewModel: ObservableObject {
+    @Published var isLoading: Bool = true
+}
 struct Webview: UIViewRepresentable {
-    
+    @ObservedObject var viewModel: WebViewModel
     let config: WebviewConfig
-    private let printHelper = WebViewPrintHelper()
-    
-    private var navigationHelper: WebViewNavigationHelper
-    
+    /*
     init (config: WebviewConfig) {
         self.config = config
-        self.navigationHelper = WebViewNavigationHelper()
-        /*
+        
         if #available(iOS 14.5, *) {
             self.navigationHelper = WebViewNavigationHelperModern()
         } else {
             self.navigationHelper = WebViewNavigationHelper()
         }
-        */
+        
+    }
+     */
+    
+    func makeCoordinator() -> WebViewCoordinator {
+        let coordinator = WebViewCoordinator(self.viewModel)
+        coordinator.finishCriteria = config.finishCriteria
+        coordinator.onFinish = config.onFinish
+        coordinator.printCriteria = config.printCriteria
+        coordinator.onFinish = config.onFinish
+        return coordinator
     }
 
     func makeUIView(context: UIViewRepresentableContext<Webview>) -> WKWebView {
@@ -35,24 +43,23 @@ struct Webview: UIViewRepresentable {
         wkPreferences.javaScriptCanOpenWindowsAutomatically = true
         let configuration = WKWebViewConfiguration()
         configuration.preferences = wkPreferences
+        
         let webview = WKWebView(frame: .zero, configuration: configuration)
         webview.isOpaque = false
         webview.backgroundColor = .clear
         webview.scrollView.backgroundColor = .clear
-        if let finishCriteria = config.finishCriteria,
-           let onFinish = config.onFinish {
-            navigationHelper.finishCriteria = finishCriteria
-            navigationHelper.onFinish = onFinish
-            webview.navigationDelegate = navigationHelper
-        }
+
+        webview.navigationDelegate = context.coordinator
+
         if let onPrivoEvent = config.onPrivoEvent {
             let contentController = ContentController(onPrivoEvent)
             webview.configuration.userContentController.add(contentController, name: "privo")
         }
-        if let printCriteria = config.printCriteria {
-            printHelper.printCriteria = printCriteria
-            webview.uiDelegate = printHelper
+        
+        if (config.printCriteria != nil) {
+            webview.uiDelegate = context.coordinator
         }
+        
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
         return webview
@@ -83,12 +90,21 @@ struct Webview: UIViewRepresentable {
         }
     }
     
-    class WebViewNavigationHelper: NSObject, WKNavigationDelegate {
+    class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+        private var viewModel: WebViewModel
+        private let printLoadingHelper = PrintLoadingHelper();
+        
+        var printCriteria: String?
         var finishCriteria: String?
+        var onLoad: (() -> Void)?
         var onFinish: ((String) -> Void)?
         
         let fileManager = FileManager()
         var lastFileDestinationURL: URL?
+        
+        init(_ viewModel: WebViewModel) {
+            self.viewModel = viewModel
+        }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
@@ -100,7 +116,18 @@ struct Webview: UIViewRepresentable {
                 }
             }
         }
-        // Will be used in future releases
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            viewModel.isLoading = false
+        }
+
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            viewModel.isLoading = true
+        }
+
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            viewModel.isLoading = false
+        }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
             if let mimeType = navigationResponse.response.mimeType {
@@ -119,39 +146,7 @@ struct Webview: UIViewRepresentable {
             }
             decisionHandler(.allow)
         }
-         
-    }
-    
-    // Will be used in future releases
-    /*
-    @available(iOS 14.5, *)
-    class WebViewNavigationHelperModern: WebViewNavigationHelper, WKDownloadDelegate {
-
-        public func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
-            download.delegate = self
-        }
-        public func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
-            let temporaryDir = NSTemporaryDirectory()
-            let fileName = temporaryDir + suggestedFilename
-            let url = URL(fileURLWithPath: fileName)
-            lastFileDestinationURL = url
-            try? fileManager.removeItem(at: url)
-            completionHandler(url)
-        }
-
-        public func downloadDidFinish(_ download: WKDownload) {
-            if let url = lastFileDestinationURL {
-                let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-                UIApplication.shared.topMostViewController()?.present(activityViewController, animated: true, completion: nil)
-            }
-        }
-    }
- */
-    
-    class WebViewPrintHelper: NSObject,  WKUIDelegate {
-        var printCriteria: String?
-        private let printLoadingHelper = PrintLoadingHelper();
-
+        
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if navigationAction.targetFrame == nil {
                 if let url = navigationAction.request.url,
@@ -189,8 +184,34 @@ struct Webview: UIViewRepresentable {
             }
         }
          
+         
     }
- 
 }
+    
+    // Will be used in future releases
+    /*
+    @available(iOS 14.5, *)
+    class WebViewNavigationHelperModern: WebViewNavigationHelper, WKDownloadDelegate {
+
+        public func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
+            download.delegate = self
+        }
+        public func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
+            let temporaryDir = NSTemporaryDirectory()
+            let fileName = temporaryDir + suggestedFilename
+            let url = URL(fileURLWithPath: fileName)
+            lastFileDestinationURL = url
+            try? fileManager.removeItem(at: url)
+            completionHandler(url)
+        }
+
+        public func downloadDidFinish(_ download: WKDownload) {
+            if let url = lastFileDestinationURL {
+                let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                UIApplication.shared.topMostViewController()?.present(activityViewController, animated: true, completion: nil)
+            }
+        }
+    }
+ */
 
 

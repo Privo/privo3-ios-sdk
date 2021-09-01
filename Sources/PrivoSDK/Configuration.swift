@@ -11,7 +11,7 @@ class Configuration {
     let authBaseUrl: URL
     let authStartUrl: URL
     let verificationUrl: URL
-    let tmpStorageUrl: URL
+    let helperUrl: URL
     let lgsRegistrationUrl: URL
     let ageGateUrl: URL
     let tokenStorageKey: String
@@ -24,7 +24,7 @@ class Configuration {
             self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification-dev.privo.com/vw")!
-            self.tmpStorageUrl = URL(string: "https://helper-svc-dev.privo.com/rest/api/v1.0/storage")!
+            self.helperUrl = URL(string: "https://helper-svc-dev.privo.com/rest/api/v1.0")!
             self.lgsRegistrationUrl = URL(string: "https://privohub-dev.privo.com/lgs")!
             self.ageGateUrl = URL(string: "https://agegate-dev.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token-local"
@@ -32,7 +32,7 @@ class Configuration {
             self.authBaseUrl = URL(string: "https://auth-dev.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth-dev.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification-dev.privo.com/vw")!
-            self.tmpStorageUrl = URL(string: "https://helper-svc-dev.privo.com/rest/api/v1.0/storage")!
+            self.helperUrl = URL(string: "https://helper-svc-dev.privo.com/rest/api/v1.0")!
             self.lgsRegistrationUrl = URL(string: "https://privohub-dev.privo.com/lgs")!
             self.ageGateUrl = URL(string: "https://agegate-dev.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token-dev"
@@ -40,7 +40,7 @@ class Configuration {
             self.authBaseUrl = URL(string: "https://auth-int.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth-int.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification-int.privo.com/vw")!
-            self.tmpStorageUrl = URL(string: "https://helper-svc-int.privo.com/rest/api/v1.0/storage")!
+            self.helperUrl = URL(string: "https://helper-svc-int.privo.com/rest/api/v1.0")!
             self.lgsRegistrationUrl = URL(string: "https://privohub-int.privo.com/lgs")!
             self.ageGateUrl = URL(string: "https://agegate-int.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token-int"
@@ -48,7 +48,7 @@ class Configuration {
             self.authBaseUrl = URL(string: "https://auth-test.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth-test.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification-test.privo.com/vw")!
-            self.tmpStorageUrl = URL(string: "https://helper-svc-test.privo.com/rest/api/v1.0/storage")!
+            self.helperUrl = URL(string: "https://helper-svc-test.privo.com/rest/api/v1.0")!
             self.lgsRegistrationUrl = URL(string: "https://privohub-test.privo.com/lgs")!
             self.ageGateUrl = URL(string: "https://agegate-test.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token-test"
@@ -56,7 +56,7 @@ class Configuration {
             self.authBaseUrl = URL(string: "https://auth.privo.com/api/v1.0")!
             self.authStartUrl = URL(string: "https://auth.privo.com/api/v1.0/privo/authorize?client_id=mobile&redirect_uri=")!
             self.verificationUrl = URL(string: "https://verification.privo.com/vw")!
-            self.tmpStorageUrl = URL(string: "https://helper-svc.privo.com/rest/api/v1.0/storage")!
+            self.helperUrl = URL(string: "https://helper-svc.privo.com/rest/api/v1.0")!
             self.lgsRegistrationUrl = URL(string: "https://privohub.privo.com/lgs")!
             self.ageGateUrl = URL(string: "https://agegate.privo.com:443/api/v1.0/age-gate")!
             self.tokenStorageKey = "privo-token"
