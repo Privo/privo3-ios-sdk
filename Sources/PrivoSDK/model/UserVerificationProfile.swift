@@ -31,10 +31,10 @@ public struct UserVerificationProfile: Encodable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(firstName, forKey: .firstName)
         try container.encode(lastName, forKey: .lastName)
-        try container.encode(birthDate, forKey: .birthDate)
+        try container.encode(birthDate?.toMilliseconds(), forKey: .birthDate)
         try container.encode(email, forKey: .email)
         try container.encode(postalCode, forKey: .postalCode)
         try container.encode(phone, forKey: .phone)
-        try container.encode(birthDate?.toMilliseconds(), forKey: .partnerDefinedUniqueID)
+        try container.encode(partnerDefinedUniqueID, forKey: .partnerDefinedUniqueID)
     }
 }
