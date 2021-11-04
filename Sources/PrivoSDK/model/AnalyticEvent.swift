@@ -16,7 +16,7 @@ struct AnalyticEventErrorData : Encodable {
 
 struct AnalyticEvent : Encodable {
     let serviceIdentifier: String?
-    let data: AnalyticEventErrorData?
+    let data: String?
     var sid: String? = nil
     var tid: String? = nil
     var svc = 62 // PrivoIosSDK
