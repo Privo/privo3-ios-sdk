@@ -123,7 +123,9 @@ class Rest {
     func sendAnalyticEvent(_ event: AnalyticEvent) {
         var metricsURL = PrivoInternal.configuration.helperUrl
         metricsURL.appendPathComponent("metrics")
-        AF.request(metricsURL, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response {_ in 
+        AF.request(metricsURL, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response {r in
+            print("Analytic Event Sent")
+            print(r)
         }
     }
 
