@@ -44,7 +44,7 @@ struct VerificationView : View {
                     inProgress = true
                      PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
                         if let errorEvent = events?.first (where: { $0.event == VerificationEventType.verifyError  }) {
-                            let customError = "Event error: code - \(String(describing: errorEvent.errorCode)) message \(String(describing: errorEvent.errorMessage))"
+                            let customError = "Event error: code - \(String(describing: errorEvent.errorCode)) message - \(String(describing: errorEvent.errorMessage))"
                             PrivoInternal.rest.trackCustomError(customError)
                         }
                         finish(events)

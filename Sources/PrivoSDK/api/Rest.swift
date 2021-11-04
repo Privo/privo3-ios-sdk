@@ -110,13 +110,15 @@ class Rest {
         }
     }
     func trackCustomError(_ errorDescr: String) {
-        let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: errorDescr)
+        let settings = PrivoInternal.settings;
+        let data = AnalyticEventErrorData(errorMessage: errorDescr, errorCode: nil, privoSettings: settings)
+        let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: data)
         sendAnalyticEvent(event)
     }
     func trackPossibleAFError(_ error: AFError?) {
         if let error = error {
-            let description = error.errorDescription
-            let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: description)
+            let data = AnalyticEventErrorData(errorMessage: error.errorDescription, errorCode: error.responseCode, privoSettings: nil)
+            let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: data)
             sendAnalyticEvent(event)
         }
     }

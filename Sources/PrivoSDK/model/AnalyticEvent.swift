@@ -7,9 +7,16 @@
 
 import Foundation
 
+struct AnalyticEventErrorData : Encodable {
+    let errorMessage: String?
+    let errorCode: Int?
+    let privoSettings: PrivoSettings?;
+}
+
+
 struct AnalyticEvent : Encodable {
     let serviceIdentifier: String?
-    let data: String?
+    let data: AnalyticEventErrorData?
     var sid: String? = nil
     var tid: String? = nil
     var svc = 62 // PrivoIosSDK
