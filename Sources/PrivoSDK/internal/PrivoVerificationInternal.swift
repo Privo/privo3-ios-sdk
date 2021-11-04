@@ -56,8 +56,10 @@ struct VerificationView : View {
     }
     func showView() {
         verification.storeState(profile: profile) { id in
-            self.state.isPresented = true
-            self.state.privoStateId = id
+            if (id != nil) {
+                self.state.isPresented = true
+                self.state.privoStateId = id
+            }
             inProgress = false
         }
     }
