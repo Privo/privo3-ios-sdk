@@ -83,21 +83,21 @@ class Rest {
     
     func processAgStatus(data: AgStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
         let url = String(format: "%@/status/ag-id", PrivoInternal.configuration.ageGateUrl.absoluteString)
-        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self, emptyResponseCodes: [200, 204, 205] ) { r in
             self.trackPossibleAFError(r.error)
             completionHandler(r.value)
         }
     }
     func processFpStatus(data: FpStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
         let url = String(format: "%@/status/fp-id", PrivoInternal.configuration.ageGateUrl.absoluteString)
-        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self, emptyResponseCodes: [200, 204, 205] ) { r in
             self.trackPossibleAFError(r.error)
             completionHandler(r.value)
         }
     }
     func processBirthDate(data: FpStatusRecord, completionHandler: @escaping (AgeGateStatus?) -> Void) {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateUrl.absoluteString)
-        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self ) { r in
+        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatus.self, emptyResponseCodes: [200, 204, 205] ) { r in
             self.trackPossibleAFError(r.error)
             completionHandler(r.value)
         }
