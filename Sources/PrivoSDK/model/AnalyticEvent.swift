@@ -7,6 +7,13 @@
 
 import Foundation
 
+struct AnalyticEventErrorData : Encodable {
+    let errorMessage: String?
+    let errorCode: Int?
+    let privoSettings: PrivoSettings?;
+}
+
+
 struct AnalyticEvent : Encodable {
     let serviceIdentifier: String?
     let data: String?

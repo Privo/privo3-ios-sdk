@@ -6,18 +6,20 @@
 //
 
 import UIKit
-import KeychainAccess
 
 struct DeviceIdentifier {
     public let identifier: String
     private let deviceIdentifierKey = "privo-device-identifier"
     init () throws {
-        let keychain = Keychain(service: PrivoInternal.configuration.privoServiceKey)
-        if let identifier = keychain[deviceIdentifierKey] {
+        let keychain = PrivoKeychain()
+        if let identifier = keychain.get(deviceIdentifierKey) {
             self.identifier = identifier
         } else {
             let newIdentifier = UIDevice.current.identifierForVendor!.uuidString
-            keychain[deviceIdentifierKey] = newIdentifier
+            let result = keychain.set(key: deviceIdentifierKey, value: newIdentifier)
+            if (result) {
+                print("Fail to save user identifier to keychain")
+            }
             self.identifier = newIdentifier
         }
     }

@@ -23,4 +23,18 @@ public struct UserVerificationProfile: Encodable {
         self.phone = phone
         self.partnerDefinedUniqueID = partnerDefinedUniqueID
     }
+    enum CodingKeys: CodingKey {
+      case firstName, lastName, birthDate, email, postalCode, phone, partnerDefinedUniqueID
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(firstName, forKey: .firstName)
+        try container.encode(lastName, forKey: .lastName)
+        try container.encode(birthDate?.toMilliseconds(), forKey: .birthDate)
+        try container.encode(email, forKey: .email)
+        try container.encode(postalCode, forKey: .postalCode)
+        try container.encode(phone, forKey: .phone)
+        try container.encode(partnerDefinedUniqueID, forKey: .partnerDefinedUniqueID)
+    }
 }

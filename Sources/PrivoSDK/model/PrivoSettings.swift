@@ -5,7 +5,7 @@
 //  Created by alex slobodeniuk on 07.06.2021.
 //
 
-public struct PrivoSettings {
+public struct PrivoSettings: Encodable {
     public let serviceIdentifier: String
     public let envType: EnviromentType
     public let apiKey: String?
