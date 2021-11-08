@@ -12,12 +12,12 @@ struct PrivoKeychain {
     private let privoPrefix = "com.privo.ios.sdk"
     
     func set (key: String, value: String) -> Bool {
-        if let value = value.data(using: String.Encoding.utf8) {
+        if let data = value.data(using: String.Encoding.utf8) {
             let prefixedKey = keyWithPrefix(key)
             let query: [String : Any] = [
                 kSecClass as String       : kSecClassGenericPassword,
                 kSecAttrAccount as String : prefixedKey,
-                kSecValueData as String   : value,
+                kSecValueData as String   : data,
                 kSecAttrAccessibleWhenUnlocked as String  : kSecAttrAccessibleWhenUnlocked
             ]
                   
