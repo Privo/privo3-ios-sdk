@@ -9,25 +9,19 @@ import SwiftUI
 
 
 struct PrivoVerificationState {
+    var inProgress = true
     var isPresented = false
+    var isFinished = false
     var privoStateId: String? = nil
 }
 
 struct VerificationView : View {
     @Binding var state: PrivoVerificationState
-    @State var inProgress = true
     let profile: UserVerificationProfile?
-
     var closeIcon: Image?
     let onFinish: ((Array<VerificationEvent>) -> Void)?
     private let verification = InternalPrivoVerification()
 
-    private func finish(_ events: Array<VerificationEvent>?) {
-        state.privoStateId = nil
-        state.isPresented = false
-        inProgress = false
-        onFinish?(events ?? Array())
-    }
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let verificationUrl = PrivoInternal.configuration.verificationUrl
              .withPath("/index.html")?
@@ -41,31 +35,48 @@ struct VerificationView : View {
              onFinish: { url in
                  if let items = URLComponents(string: url)?.queryItems,
                     let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
-                    inProgress = true
+                     state.inProgress = true
                      PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
                         if let errorEvent = events?.first (where: { $0.event == VerificationEventType.verifyError  }) {
                             let customError = "Event error: code - \(String(describing: errorEvent.errorCode)) message - \(String(describing: errorEvent.errorMessage))"
                             PrivoInternal.rest.trackCustomError(customError)
                         }
-                        finish(events)
+                         finishView(events)
                      }
                  } else {
-                    finish(nil)
+                     finishView(nil)
                  }
              })
     }
     func showView() {
+        state.isFinished = false
+        state.inProgress = true
         verification.storeState(profile: profile) { id in
             if (id != nil) {
                 self.state.isPresented = true
                 self.state.privoStateId = id
             }
-            inProgress = false
+            state.inProgress = false
+        }
+    }
+    private func finishView(_ verificationEvents: Array<VerificationEvent>?, isOnDisappear: Bool = false) {
+        if (state.isFinished == false) { //Remove
+            state.privoStateId = nil
+            state.isPresented = false
+            state.isFinished = true
+            state.inProgress = false
+            if (isOnDisappear && verificationEvents == nil) { //Remove
+                let events = self.verification.getCancelEvents()
+                onFinish?(events)
+            } else {
+                onFinish?(verificationEvents ?? Array())
+                
+            }
         }
     }
     
     public var body: some View {
-        LoadingView(isShowing: $inProgress) {
+        LoadingView(isShowing: $state.inProgress) {
             VStack {
                 if (state.privoStateId != nil) {
                     ModalWebView(isPresented: $state.isPresented,  config: getConfig(state.privoStateId!))
@@ -74,11 +85,7 @@ struct VerificationView : View {
         }.onAppear {
             showView()
         }.onDisappear {
-            if (state.isPresented == true) {
-                state.isPresented = false
-                let events = self.verification.getCancelEvents()
-                onFinish?(events)
-            }
+            finishView(nil, isOnDisappear: true)
         }
     }
 }
@@ -96,7 +103,8 @@ struct VerificationStateView : View {
                     onClose()
                 }
             }),
-            profile: profile, onFinish: { e in
+            profile: profile,
+            onFinish: { e in
                 self.state.isPresented = false
                 onFinish?(e)
             }
