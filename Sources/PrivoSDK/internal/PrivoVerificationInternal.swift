@@ -73,6 +73,12 @@ struct VerificationView : View {
             }
         }.onAppear {
             showView()
+        }.onDisappear {
+            if (state.isPresented == true) {
+                state.isPresented = false
+                let events = self.verification.getCancelEvents()
+                onFinish?(events)
+            }
         }
     }
 }
