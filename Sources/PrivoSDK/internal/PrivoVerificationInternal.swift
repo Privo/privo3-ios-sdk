@@ -81,11 +81,11 @@ struct VerificationView : View {
                 if (state.privoStateId != nil) {
                     ModalWebView(isPresented: $state.isPresented,  config: getConfig(state.privoStateId!))
                 }
+            }.onDisappear {
+                finishView(nil, isOnDisappear: true)
             }
         }.onAppear {
             showView()
-        }.onDisappear {
-            finishView(nil, isOnDisappear: true)
         }
     }
 }
