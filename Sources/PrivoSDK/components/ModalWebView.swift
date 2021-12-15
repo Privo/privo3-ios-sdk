@@ -21,6 +21,7 @@ struct ModalWebView: View {
                       Spacer()
                       Button(action: {
                         isPresented = false
+                        self.config.onClose?()
                       }, label: {
                         if (self.config.closeIcon != nil) {
                             self.config.closeIcon

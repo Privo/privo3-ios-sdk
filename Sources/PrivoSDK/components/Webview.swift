@@ -9,6 +9,7 @@ struct WebviewConfig {
     var finishCriteria: String?
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
     var onFinish: ((String) -> Void)?
+    var onClose: (() -> Void)?
 }
 class WebViewModel: ObservableObject {
     @Published var isLoading: Bool = true

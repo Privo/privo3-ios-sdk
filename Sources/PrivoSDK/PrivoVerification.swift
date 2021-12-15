@@ -33,7 +33,11 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
             showView()
         } label: {
             label
-        }.sheet(isPresented: $state.isPresented) {
+        }.sheet(isPresented: $state.isPresented, onDismiss: {
+            self.state.isPresented = false
+            let events = verification.getCancelEvents()
+            onFinish?(events)
+        }) {
             VerificationView(state: $state, profile: profile, closeIcon: closeIcon, onFinish: onFinish).clearModalBackground()
         }
     }
@@ -41,10 +45,15 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
 
 
 public class PrivoVerification {
+    private let verification = InternalPrivoVerification()
     public init() {}
     
     public func showVerification(_ profile: UserVerificationProfile?, completion: ((Array<VerificationEvent>) -> Void)?) {
-        UIApplication.shared.showView(true) {
+        UIApplication.shared.showView(true, completion: { [weak self] in
+            if let events = self?.verification.getCancelEvents() {
+                completion?(events)
+            }
+        }) {
             VerificationStateView(
                 profile: profile,
                 onClose: {

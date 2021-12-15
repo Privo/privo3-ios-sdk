@@ -108,6 +108,13 @@ struct InternalPrivoVerification {
         }
     }
     
+    func getCancelEvents() -> Array<VerificationEvent> {
+        [
+            VerificationEvent(event: VerificationEventType.verifyInitialized, result: nil, data: nil, errorCode: nil, errorMessage: nil),
+            VerificationEvent(event: VerificationEventType.verifyCancel, result: nil, data: nil, errorCode: nil, errorMessage: nil)
+        ]
+    }
+    
 }
 
 
