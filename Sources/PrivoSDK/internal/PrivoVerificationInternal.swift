@@ -90,7 +90,7 @@ struct VerificationView : View {
     }
 }
 struct VerificationStateView : View {
-    @State private var state = PrivoVerificationState()
+    @State private var state = PrivoVerificationState( inProgress: true, isPresented: true, isFinished: false, privoStateId: nil)
 
     let profile: UserVerificationProfile?
     let onClose: () -> Void
