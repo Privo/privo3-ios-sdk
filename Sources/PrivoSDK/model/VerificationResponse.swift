@@ -25,6 +25,7 @@ public enum VerificationOutcome: Int, Decodable {
 }
 
 public struct VerificationResponse: Decodable, Hashable {
+    public let requestIdentifier: String
     public let verified: Bool
     public let requestID: String
     public let transactionID: String

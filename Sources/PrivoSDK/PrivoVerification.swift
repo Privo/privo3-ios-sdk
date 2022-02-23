@@ -41,6 +41,7 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
 
 
 public class PrivoVerification {
+    private let verification = InternalPrivoVerification()
     public init() {}
     
     public func showVerification(_ profile: UserVerificationProfile?, completion: ((Array<VerificationEvent>) -> Void)?) {
