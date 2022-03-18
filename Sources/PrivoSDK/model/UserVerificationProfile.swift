@@ -9,7 +9,7 @@ import Foundation
 public struct UserVerificationProfile: Encodable {
     public var firstName: String?
     public var lastName: String?
-    public var birthDateYYYYMMDD: String? // "YYYY-MM-DD"
+    public var birthDateYYYYMMDD: String? // "yyyy-MM-dd"
     public var email: String?
     public var postalCode: String?
     public var phone: String?
