@@ -59,8 +59,8 @@ public class PrivoAgeGate {
 }
 
 fileprivate class InternalAgeGate {
-    fileprivate let AG_ID = "privoAgId";
-    fileprivate let FP_ID = "privoFpId";
+    fileprivate let AG_ID = "privoAgId_1";
+    fileprivate let FP_ID = "privoFpId_1";
     
     fileprivate func getFpId(completionHandler: @escaping (String?) -> Void) {
         if let fpId = UserDefaults.standard.string(forKey: FP_ID) {
