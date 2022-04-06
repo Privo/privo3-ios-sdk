@@ -113,7 +113,7 @@ internal class InternalPrivoAgeGate {
                 settings: settings,
                 userIdentifier: data.userIdentifier,
                 countryCode: data.countryCode,
-                redirectUrl: "age-gate-done",
+                redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html/#/age-gate-loading")!.absoluteString,
                 agId: agId,
                 fpId: fpId
             )
@@ -192,7 +192,7 @@ struct AgeGateView : View {
          return WebviewConfig(
              url: verificationUrl!,
              showCloseIcon: false,
-             finishCriteria: "age-gate-done",
+             finishCriteria: "age-gate-loading",
              onFinish: { url in
                  if let items = URLComponents(string: url)?.queryItems,
                     let eventId = items.first(where: {$0.name == "privo_age_gate_events_id"})?.value {
