@@ -8,6 +8,6 @@
 import Foundation
 
 internal struct AgeGateResponse: Decodable, Encodable, Hashable {
-    let status: AgeGateAction;
+    let action: AgeGateAction;
     let ageGateIdentifier: String?;
 }

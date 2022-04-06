@@ -51,7 +51,7 @@ internal class InternalPrivoAgeGate {
                 )
                 PrivoInternal.rest.processBirthDate(data: record) { [weak self] r in
                     if let response = r,
-                       let status = self?.toStatus(response.status) {
+                       let status = self?.toStatus(response.action) {
                         let event = AgeGateEvent(
                             status: status,
                             userIdentifier: data.userIdentifier,
