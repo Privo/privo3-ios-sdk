@@ -20,7 +20,7 @@ internal struct CheckAgeStoreData: Encodable {
 }
 
 public struct CheckAgeData: Hashable {
-    public let userIdentifier: String? = nil; // uniq user identifier
-    public let birthDateYYYYMMDD: String? = nil; // "yyyy-MM-dd" format
-    public let countryCode: String? = nil; // Alpha-2 country code, e.g US
+    public let userIdentifier: String? ; // uniq user identifier
+    public let birthDateYYYYMMDD: String?; // "yyyy-MM-dd" format
+    public let countryCode: String?; // Alpha-2 country code, e.g US
 }
