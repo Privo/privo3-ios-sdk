@@ -186,7 +186,7 @@ struct AgeGateView : View {
 
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let verificationUrl = PrivoInternal.configuration.ageGatePublicUrl
-             .withPath("/gate/index.html")?
+             .withPath("/index.html")?
              .withQueryParam(name: "privo_state_id", value: stateId)?
              .withPath("#/dob")
          return WebviewConfig(
