@@ -8,11 +8,9 @@ import Foundation
 import UIKit
 
 public class PrivoAgeGate {
-    private let dateFormatter = DateFormatter()
     private let ageGate = InternalAgeGate()
 
     public init() {
-        dateFormatter.dateFormat = "yyyy-MM-dd"
     }
     
     public func getAgeStatus(extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
@@ -32,11 +30,15 @@ public class PrivoAgeGate {
         }
     }
     
-    public func getAgeStatusByBirthDate(birthDate: Date, extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
-        let textDate = dateFormatter.string(from: birthDate);
+    public func getAgeStatusByBirthDate(
+        birthDateYYYMMDD: String,  // "yyyy-MM-dd" format
+        extUserId: String? = nil,
+        countryCode: String? = nil,
+        completionHandler: @escaping (AgeGateStatus?) -> Void
+    ) {
         ageGate.getFpId() { fpId in
             if let fpId = fpId {
-                let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, fpId: fpId, birthDate: textDate, extUserId: extUserId, countryCode: countryCode)
+                let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, fpId: fpId, birthDate: birthDateYYYMMDD, extUserId: extUserId, countryCode: countryCode)
                 PrivoInternal.rest.processBirthDate(data: record) { [weak self] r in
                     if let id = r?.ageGateIdentifier {
                         self?.ageGate.storeAgId(id)
@@ -59,8 +61,8 @@ public class PrivoAgeGate {
 }
 
 fileprivate class InternalAgeGate {
-    fileprivate let AG_ID = "privoAgId";
-    fileprivate let FP_ID = "privoFpId";
+    fileprivate let AG_ID = "privoAgId_1";
+    fileprivate let FP_ID = "privoFpId_1";
     
     fileprivate func getFpId(completionHandler: @escaping (String?) -> Void) {
         if let fpId = UserDefaults.standard.string(forKey: FP_ID) {
