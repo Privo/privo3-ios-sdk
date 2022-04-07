@@ -7,14 +7,27 @@
 
 import Foundation
 
-public enum AgeGateAction: Int, Decodable, Encodable, Hashable {
-    case Block = 0
-    case Consent
-    case Verify
-    case Allow
+
+public enum AgeGateStatus: String, Decodable, Encodable, Hashable {
+    case Undefined = "Undefined"
+    case Blocked = "Blocked"
+    case Allowed = "Allowed"
+    case Canceled = "Canceled"
+    case Pending = "Pending"
+    case ConsentApproved="Consent Approved"
+    case ConsentDeclined="Consent Declined"
 }
 
-public struct AgeGateStatus: Decodable, Encodable, Hashable {
-    public var action: AgeGateAction
-    public var ageGateIdentifier: String
+public enum AgeGateStatusInternal: String, Decodable, Encodable, Hashable {
+    case Undefined = "Undefined"
+    case Blocked = "Blocked"
+    case Allowed = "Allowed"
+    case Canceled = "Canceled"
+    case Pending = "Pending"
+    case ConsentApproved="Consent Approved"
+    case ConsentDeclined="Consent Declined"
+    
+    // Internal statuses
+    case OpenVerification = "open-verification-widget"
+    case CloseAgeGate = "close-age-gate-widget"
 }
