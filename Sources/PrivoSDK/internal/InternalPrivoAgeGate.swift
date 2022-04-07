@@ -106,7 +106,7 @@ internal class InternalPrivoAgeGate {
             }
             
             let agId = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.agId : nil;
-            // let status = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.status : nil;
+            let status = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.status : nil;
             
             let ageGateData = CheckAgeStoreData(
                 serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
@@ -118,7 +118,7 @@ internal class InternalPrivoAgeGate {
                 fpId: fpId
             )
             UIApplication.shared.showView(false) {
-                AgeGateView(ageGateData : ageGateData, onFinish: { events in
+                AgeGateView(ageGateData : ageGateData, status: status, onFinish: { events in
                     events.forEach { event in
                         completionHandler(event)
                     }
@@ -170,6 +170,7 @@ internal class InternalPrivoAgeGate {
             return AgeGateStatus.Undefined
         }
     }
+    
 }
 
 struct PrivoAgeGateState {
@@ -182,13 +183,25 @@ struct PrivoAgeGateState {
 struct AgeGateView : View {
     @State var state: PrivoAgeGateState = PrivoAgeGateState()
     let ageGateData: CheckAgeStoreData?
+    let status:  AgeGateStatus?
     let onFinish: ((Array<AgeGateEvent>) -> Void)
+    
+    private func getStatusTargetPage () -> String {
+        switch status {
+            case .Pending:
+                return "verification-pending";
+            case .Blocked:
+                return "sorry";
+            default:
+                return "dob";
+        }
+    };
 
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let verificationUrl = PrivoInternal.configuration.ageGatePublicUrl
              .withPath("/index.html")?
              .withQueryParam(name: "privo_state_id", value: stateId)?
-             .withPath("#/dob")
+             .withPath("#/\(getStatusTargetPage())")
          return WebviewConfig(
              url: verificationUrl!,
              showCloseIcon: false,
