@@ -14,6 +14,6 @@ internal struct AgeServiceSettings: Encodable, Decodable {
     let isShowStatusUi: Bool
     let poolAgeGateStatusInterval: Int
     let verificationApiKey: String?
-    let p2SiteId: String?
+    let p2SiteId: Int?
 }
 
