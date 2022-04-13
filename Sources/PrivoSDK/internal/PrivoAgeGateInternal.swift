@@ -159,7 +159,7 @@ internal class PrivoAgeGateInternal {
                 settings: settings,
                 userIdentifier: data.userIdentifier,
                 countryCode: data.countryCode,
-                redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString,
+                redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html/#/age-gate-loading")!.absoluteString,
                 agId: agId,
                 fpId: fpId
             )
@@ -195,7 +195,7 @@ internal class PrivoAgeGateInternal {
                 settings: settings,
                 userIdentifier: data.userIdentifier,
                 countryCode: data.countryCode,
-                redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString,
+                redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html/#/age-gate-loading")!.absoluteString,
                 agId: agId,
                 fpId: fpId
             )
