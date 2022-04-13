@@ -8,23 +8,13 @@ import Foundation
 import UIKit
 
 public class PrivoAgeGate {
-    private let ageGate = InternalPrivoAgeGate()
+    private let ageGate = PrivoAgeGateInternal()
 
     public init() {
     }
     
-    public func getStatus(
-        _ data: CheckAgeData,
-        completionHandler: @escaping (AgeGateEvent?) -> Void
-    ) {
-        // TODO: add pooling here
-        ageGate.getAgeGateEvent() { lastEvent in
-            if (lastEvent != nil && lastEvent?.userIdentifier == data.userIdentifier) {
-                completionHandler(lastEvent)
-            } else {
-                completionHandler(AgeGateEvent(status: AgeGateStatus.Undefined, userIdentifier: nil, agId: nil))
-            }
-        }
+    public func getStatus(_ userIdentifier: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) {
+        ageGate.getStatusEvent(userIdentifier, completionHandler: completionHandler)
     }
     
     public func run(
@@ -42,13 +32,20 @@ public class PrivoAgeGate {
         }
 
     }
-    /*
-    public func runAgeVerification(ageGateIdentifier: String, completionHandler: @escaping (AgeGateStatus?) -> Void) {
-        let profile = UserVerificationProfile(partnerDefinedUniqueID: String(format: "AG:%@", ageGateIdentifier));
-        Privo.verification.showVerification(profile) { [weak self] events in
-            let status = self?.ageGate.getVerificationResponse(events,ageGateIdentifier: ageGateIdentifier)
-            completionHandler(status)
+    public func recheck(
+        _ data: RecheckAgeData,
+        completionHandler: @escaping (AgeGateEvent?) -> Void
+    ) {
+                
+        ageGate.runAgeGateRecheck(data) { event in
+            if let event = event {
+                self.ageGate.storeAgeGateEvent(event)
+            }
+            completionHandler(event)
         }
+
     }
-     */
+    public func hide() {
+        ageGate.hide()
+    }
 }

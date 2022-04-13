@@ -31,3 +31,12 @@ public enum AgeGateStatusInternal: String, Decodable, Encodable, Hashable {
     case OpenVerification = "open-verification-widget"
     case CloseAgeGate = "close-age-gate-widget"
 }
+
+public enum AgeGateStatusTO: Int, Decodable, Encodable, Hashable {
+    case Blocked = -1
+    case Undefined = 0
+    case Pending = 1
+    case ConsentApproved = 2
+    case ConsentDeclined = -2
+    case Allowed = 3
+}

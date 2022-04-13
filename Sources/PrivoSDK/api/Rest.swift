@@ -80,26 +80,23 @@ class Rest {
             completionHandler(token)
         }
     }
-    
-    /*
-    func processAgStatus(data: AgStatusRecord, completionHandler: @escaping (AgeGateStatusTO?) -> Void) {
-        let url = String(format: "%@/status/ag-id", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
+    func processStatus(data: StatusRecord, completionHandler: @escaping (AgeGateStatusTO?) -> Void) {
+        let url = String(format: "%@/status", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatusTO.self, emptyResponseCodes: [200, 204, 205] ) { r in
             self.trackPossibleAFError(r.error, r.response?.statusCode)
             completionHandler(r.value)
         }
     }
-    func processFpStatus(data: FpStatusRecord, completionHandler: @escaping (AgeGateStatusTO?) -> Void) {
-        let url = String(format: "%@/status/fp-id", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatusTO.self, emptyResponseCodes: [200, 204, 205] ) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
-        }
-    }
-     */
-    func processBirthDate(data: FpStatusRecord, completionHandler: @escaping (AgeGateResponse?) -> Void) {
+    func processBirthDate(data: FpStatusRecord, completionHandler: @escaping (AgeGateBirthDateResponse?) -> Void) {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
+        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateBirthDateResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
+            self.trackPossibleAFError(r.error, r.response?.statusCode)
+            completionHandler(r.value)
+        }
+    }
+    func processRecheck(data: RecheckStatusRecord, completionHandler: @escaping (AgeGateRecheckResponse?) -> Void) {
+        let url = String(format: "%@/recheck", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
+        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateRecheckResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
             self.trackPossibleAFError(r.error, r.response?.statusCode)
             completionHandler(r.value)
         }

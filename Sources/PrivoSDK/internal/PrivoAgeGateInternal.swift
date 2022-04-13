@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-internal class InternalPrivoAgeGate {
+internal class PrivoAgeGateInternal {
     private let FP_ID_KEY = "privoFpId";
     private let AGE_EVENT_KEY = "AgeGateEvent"
     private let keychain = PrivoKeychain()
@@ -35,6 +35,40 @@ internal class InternalPrivoAgeGate {
          } else {
              completionHandler(nil)
          }
+    }
+    
+    internal func getStatusEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeGateEvent) -> Void) {
+        getAgeGateEvent() { lastEvent in
+            self.getFpId { fpId in
+                if let agId = lastEvent?.agId,
+                   let fpId = fpId {
+                    let record = StatusRecord(
+                        serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
+                        fpId: fpId,
+                        agId: agId,
+                        extUserId: userIdentifier
+                    )
+                    PrivoInternal.rest.processStatus(data: record) { response in
+                        if let response = response {
+                            let event = AgeGateEvent(status: response.toStatus(), userIdentifier: userIdentifier, agId: agId)
+                            completionHandler(event)
+                        } else {
+                            completionHandler(AgeGateEvent(
+                                status: AgeGateStatus.Undefined,
+                                userIdentifier: userIdentifier,
+                                agId: agId
+                            ))
+                        }
+                    }
+                } else {
+                    completionHandler(AgeGateEvent(
+                        status: AgeGateStatus.Undefined,
+                        userIdentifier: userIdentifier,
+                        agId: nil
+                    ))
+                }
+            }
+        }
     }
     
     internal func runAgeGateByBirthDay(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
@@ -80,11 +114,11 @@ internal class InternalPrivoAgeGate {
             }
         }
         group.enter()
+        group.enter()
         getFpId() { r in
             fpId = r
             group.leave()
         }
-        group.enter()
         getAgeGateEvent() { event in
             lastEvent = event
             group.leave()
@@ -96,6 +130,17 @@ internal class InternalPrivoAgeGate {
         return ()
         
     }
+    
+    private func getAgeGateTargetPage (_ status: AgeGateStatus?) -> String {
+        switch status {
+            case .Pending:
+                return "verification-pending";
+            case .Blocked:
+                return "sorry";
+            default:
+                return "dob";
+        }
+    };
     
     internal func runAgeGate(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
         
@@ -117,8 +162,9 @@ internal class InternalPrivoAgeGate {
                 agId: agId,
                 fpId: fpId
             )
+            let target = self.getAgeGateTargetPage(status)
             UIApplication.shared.showView(false) {
-                AgeGateView(ageGateData : ageGateData, status: status, onFinish: { events in
+                AgeGateView(ageGateData : ageGateData, targetPage: target, onFinish: { events in
                     events.forEach { event in
                         completionHandler(event)
                     }
@@ -126,6 +172,44 @@ internal class InternalPrivoAgeGate {
                 })
             }
         }
+    }
+    
+    internal func runAgeGateRecheck(_ data: RecheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
+        
+        prepareSettings() { (settings, fpId, lastEvent) in
+            
+            guard let settings = settings else {
+                return
+            }
+            
+            let agId = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.agId : nil;
+            
+            if (agId == nil) {
+                print("Previous status not found")
+                return
+            }
+            
+            let ageGateData = CheckAgeStoreData(
+                serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
+                settings: settings,
+                userIdentifier: data.userIdentifier,
+                countryCode: data.countryCode,
+                redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html/#/age-gate-loading")!.absoluteString,
+                agId: agId,
+                fpId: fpId
+            )
+            UIApplication.shared.showView(false) {
+                AgeGateView(ageGateData : ageGateData, targetPage: "recheck", onFinish: { events in
+                    events.forEach { event in
+                        completionHandler(event)
+                    }
+                    UIApplication.shared.dismissTopView()
+                })
+            }
+        }
+    }
+    internal func hide() {
+        UIApplication.shared.dismissTopView()
     }
     
     internal func getFpId(completionHandler: @escaping (String?) -> Void) {
@@ -145,16 +229,6 @@ internal class InternalPrivoAgeGate {
             }
         }
     }
-    /*
-    internal func getVerificationResponse(_ events: [VerificationEvent], ageGateIdentifier: String) -> AgeGateStatus? {
-        let aceptedVerification = events.first {$0.result?.verificationResponse.matchOutcome == VerificationOutcome.Pass};
-        if (aceptedVerification != nil) {
-            return AgeGateStatus(action: AgeGateAction.Allow, ageGateIdentifier: ageGateIdentifier)
-        } else {
-            return nil
-        }
-    }
-     */
     
     internal func toStatus(_ action: AgeGateAction?) -> AgeGateStatus? {
         switch action {
@@ -183,25 +257,14 @@ struct PrivoAgeGateState {
 struct AgeGateView : View {
     @State var state: PrivoAgeGateState = PrivoAgeGateState()
     let ageGateData: CheckAgeStoreData?
-    let status:  AgeGateStatus?
+    let targetPage:  String
     let onFinish: ((Array<AgeGateEvent>) -> Void)
-    
-    private func getStatusTargetPage () -> String {
-        switch status {
-            case .Pending:
-                return "verification-pending";
-            case .Blocked:
-                return "sorry";
-            default:
-                return "dob";
-        }
-    };
 
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let verificationUrl = PrivoInternal.configuration.ageGatePublicUrl
              .withPath("/index.html")?
              .withQueryParam(name: "privo_state_id", value: stateId)?
-             .withPath("#/\(getStatusTargetPage())")
+             .withPath("#/\(targetPage)")
          return WebviewConfig(
              url: verificationUrl!,
              showCloseIcon: false,
