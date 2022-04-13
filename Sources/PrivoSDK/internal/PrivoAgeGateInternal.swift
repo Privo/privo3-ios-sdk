@@ -281,7 +281,12 @@ struct AgeGateView : View {
                  } else {
                      finishView(nil)
                  }
-             })
+             },
+             onClose: {
+                 finishView(nil)
+             }
+         )
+        
     }
     func showView() {
         if let ageGateData = ageGateData {
