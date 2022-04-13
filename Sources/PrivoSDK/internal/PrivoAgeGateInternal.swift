@@ -261,12 +261,12 @@ struct AgeGateView : View {
     let onFinish: ((Array<AgeGateEvent>) -> Void)
 
     private func getConfig(_ stateId: String) -> WebviewConfig {
-        let verificationUrl = PrivoInternal.configuration.ageGatePublicUrl
+        let ageGateUrl = PrivoInternal.configuration.ageGatePublicUrl
              .withPath("/index.html")?
-             .withQueryParam(name: "privo_state_id", value: stateId)?
+             .withQueryParam(name: "privo_age_gate_state_id", value: stateId)?
              .withPath("#/\(targetPage)")
          return WebviewConfig(
-             url: verificationUrl!,
+             url: ageGateUrl!,
              showCloseIcon: false,
              finishCriteria: "age-gate-loading",
              onFinish: { url in
