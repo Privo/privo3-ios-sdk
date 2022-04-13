@@ -40,7 +40,8 @@ internal class PrivoAgeGateInternal {
     internal func getStatusEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeGateEvent) -> Void) {
         getAgeGateEvent() { lastEvent in
             self.getFpId { fpId in
-                if let agId = lastEvent?.agId,
+                let agId = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.agId : nil;
+                if let agId = agId,
                    let fpId = fpId {
                     let record = StatusRecord(
                         serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
