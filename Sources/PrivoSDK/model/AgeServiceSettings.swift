@@ -8,6 +8,7 @@
 import Foundation
 
 internal struct AgeServiceSettings: Encodable, Decodable {
+    let isGeoApiOn: Bool
     let isAllowSelectCountry: Bool
     let isProvideUserId: Bool
     let isShowStatusUi: Bool

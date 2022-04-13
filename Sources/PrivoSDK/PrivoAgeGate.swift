@@ -26,7 +26,9 @@ public class PrivoAgeGate {
         
         processor(data) { event in
             if let event = event {
-                self.ageGate.storeAgeGateEvent(event)
+                if (event.status != AgeGateStatus.Canceled) {
+                    self.ageGate.storeAgeGateEvent(event)
+                }
             }
             completionHandler(event)
         }
@@ -39,7 +41,9 @@ public class PrivoAgeGate {
                 
         ageGate.runAgeGateRecheck(data) { event in
             if let event = event {
-                self.ageGate.storeAgeGateEvent(event)
+                if (event.status != AgeGateStatus.Canceled) {
+                    self.ageGate.storeAgeGateEvent(event)
+                }
             }
             completionHandler(event)
         }
