@@ -285,7 +285,7 @@ struct AgeGateView : View {
                          finishView(publicEvents)
                      }
                  } else {
-                     finishView([])
+                     finishView(nil)
                  }
              },
              onClose: {
@@ -308,10 +308,11 @@ struct AgeGateView : View {
     }
     private func finishView(_ events: Array<AgeGateEvent>?) {
         state.inProgress = false
-        state.isPresented = false
         state.privoStateId = nil
-        if let events = events {
-            onFinish(events)
+        
+        if (state.isPresented == true) {
+            state.isPresented = false
+            onFinish(events ?? [AgeGateEvent(status: AgeGateStatus.Canceled, userIdentifier: nil, agId: nil)])
         }
     }
     
