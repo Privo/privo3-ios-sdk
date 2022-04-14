@@ -310,9 +310,7 @@ struct AgeGateView : View {
         state.inProgress = false
         state.isPresented = false
         state.privoStateId = nil
-        if let events = events {
-            onFinish(events)
-        }
+        onFinish(events ?? [])
     }
     
     public var body: some View {
