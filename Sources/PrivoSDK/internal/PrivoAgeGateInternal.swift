@@ -169,6 +169,9 @@ internal class PrivoAgeGateInternal {
                     events.forEach { event in
                         completionHandler(event)
                     }
+                    if (events.isEmpty) {
+                        completionHandler(nil)
+                    }
                     UIApplication.shared.dismissTopView()
                 })
             }
@@ -203,6 +206,9 @@ internal class PrivoAgeGateInternal {
                 AgeGateView(ageGateData : ageGateData, targetPage: "recheck", onFinish: { events in
                     events.forEach { event in
                         completionHandler(event)
+                    }
+                    if (events.isEmpty) {
+                        completionHandler(nil)
                     }
                     UIApplication.shared.dismissTopView()
                 })
