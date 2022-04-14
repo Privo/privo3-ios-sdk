@@ -122,9 +122,11 @@ struct Webview: UIViewRepresentable {
             viewModel.isLoading = false
         }
 
+        /*
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
             viewModel.isLoading = true
         }
+        */
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             viewModel.isLoading = false
