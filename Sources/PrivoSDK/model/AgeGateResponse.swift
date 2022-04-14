@@ -7,7 +7,10 @@
 
 import Foundation
 
-internal struct AgeGateResponse: Decodable, Encodable, Hashable {
+internal struct AgeGateBirthDateResponse: Decodable, Encodable, Hashable {
     let action: AgeGateAction;
     let ageGateIdentifier: String?;
+}
+internal struct AgeGateRecheckResponse: Decodable, Encodable, Hashable {
+    let action: AgeGateAction;
 }

@@ -26,3 +26,4 @@ extension AgeGateEventInternal {
         return nil
     }
 }
+
