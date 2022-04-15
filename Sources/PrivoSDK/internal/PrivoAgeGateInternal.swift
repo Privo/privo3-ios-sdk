@@ -62,9 +62,9 @@ internal class PrivoAgeGateInternal {
                     }
                 } else {
                     completionHandler(AgeGateEvent(
-                        status: AgeGateStatus.Undefined,
+                        status: lastEvent?.status ?? AgeGateStatus.Undefined,
                         userIdentifier: userIdentifier,
-                        agId: nil
+                        agId: lastEvent?.agId
                     ))
                 }
             }
