@@ -22,15 +22,22 @@ public class PrivoAgeGate {
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
         
-        let processor = data.birthDateYYYYMMDD != nil ? ageGate.runAgeGateByBirthDay : ageGate.runAgeGate
-        
-        processor(data) { event in
-            if let event = event {
-                if (event.status != AgeGateStatus.Canceled) {
-                    self.ageGate.storeAgeGateEvent(event)
+        ageGate.getAgeGateEvent(data.userIdentifier) { lastEvent in
+            if let lastEvent = lastEvent {
+                completionHandler(lastEvent)
+            } else {
+                if (data.birthDateYYYYMMDD != nil) {
+                    self.ageGate.runAgeGateByBirthDay(data) { event in
+                        self.ageGate.storeAgeGateEvent(event)
+                        completionHandler(event)
+                    }
+                } else {
+                    self.ageGate.runAgeGate(data, lastEvent: nil, target: "dob") { event in
+                        self.ageGate.storeAgeGateEvent(event)
+                        completionHandler(event)
+                    }
                 }
             }
-            completionHandler(event)
         }
 
     }
@@ -40,11 +47,7 @@ public class PrivoAgeGate {
     ) {
                 
         ageGate.runAgeGateRecheck(data) { event in
-            if let event = event {
-                if (event.status != AgeGateStatus.Canceled) {
-                    self.ageGate.storeAgeGateEvent(event)
-                }
-            }
+            self.ageGate.storeAgeGateEvent(event)
             completionHandler(event)
         }
 

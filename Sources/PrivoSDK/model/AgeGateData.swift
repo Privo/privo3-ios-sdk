@@ -14,6 +14,7 @@ internal struct CheckAgeStoreData: Encodable {
     let settings: AgeServiceSettings;
     let userIdentifier: String?;
     let countryCode: String?;
+    let birthDateYYYYMMDD: String?
     let redirectUrl: String?;
     let agId: String?;
     let fpId: String?;

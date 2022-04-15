@@ -12,19 +12,16 @@ internal class PrivoAgeGateInternal {
     private let FP_ID_KEY = "privoFpId";
     private let AGE_EVENT_KEY_PREFIX = "AgeGateEvent"
     private let keychain = PrivoKeychain()
-    private var serviceSettings: AgeServiceSettings? = nil
     
-    internal init() {
-        PrivoInternal.rest.getAgeServiceSettings(serviceIdentifier: PrivoInternal.settings.serviceIdentifier) { s in
-            self.serviceSettings = s
-        }
-    }
-    
-    internal func storeAgeGateEvent(_ event: AgeGateEvent) {
-        if let jsonData = try? JSONEncoder().encode(event) {
-            let jsonString = String(decoding: jsonData, as: UTF8.self)
-            let key = "\(AGE_EVENT_KEY_PREFIX)-\(event.userIdentifier ?? "")"
-            keychain.set(key: key, value: jsonString)
+    internal func storeAgeGateEvent(_ event: AgeGateEvent?) {
+        if let event = event {
+            if (event.status != AgeGateStatus.Canceled && event.status != AgeGateStatus.Undefined) {
+                if let jsonData = try? JSONEncoder().encode(event) {
+                    let jsonString = String(decoding: jsonData, as: UTF8.self)
+                    let key = "\(AGE_EVENT_KEY_PREFIX)-\(event.userIdentifier ?? "")"
+                    keychain.set(key: key, value: jsonString)
+                }
+            }
         }
     }
     
@@ -74,8 +71,40 @@ internal class PrivoAgeGateInternal {
         }
     }
     
+    private func prepareSettings(_ userIdentifier: String?, completionHandler: @escaping (AgeServiceSettings?,String?,AgeGateEvent?) -> Void) {
+        var settings: AgeServiceSettings?
+        var fpId: String? = nil
+        var lastEvent: AgeGateEvent? = nil
+        
+        let group = DispatchGroup()
+
+        group.enter()
+        group.enter()
+        group.enter()
+        
+        PrivoInternal.rest.getAgeServiceSettings(serviceIdentifier: PrivoInternal.settings.serviceIdentifier) { s in
+            settings = s
+            group.leave()
+        }
+
+        getFpId() { r in
+            fpId = r
+            group.leave()
+        }
+        getAgeGateEvent(userIdentifier) { event in
+            lastEvent = event
+            group.leave()
+        }
+        group.notify(queue: .main) {
+            completionHandler(settings,fpId, lastEvent)
+        }
+        
+        return ()
+        
+    }
+    
     internal func runAgeGateByBirthDay(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
-        getFpId() { fpId in
+        self.getFpId() { fpId in
             if let birthDateYYYMMDD = data.birthDateYYYYMMDD,
                let fpId = fpId {
                 // make a rest call
@@ -94,7 +123,23 @@ internal class PrivoAgeGateInternal {
                             userIdentifier: data.userIdentifier,
                             agId: response.ageGateIdentifier
                         )
-                        completionHandler(event)
+                        if (response.action == AgeGateAction.Consent) {
+                            self?.runAgeGate(
+                                data,
+                                lastEvent: event,
+                                target: "request-consent",
+                                completionHandler: completionHandler
+                            )
+                        } else if (response.action == AgeGateAction.Verify) {
+                            self?.runAgeGate(
+                                data,
+                                lastEvent: event,
+                                target: "request-verification",
+                                completionHandler: completionHandler
+                            )
+                        } else {
+                            completionHandler(event)
+                        }
                     } else {
                         completionHandler(nil)
                     }
@@ -103,51 +148,14 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    private func prepareSettings(_ userIdentifier: String?, completionHandler: @escaping (AgeServiceSettings?,String?,AgeGateEvent?) -> Void) {
-        var settings: AgeServiceSettings? = serviceSettings
-        var fpId: String? = nil
-        var lastEvent: AgeGateEvent? = nil
+    internal func runAgeGate(
+        _ data: CheckAgeData,
+        lastEvent: AgeGateEvent?,
+        target: String,
+        completionHandler: @escaping (AgeGateEvent?) -> Void
+    ) {
         
-        let group = DispatchGroup()
-        if (settings == nil) {
-            group.enter()
-            PrivoInternal.rest.getAgeServiceSettings(serviceIdentifier: PrivoInternal.settings.serviceIdentifier) { s in
-                settings = s
-                group.leave()
-            }
-        }
-        group.enter()
-        group.enter()
-        getFpId() { r in
-            fpId = r
-            group.leave()
-        }
-        getAgeGateEvent(userIdentifier) { event in
-            lastEvent = event
-            group.leave()
-        }
-        group.notify(queue: .main) {
-            completionHandler(settings,fpId, lastEvent)
-        }
-        
-        return ()
-        
-    }
-    
-    private func getAgeGateTargetPage (_ status: AgeGateStatus?) -> String {
-        switch status {
-            case .Pending:
-                return "verification-pending";
-            case .Blocked:
-                return "sorry";
-            default:
-                return "dob";
-        }
-    };
-    
-    internal func runAgeGate(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
-        
-        prepareSettings(data.userIdentifier) { (settings, fpId, lastEvent) in
+        prepareSettings(data.userIdentifier) { (settings, fpId, _)  in
             
             guard let settings = settings else {
                 completionHandler(nil)
@@ -155,18 +163,17 @@ internal class PrivoAgeGateInternal {
             }
             
             let agId = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.agId : nil;
-            let status = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.status : nil;
             
             let ageGateData = CheckAgeStoreData(
                 serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                 settings: settings,
                 userIdentifier: data.userIdentifier,
                 countryCode: data.countryCode,
+                birthDateYYYYMMDD: data.birthDateYYYYMMDD,
                 redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString,
                 agId: agId,
                 fpId: fpId
             )
-            let target = self.getAgeGateTargetPage(status)
             UIApplication.shared.showView(false) {
                 AgeGateView(ageGateData : ageGateData, targetPage: target, onFinish: { events in
                     events.forEach { event in
@@ -203,6 +210,7 @@ internal class PrivoAgeGateInternal {
                 settings: settings,
                 userIdentifier: data.userIdentifier,
                 countryCode: data.countryCode,
+                birthDateYYYYMMDD: nil,
                 redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString,
                 agId: agId,
                 fpId: fpId
