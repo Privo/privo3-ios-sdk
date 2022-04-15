@@ -14,7 +14,10 @@ public class PrivoAgeGate {
     }
     
     public func getStatus(_ userIdentifier: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) {
-        ageGate.getStatusEvent(userIdentifier, completionHandler: completionHandler)
+        ageGate.getStatusEvent(userIdentifier) { event in
+            self.ageGate.storeAgeGateEvent(event)
+            completionHandler(event)
+        }
     }
     
     public func run(
