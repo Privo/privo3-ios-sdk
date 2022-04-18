@@ -35,7 +35,7 @@ public class PrivoAgeGate {
                         completionHandler(event)
                     }
                 } else {
-                    self.ageGate.runAgeGate(data, lastEvent: nil, target: "dob") { event in
+                    self.ageGate.runAgeGate(data, lastEvent: nil) { event in
                         self.ageGate.storeAgeGateEvent(event)
                         completionHandler(event)
                     }

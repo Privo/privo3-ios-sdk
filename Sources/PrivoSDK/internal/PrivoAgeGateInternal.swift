@@ -71,6 +71,24 @@ internal class PrivoAgeGateInternal {
         }
     }
     
+    func getStatusTargetPage(_ status: AgeGateStatus?) -> String {
+        guard let status = status else {
+            return "dob"
+        }
+        switch status {
+            case AgeGateStatus.Pending:
+                return "verification-pending"
+            case AgeGateStatus.Blocked:
+                return "sorry";
+            case AgeGateStatus.ConsentRequired:
+                return "request-consent";
+            case AgeGateStatus.IdentityVerificationRequired:
+                return "request-verification";
+            default:
+                return "dob";
+        }
+    };
+    
     private func prepareSettings(_ userIdentifier: String?, completionHandler: @escaping (AgeServiceSettings?,String?,AgeGateEvent?) -> Void) {
         var settings: AgeServiceSettings?
         var fpId: String? = nil
@@ -123,18 +141,10 @@ internal class PrivoAgeGateInternal {
                             userIdentifier: data.userIdentifier,
                             agId: response.ageGateIdentifier
                         )
-                        if (response.action == AgeGateAction.Consent) {
+                        if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify) {
                             self?.runAgeGate(
                                 data,
                                 lastEvent: event,
-                                target: "request-consent",
-                                completionHandler: completionHandler
-                            )
-                        } else if (response.action == AgeGateAction.IdentityVerify) {
-                            self?.runAgeGate(
-                                data,
-                                lastEvent: event,
-                                target: "request-verification",
                                 completionHandler: completionHandler
                             )
                         } else {
@@ -151,7 +161,6 @@ internal class PrivoAgeGateInternal {
     internal func runAgeGate(
         _ data: CheckAgeData,
         lastEvent: AgeGateEvent?,
-        target: String,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
         
@@ -175,15 +184,18 @@ internal class PrivoAgeGateInternal {
                 fpId: fpId
             )
             UIApplication.shared.showView(false) {
-                AgeGateView(ageGateData : ageGateData, targetPage: target, onFinish: { events in
-                    events.forEach { event in
-                        completionHandler(event)
-                    }
-                    if (events.isEmpty) {
-                        completionHandler(nil)
-                    }
-                    UIApplication.shared.dismissTopView()
-                })
+                AgeGateView(
+                    ageGateData : ageGateData,
+                    targetPage: self.getStatusTargetPage(lastEvent?.status),
+                    onFinish: { events in
+                        events.forEach { event in
+                            completionHandler(event)
+                        }
+                        if (events.isEmpty) {
+                            completionHandler(nil)
+                        }
+                        UIApplication.shared.dismissTopView()
+                    })
             }
         }
     }
