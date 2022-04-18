@@ -130,7 +130,7 @@ internal class PrivoAgeGateInternal {
                                 target: "request-consent",
                                 completionHandler: completionHandler
                             )
-                        } else if (response.action == AgeGateAction.Verify) {
+                        } else if (response.action == AgeGateAction.IdentityVerify) {
                             self?.runAgeGate(
                                 data,
                                 lastEvent: event,
@@ -257,11 +257,13 @@ internal class PrivoAgeGateInternal {
             case .Block:
                 return AgeGateStatus.Blocked
             case .Consent:
-                return AgeGateStatus.Pending
-            case .Verify:
-                return AgeGateStatus.Pending
+                return AgeGateStatus.ConsentRequired
+            case .IdentityVerify:
+                return AgeGateStatus.IdentityVerificationRequired
+            case .AgeVerify:
+                return AgeGateStatus.AgeVerified
             default:
-            return AgeGateStatus.Undefined
+                return AgeGateStatus.Undefined
         }
     }
     
