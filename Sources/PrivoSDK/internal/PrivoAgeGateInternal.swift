@@ -82,6 +82,8 @@ internal class PrivoAgeGateInternal {
                 return "sorry";
             case AgeGateStatus.ConsentRequired:
                 return "request-consent";
+            case AgeGateStatus.AgeVerificationRequired:
+                return "request-consent";
             case AgeGateStatus.IdentityVerificationRequired:
                 return "request-verification";
             default:
@@ -141,7 +143,7 @@ internal class PrivoAgeGateInternal {
                             userIdentifier: data.userIdentifier,
                             agId: response.ageGateIdentifier
                         )
-                        if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify) {
+                        if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
                             self?.runAgeGate(
                                 data,
                                 lastEvent: event,
