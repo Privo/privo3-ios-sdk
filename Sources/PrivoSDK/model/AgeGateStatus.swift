@@ -7,36 +7,52 @@
 
 import Foundation
 
-
 public enum AgeGateStatus: String, Decodable, Encodable, Hashable {
     case Undefined = "Undefined"
     case Blocked = "Blocked"
     case Allowed = "Allowed"
-    case Canceled = "Canceled"
     case Pending = "Pending"
-    case ConsentApproved="Consent Approved"
-    case ConsentDeclined="Consent Declined"
+    case ConsentRequired = "ConsentRequired"
+    case ConsentApproved = "ConsentApproved"
+    case ConsentDenied = "ConsentDenied"
+    case IdentityVerificationRequired = "IdentityVerificationRequired"
+    case IdentityVerified = "IdentityVerified"
+    case AgeVerificationRequired = "AgeVerificationRequired"
+    case AgeVerified = "AgeVerified"
+    case AgeBlocked = "AgeBlocked"
+    case Canceled = "Canceled"
 }
 
 public enum AgeGateStatusInternal: String, Decodable, Encodable, Hashable {
     case Undefined = "Undefined"
     case Blocked = "Blocked"
     case Allowed = "Allowed"
-    case Canceled = "Canceled"
     case Pending = "Pending"
-    case ConsentApproved="Consent Approved"
-    case ConsentDeclined="Consent Declined"
+    case ConsentRequired = "ConsentRequired"
+    case ConsentApproved = "ConsentApproved"
+    case ConsentDenied = "ConsentDenied"
+    case IdentityVerificationRequired = "IdentityVerificationRequired"
+    case IdentityVerified = "IdentityVerified"
+    case AgeVerificationRequired = "AgeVerificationRequired"
+    case AgeVerified = "AgeVerified"
+    case AgeBlocked = "AgeBlocked"
+    case Canceled = "Canceled"
     
     // Internal statuses
-    case OpenVerification = "open-verification-widget"
-    case CloseAgeGate = "close-age-gate-widget"
+    case Closed = "Closed"
 }
 
 public enum AgeGateStatusTO: Int, Decodable, Encodable, Hashable {
-    case Blocked = -1
     case Undefined = 0
-    case Pending = 1
-    case ConsentApproved = 2
-    case ConsentDeclined = -2
-    case Allowed = 3
+    case Pending
+    case Allowed
+    case Blocked
+    case ConsentRequired
+    case ConsentApproved
+    case ConsentDenied
+    case IdentityVerificationRequired
+    case IdentityVerified
+    case AgeVerificationRequired
+    case AgeVerified
+    case AgeBlocked
 }

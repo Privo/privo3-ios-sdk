@@ -26,7 +26,13 @@ public class PrivoAgeGate {
     ) {
         
         ageGate.getAgeGateEvent(data.userIdentifier) { lastEvent in
-            if let lastEvent = lastEvent {
+            
+            
+            if (lastEvent != nil &&
+                lastEvent?.status != AgeGateStatus.ConsentRequired &&
+                lastEvent?.status != AgeGateStatus.IdentityVerificationRequired &&
+                lastEvent?.status != AgeGateStatus.AgeVerificationRequired
+            ) {
                 completionHandler(lastEvent)
             } else {
                 if (data.birthDateYYYYMMDD != nil) {
@@ -35,7 +41,7 @@ public class PrivoAgeGate {
                         completionHandler(event)
                     }
                 } else {
-                    self.ageGate.runAgeGate(data, lastEvent: nil, target: "dob") { event in
+                    self.ageGate.runAgeGate(data, lastEvent: nil) { event in
                         self.ageGate.storeAgeGateEvent(event)
                         completionHandler(event)
                     }

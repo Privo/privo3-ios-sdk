@@ -10,7 +10,7 @@ import Foundation
 extension AgeGateEventInternal {
     
     private func toStatus() -> AgeGateStatus? {
-        if (status == AgeGateStatusInternal.OpenVerification || status == AgeGateStatusInternal.CloseAgeGate) {
+        if (status == AgeGateStatusInternal.Closed) {
             // Skip internal statuses
             return nil
         } else {

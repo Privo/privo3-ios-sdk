@@ -9,17 +9,30 @@ import Foundation
 
 extension AgeGateStatusTO {
     func toStatus() -> AgeGateStatus {
+        
         switch self {
-            case AgeGateStatusTO.Blocked:
-                return AgeGateStatus.Blocked;
-            case AgeGateStatusTO.Allowed:
-                return AgeGateStatus.Allowed;
-            case AgeGateStatusTO.ConsentApproved:
-                return AgeGateStatus.ConsentApproved;
-            case AgeGateStatusTO.ConsentDeclined:
-                return AgeGateStatus.ConsentDeclined;
-            case AgeGateStatusTO.Pending:
-                return AgeGateStatus.Pending;
+            case .Pending:
+                return AgeGateStatus.Pending
+            case .Allowed:
+                return AgeGateStatus.Allowed
+            case .Blocked:
+                return AgeGateStatus.Blocked
+            case .ConsentRequired:
+                return AgeGateStatus.ConsentRequired
+            case .ConsentApproved:
+                return AgeGateStatus.ConsentApproved
+            case .ConsentDenied:
+                return AgeGateStatus.ConsentDenied
+            case .IdentityVerificationRequired:
+                return AgeGateStatus.IdentityVerificationRequired
+            case .IdentityVerified:
+                return AgeGateStatus.IdentityVerified
+            case .AgeVerificationRequired:
+                return AgeGateStatus.AgeVerificationRequired
+            case .AgeVerified:
+                return AgeGateStatus.AgeVerified
+            case .AgeBlocked:
+                return AgeGateStatus.AgeBlocked
             default:
                 return AgeGateStatus.Undefined;
         }
