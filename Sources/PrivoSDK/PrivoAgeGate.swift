@@ -25,15 +25,15 @@ public class PrivoAgeGate {
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
         
-        ageGate.getAgeGateEvent(data.userIdentifier) { lastEvent in
+        ageGate.getAgeGateEvent(data.userIdentifier) { expireEvent in
             
-            
-            if (lastEvent != nil &&
-                lastEvent?.status != AgeGateStatus.ConsentRequired &&
-                lastEvent?.status != AgeGateStatus.IdentityVerificationRequired &&
-                lastEvent?.status != AgeGateStatus.AgeVerificationRequired
+            let event = expireEvent?.event
+            if (event != nil &&
+                event?.status != AgeGateStatus.ConsentRequired &&
+                event?.status != AgeGateStatus.IdentityVerificationRequired &&
+                event?.status != AgeGateStatus.AgeVerificationRequired
             ) {
-                completionHandler(lastEvent)
+                completionHandler(event)
             } else {
                 if (data.birthDateYYYYMMDD != nil) {
                     self.ageGate.runAgeGateByBirthDay(data) { event in
@@ -51,7 +51,7 @@ public class PrivoAgeGate {
 
     }
     public func recheck(
-        _ data: RecheckAgeData,
+        _ data: CheckAgeData,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
                 

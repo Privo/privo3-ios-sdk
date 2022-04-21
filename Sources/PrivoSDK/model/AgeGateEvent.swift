@@ -12,9 +12,3 @@ public struct AgeGateEvent: Decodable, Encodable, Hashable {
     public let userIdentifier: String?;
     public let agId: String?;
 }
-internal struct AgeGateEventInternal: Decodable, Encodable, Hashable {
-    let status: AgeGateStatusInternal;
-    let userIdentifier: String?;
-    let agId: String?;
-}
-

@@ -36,15 +36,3 @@ public struct CheckAgeData: Hashable {
     }
 }
 
-public struct RecheckAgeData: Hashable {
-    public let userIdentifier: String? ; // uniq user identifier
-    public let countryCode: String?; // Alpha-2 country code, e.g US
-    
-    public init(
-        userIdentifier: String? = nil,
-        countryCode: String? = nil
-    ) {
-        self.userIdentifier = userIdentifier
-        self.countryCode = countryCode
-    }
-}

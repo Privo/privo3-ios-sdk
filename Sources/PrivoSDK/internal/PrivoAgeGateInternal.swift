@@ -12,34 +12,58 @@ internal class PrivoAgeGateInternal {
     private let FP_ID_KEY = "privoFpId";
     private let AGE_EVENT_KEY_PREFIX = "AgeGateEvent"
     private let keychain = PrivoKeychain()
+    private let serviceSettings = PrivoAgeSettingsInternal()
     
     internal func storeAgeGateEvent(_ event: AgeGateEvent?) {
+        
+        func getEventExpiration (_ interval: Double) -> TimeInterval {
+            if (event?.status == AgeGateStatus.Pending) {
+                // Pending Events are always expired and should be re-fetched
+                return Date().timeIntervalSince1970
+            } else {
+                return (Date() + interval).timeIntervalSince1970
+            }
+        };
+        
         if let event = event {
             if (event.status != AgeGateStatus.Canceled && event.status != AgeGateStatus.Undefined) {
-                if let jsonData = try? JSONEncoder().encode(event) {
-                    let jsonString = String(decoding: jsonData, as: UTF8.self)
-                    let key = "\(AGE_EVENT_KEY_PREFIX)-\(event.userIdentifier ?? "")"
-                    keychain.set(key: key, value: jsonString)
+                serviceSettings.getSettings { settings in
+                    let interval = Double(settings.poolAgeGateStatusInterval)
+                    let expireEvent = AgeGateExpireEvent(event: event, expires: getEventExpiration(interval))
+                    if let jsonData = try? JSONEncoder().encode(expireEvent) {
+                        let jsonString = String(decoding: jsonData, as: UTF8.self)
+                        let key = "\(self.AGE_EVENT_KEY_PREFIX)-\(event.userIdentifier ?? "")"
+                        self.keychain.set(key: key, value: jsonString)
+                    }
                 }
             }
         }
     }
     
-    internal func getAgeGateEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeGateEvent?) -> Void) {
+    internal func getAgeGateEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeGateIsExpireEvent?) -> Void) {
         let key = "\(AGE_EVENT_KEY_PREFIX)-\(userIdentifier ?? "")"
         if let jsonString = keychain.get(key),
            let jsonData = jsonString.data(using: .utf8),
-           let value = try? JSONDecoder().decode(AgeGateEvent.self, from: jsonData) {
-             completionHandler(value)
+           let value = try? JSONDecoder().decode(AgeGateExpireEvent.self, from: jsonData) {
+            let event = AgeGateIsExpireEvent(event: value.event, isExpire: value.expires < Date().timeIntervalSince1970)
+            completionHandler(event)
          } else {
              completionHandler(nil)
          }
     }
     
     internal func getStatusEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeGateEvent) -> Void) {
-        getAgeGateEvent(userIdentifier) { lastEvent in
+        getAgeGateEvent(userIdentifier) { expireEvent in
+            if (expireEvent?.isExpire == false) {
+                if let event = expireEvent?.event {
+                    // Force return event if we found non-expired one
+                    completionHandler(event)
+                    return
+                }
+            }
+            let event = expireEvent?.event
             self.getFpId { fpId in
-                let agId = lastEvent?.userIdentifier == userIdentifier ? lastEvent?.agId : nil;
+                let agId = expireEvent?.event.agId
                 if let agId = agId,
                    let fpId = fpId {
                     let record = StatusRecord(
@@ -62,9 +86,9 @@ internal class PrivoAgeGateInternal {
                     }
                 } else {
                     completionHandler(AgeGateEvent(
-                        status: lastEvent?.status ?? AgeGateStatus.Undefined,
+                        status: event?.status ?? AgeGateStatus.Undefined,
                         userIdentifier: userIdentifier,
-                        agId: lastEvent?.agId
+                        agId: event?.agId
                     ))
                 }
             }
@@ -94,7 +118,7 @@ internal class PrivoAgeGateInternal {
     private func prepareSettings(_ userIdentifier: String?, completionHandler: @escaping (AgeServiceSettings?,String?,AgeGateEvent?) -> Void) {
         var settings: AgeServiceSettings?
         var fpId: String? = nil
-        var lastEvent: AgeGateEvent? = nil
+        var event: AgeGateEvent? = nil
         
         let group = DispatchGroup()
 
@@ -102,7 +126,7 @@ internal class PrivoAgeGateInternal {
         group.enter()
         group.enter()
         
-        PrivoInternal.rest.getAgeServiceSettings(serviceIdentifier: PrivoInternal.settings.serviceIdentifier) { s in
+        serviceSettings.getSettings { s in
             settings = s
             group.leave()
         }
@@ -111,12 +135,12 @@ internal class PrivoAgeGateInternal {
             fpId = r
             group.leave()
         }
-        getAgeGateEvent(userIdentifier) { event in
-            lastEvent = event
+        getAgeGateEvent(userIdentifier) { expireEvent in
+            event = expireEvent?.event
             group.leave()
         }
         group.notify(queue: .main) {
-            completionHandler(settings,fpId, lastEvent)
+            completionHandler(settings,fpId, event)
         }
         
         return ()
@@ -202,7 +226,7 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    internal func runAgeGateRecheck(_ data: RecheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
+    internal func runAgeGateRecheck(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
         
         prepareSettings(data.userIdentifier) { (settings, fpId, lastEvent) in
             
