@@ -17,12 +17,12 @@ class PrivoAgeSettingsInternal {
     
     private func updateSettings(_ completion: @escaping (AgeServiceSettings) -> Void) {
         let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
-        PrivoInternal.rest.getAgeServiceSettings(serviceIdentifier: serviceIdentifier) { s in
+        PrivoInternal.rest.getAgeServiceSettings(serviceIdentifier: serviceIdentifier) { [weak self] s in
             guard let settings = s else {
                 os_log("Failed to get privo service settings", log: .default, type: .error)
                 return
             }
-            self.lastSettings = (serviceIdentifier,settings)
+            self?.lastSettings = (serviceIdentifier,settings)
             completion(settings)
         }
     }

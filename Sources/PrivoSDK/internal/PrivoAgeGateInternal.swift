@@ -27,10 +27,11 @@ internal class PrivoAgeGateInternal {
         
         if let event = event {
             if (event.status != AgeGateStatus.Canceled && event.status != AgeGateStatus.Undefined) {
-                serviceSettings.getSettings { settings in
+                serviceSettings.getSettings { [weak self] settings in
                     let interval = Double(settings.poolAgeGateStatusInterval)
                     let expireEvent = AgeGateExpireEvent(event: event, expires: getEventExpiration(interval))
-                    if let jsonData = try? JSONEncoder().encode(expireEvent) {
+                    if let jsonData = try? JSONEncoder().encode(expireEvent),
+                       let self = self {
                         let jsonString = String(decoding: jsonData, as: UTF8.self)
                         let key = "\(self.AGE_EVENT_KEY_PREFIX)-\(event.userIdentifier ?? "")"
                         self.keychain.set(key: key, value: jsonString)
@@ -53,7 +54,7 @@ internal class PrivoAgeGateInternal {
     }
     
     internal func getStatusEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeGateEvent) -> Void) {
-        getAgeGateEvent(userIdentifier) { expireEvent in
+        getAgeGateEvent(userIdentifier) { [weak self] expireEvent in
             if (expireEvent?.isExpire == false) {
                 if let event = expireEvent?.event {
                     // Force return event if we found non-expired one
@@ -62,7 +63,7 @@ internal class PrivoAgeGateInternal {
                 }
             }
             let event = expireEvent?.event
-            self.getFpId { fpId in
+            self?.getFpId { fpId in
                 let agId = expireEvent?.event.agId
                 if let agId = agId,
                    let fpId = fpId {

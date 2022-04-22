@@ -14,8 +14,8 @@ public class PrivoAgeGate {
     }
     
     public func getStatus(_ userIdentifier: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) {
-        ageGate.getStatusEvent(userIdentifier) { event in
-            self.ageGate.storeAgeGateEvent(event)
+        ageGate.getStatusEvent(userIdentifier) { [weak self] event in
+            self?.ageGate.storeAgeGateEvent(event)
             completionHandler(event)
         }
     }
@@ -25,7 +25,7 @@ public class PrivoAgeGate {
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
         
-        ageGate.getAgeGateEvent(data.userIdentifier) { expireEvent in
+        ageGate.getAgeGateEvent(data.userIdentifier) { [weak self] expireEvent in
             
             let event = expireEvent?.event
             if (event != nil &&
@@ -36,13 +36,13 @@ public class PrivoAgeGate {
                 completionHandler(event)
             } else {
                 if (data.birthDateYYYYMMDD != nil) {
-                    self.ageGate.runAgeGateByBirthDay(data) { event in
-                        self.ageGate.storeAgeGateEvent(event)
+                    self?.ageGate.runAgeGateByBirthDay(data) { event in
+                        self?.ageGate.storeAgeGateEvent(event)
                         completionHandler(event)
                     }
                 } else {
-                    self.ageGate.runAgeGate(data, lastEvent: nil) { event in
-                        self.ageGate.storeAgeGateEvent(event)
+                    self?.ageGate.runAgeGate(data, lastEvent: nil) { event in
+                        self?.ageGate.storeAgeGateEvent(event)
                         completionHandler(event)
                     }
                 }
@@ -55,8 +55,8 @@ public class PrivoAgeGate {
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
                 
-        ageGate.runAgeGateRecheck(data) { event in
-            self.ageGate.storeAgeGateEvent(event)
+        ageGate.runAgeGateRecheck(data) { [weak self] event in
+            self?.ageGate.storeAgeGateEvent(event)
             completionHandler(event)
         }
 
