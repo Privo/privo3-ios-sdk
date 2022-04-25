@@ -41,7 +41,7 @@ public class PrivoAgeGate {
                         completionHandler(event)
                     }
                 } else {
-                    self?.ageGate.runAgeGate(data, lastEvent: nil) { event in
+                    self?.ageGate.runAgeGate(data, lastEvent: event, recheckRequired: false) { event in
                         self?.ageGate.storeAgeGateEvent(event)
                         completionHandler(event)
                     }
@@ -54,12 +54,25 @@ public class PrivoAgeGate {
         _ data: CheckAgeData,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
+        ageGate.getAgeGateEvent(data.userIdentifier) { [weak self] expireEvent in
+            if let event = expireEvent?.event,
+               let _ = event.agId {
                 
-        ageGate.runAgeGateRecheck(data) { [weak self] event in
-            self?.ageGate.storeAgeGateEvent(event)
-            completionHandler(event)
+                if data.birthDateYYYYMMDD != nil {
+                    self?.ageGate.recheckAgeGateByBirthDay(data,lastEvent: event) { [weak self] event in
+                        self?.ageGate.storeAgeGateEvent(event)
+                        completionHandler(event)
+                    }
+                } else {
+                    self?.ageGate.runAgeGate(data,lastEvent: event, recheckRequired: true) { [weak self] event in
+                        self?.ageGate.storeAgeGateEvent(event)
+                        completionHandler(event)
+                    }
+                }
+                
+                
+            }
         }
-
     }
     public func hide() {
         ageGate.hide()

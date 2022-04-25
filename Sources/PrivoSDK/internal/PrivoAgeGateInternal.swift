@@ -96,9 +96,12 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    func getStatusTargetPage(_ status: AgeGateStatus?) -> String {
+    func getStatusTargetPage(_ status: AgeGateStatus?, recheckRequired: Bool) -> String {
         guard let status = status else {
             return "dob"
+        }
+        if (recheckRequired == true) {
+            return "recheck"
         }
         switch status {
             case AgeGateStatus.Pending:
@@ -116,14 +119,12 @@ internal class PrivoAgeGateInternal {
         }
     };
     
-    private func prepareSettings(_ userIdentifier: String?, completionHandler: @escaping (AgeServiceSettings?,String?,AgeGateEvent?) -> Void) {
+    private func prepareSettings(_ userIdentifier: String?, completionHandler: @escaping (AgeServiceSettings?,String?) -> Void) {
         var settings: AgeServiceSettings?
         var fpId: String? = nil
-        var event: AgeGateEvent? = nil
         
         let group = DispatchGroup()
 
-        group.enter()
         group.enter()
         group.enter()
         
@@ -136,12 +137,8 @@ internal class PrivoAgeGateInternal {
             fpId = r
             group.leave()
         }
-        getAgeGateEvent(userIdentifier) { expireEvent in
-            event = expireEvent?.event
-            group.leave()
-        }
         group.notify(queue: .main) {
-            completionHandler(settings,fpId, event)
+            completionHandler(settings,fpId)
         }
         
         return ()
@@ -172,6 +169,7 @@ internal class PrivoAgeGateInternal {
                             self?.runAgeGate(
                                 data,
                                 lastEvent: event,
+                                recheckRequired: false,
                                 completionHandler: completionHandler
                             )
                         } else {
@@ -184,21 +182,60 @@ internal class PrivoAgeGateInternal {
             }
         }
     }
+    internal func recheckAgeGateByBirthDay(
+        _ data: CheckAgeData,
+        lastEvent: AgeGateEvent,
+        completionHandler: @escaping (AgeGateEvent?) -> Void
+    ) {
+            if let birthDateYYYMMDD = data.birthDateYYYYMMDD,
+               let agId = lastEvent.agId {
+                // make a rest call
+                let record = RecheckStatusRecord(
+                    serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
+                    agId: agId,
+                    birthDate: birthDateYYYMMDD,
+                    countryCode: data.countryCode
+                )
+                PrivoInternal.rest.processRecheck(data: record) { [weak self] r in
+                    if let response = r,
+                       let status = self?.toStatus(response.action) {
+                        let event = AgeGateEvent(
+                            status: status,
+                            userIdentifier: data.userIdentifier,
+                            agId: agId
+                        )
+                        if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
+                            self?.runAgeGate(
+                                data,
+                                lastEvent: event,
+                                recheckRequired: false,
+                                completionHandler: completionHandler
+                            )
+                        } else {
+                            completionHandler(event)
+                        }
+                    } else {
+                        completionHandler(nil)
+                    }
+                }
+            }
+    }
     
     internal func runAgeGate(
         _ data: CheckAgeData,
         lastEvent: AgeGateEvent?,
+        recheckRequired: Bool,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
         
-        prepareSettings(data.userIdentifier) { (settings, fpId, _)  in
+        prepareSettings(data.userIdentifier) { (settings, fpId)  in
             
             guard let settings = settings else {
                 completionHandler(nil)
                 return
             }
             
-            let agId = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.agId : nil;
+            let agId = lastEvent?.agId;
             
             let ageGateData = CheckAgeStoreData(
                 serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
@@ -213,7 +250,7 @@ internal class PrivoAgeGateInternal {
             UIApplication.shared.showView(false) {
                 AgeGateView(
                     ageGateData : ageGateData,
-                    targetPage: self.getStatusTargetPage(lastEvent?.status),
+                    targetPage: self.getStatusTargetPage(lastEvent?.status, recheckRequired: recheckRequired),
                     onFinish: { events in
                         events.forEach { event in
                             completionHandler(event)
@@ -227,46 +264,6 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    internal func runAgeGateRecheck(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
-        
-        prepareSettings(data.userIdentifier) { (settings, fpId, lastEvent) in
-            
-            guard let settings = settings else {
-                completionHandler(nil)
-                return
-            }
-            
-            let agId = lastEvent?.userIdentifier == data.userIdentifier ? lastEvent?.agId : nil;
-            
-            if (agId == nil) {
-                completionHandler(nil)
-                print("Previous status not found")
-                return
-            }
-            
-            let ageGateData = CheckAgeStoreData(
-                serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
-                settings: settings,
-                userIdentifier: data.userIdentifier,
-                countryCode: data.countryCode,
-                birthDateYYYYMMDD: nil,
-                redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString,
-                agId: agId,
-                fpId: fpId
-            )
-            UIApplication.shared.showView(false) {
-                AgeGateView(ageGateData : ageGateData, targetPage: "recheck", onFinish: { events in
-                    events.forEach { event in
-                        completionHandler(event)
-                    }
-                    if (events.isEmpty) {
-                        completionHandler(nil)
-                    }
-                    UIApplication.shared.dismissTopView()
-                })
-            }
-        }
-    }
     internal func hide() {
         UIApplication.shared.dismissTopView()
     }
