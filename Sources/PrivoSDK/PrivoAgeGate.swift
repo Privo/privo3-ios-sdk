@@ -8,114 +8,73 @@ import Foundation
 import UIKit
 
 public class PrivoAgeGate {
-    private let ageGate = InternalAgeGate()
+    private let ageGate = PrivoAgeGateInternal()
 
     public init() {
     }
     
-    public func getAgeStatus(extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
-        if let agId = UserDefaults.standard.string(forKey: ageGate.AG_ID) {
-            let record = AgStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, agId: agId, extUserId: extUserId, countryCode: countryCode)
-            PrivoInternal.rest.processAgStatus(data: record) { [weak self] r in
-                let id = r?.ageGateIdentifier
-                self?.ageGate.storeAgId(id)
-                if (id != nil) {
-                    completionHandler(r)
-                } else {
-                    self?.ageGate.getFpStatus(extUserId: extUserId,countryCode: countryCode,completionHandler: completionHandler)
-                }
-            }
-        } else {
-            ageGate.getFpStatus(extUserId: extUserId,countryCode: countryCode,completionHandler: completionHandler)
+    public func getStatus(_ userIdentifier: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) {
+        ageGate.getStatusEvent(userIdentifier) { [weak self] event in
+            self?.ageGate.storeAgeGateEvent(event)
+            completionHandler(event)
         }
     }
     
-    public func getAgeStatusByBirthDate(
-        birthDateYYYMMDD: String,  // "yyyy-MM-dd" format
-        extUserId: String? = nil,
-        countryCode: String? = nil,
-        completionHandler: @escaping (AgeGateStatus?) -> Void
+    public func run(
+        _ data: CheckAgeData,
+        completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
-        ageGate.getFpId() { fpId in
-            if let fpId = fpId {
-                let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, fpId: fpId, birthDate: birthDateYYYMMDD, extUserId: extUserId, countryCode: countryCode)
-                PrivoInternal.rest.processBirthDate(data: record) { [weak self] r in
-                    if let id = r?.ageGateIdentifier {
-                        self?.ageGate.storeAgId(id)
-                    }
-                    completionHandler(r)
-                }
+        
+        ageGate.getAgeGateEvent(data.userIdentifier) { [weak self] expireEvent in
+            
+            let event = expireEvent?.event
+            if (event != nil &&
+                event?.status != AgeGateStatus.ConsentRequired &&
+                event?.status != AgeGateStatus.IdentityVerificationRequired &&
+                event?.status != AgeGateStatus.AgeVerificationRequired
+            ) {
+                completionHandler(event)
             } else {
-                completionHandler(nil)
+                if (data.birthDateYYYYMMDD != nil) {
+                    self?.ageGate.runAgeGateByBirthDay(data) { event in
+                        self?.ageGate.storeAgeGateEvent(event)
+                        completionHandler(event)
+                    }
+                } else {
+                    self?.ageGate.runAgeGate(data, lastEvent: event, recheckRequired: false) { event in
+                        self?.ageGate.storeAgeGateEvent(event)
+                        completionHandler(event)
+                    }
+                }
             }
         }
 
     }
-    public func verifyStatus(ageGateIdentifier: String, completionHandler: @escaping (AgeGateStatus?) -> Void) {
-        let profile = UserVerificationProfile(partnerDefinedUniqueID: String(format: "AG:%@", ageGateIdentifier));
-        Privo.verification.showVerification(profile) { [weak self] events in
-            let status = self?.ageGate.getVerificationStatus(events,ageGateIdentifier: ageGateIdentifier)
-            completionHandler(status)
+    public func recheck(
+        _ data: CheckAgeData,
+        completionHandler: @escaping (AgeGateEvent?) -> Void
+    ) {
+        ageGate.getAgeGateEvent(data.userIdentifier) { [weak self] expireEvent in
+            if let event = expireEvent?.event,
+               let _ = event.agId {
+                
+                if data.birthDateYYYYMMDD != nil {
+                    self?.ageGate.recheckAgeGateByBirthDay(data,lastEvent: event) { [weak self] event in
+                        self?.ageGate.storeAgeGateEvent(event)
+                        completionHandler(event)
+                    }
+                } else {
+                    self?.ageGate.runAgeGate(data,lastEvent: event, recheckRequired: true) { [weak self] event in
+                        self?.ageGate.storeAgeGateEvent(event)
+                        completionHandler(event)
+                    }
+                }
+                
+                
+            }
         }
+    }
+    public func hide() {
+        ageGate.hide()
     }
 }
-
-fileprivate class InternalAgeGate {
-    fileprivate let AG_ID = "privoAgId_1";
-    fileprivate let FP_ID = "privoFpId_1";
-    
-    fileprivate func getFpId(completionHandler: @escaping (String?) -> Void) {
-        if let fpId = UserDefaults.standard.string(forKey: FP_ID) {
-            completionHandler(fpId)
-        } else {
-            if let fingerprint = try? DeviceFingerprint() {
-                PrivoInternal.rest.generateFingerprint(fingerprint: fingerprint) { [weak self] r in
-                    if let id = r?.id {
-                        self?.storeFpId(id)
-                    }
-                    completionHandler(r?.id)
-                }
-            } else {
-                completionHandler(nil)
-            }
-        }
-    }
-    fileprivate func getFpStatus(extUserId: String? = nil, countryCode: String? = nil, completionHandler: @escaping (AgeGateStatus?) -> Void) {
-        getFpId() { fpId in
-            if let fpId = fpId {
-                let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, fpId: fpId, birthDate: nil, extUserId: extUserId, countryCode: countryCode)
-                PrivoInternal.rest.processFpStatus(data: record) { [weak self] r in
-                    if let id = r?.ageGateIdentifier {
-                        self?.storeAgId(id)
-                    }
-                    completionHandler(r)
-                }
-            } else {
-                completionHandler(nil)
-            }
-        }
-    }
-    fileprivate func storeAgId(_ id: String?) {
-        if let id = id {
-            UserDefaults.standard.set(id, forKey: self.AG_ID)
-        } else {
-            UserDefaults.standard.removeObject(forKey: self.AG_ID)
-        }
-    }
-    fileprivate func storeFpId(_ id: String?) {
-        if let id = id {
-            UserDefaults.standard.set(id, forKey: self.FP_ID)
-        } else {
-            UserDefaults.standard.removeObject(forKey: self.FP_ID)
-        }
-    }
-    fileprivate func getVerificationStatus(_ events: [VerificationEvent], ageGateIdentifier: String) -> AgeGateStatus? {
-        let aceptedVerification = events.first {$0.result?.verificationResponse.matchOutcome == VerificationOutcome.Pass};
-        if (aceptedVerification != nil) {
-            return AgeGateStatus(action: AgeGateAction.Allow, ageGateIdentifier: ageGateIdentifier)
-        } else {
-            return nil
-        }
-    }
-}
-
