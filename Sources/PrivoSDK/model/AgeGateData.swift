@@ -9,6 +9,7 @@ import Foundation
 
 internal struct CheckAgeStoreData: Encodable {
     private let displayMode = "redirect";
+    private let isNativeIntegration = true;
     
     let serviceIdentifier: String;
     let settings: AgeServiceSettings;
