@@ -107,11 +107,11 @@ internal class PrivoAgeGateInternal {
             case AgeGateStatus.Pending:
                 return "verification-pending"
             case AgeGateStatus.Blocked:
-                return "sorry";
+                return "access-restricted";
             case AgeGateStatus.ConsentRequired:
                 return "request-consent";
             case AgeGateStatus.AgeVerificationRequired:
-                return "request-consent";
+                return "request-age-verification";
             case AgeGateStatus.IdentityVerificationRequired:
                 return "request-verification";
             default:
