@@ -19,11 +19,11 @@ internal class PrivoAgeVerificationInternal {
         let status = from.status;
         let profile = AgeVerificationProfile(
             userIdentifier: userIdentifier,
-            ageGateIdentifier: nil,
             firstName: from.firstName,
             email: from.email,
             birthDateYYYYMMDD: from.birthDate,
-            phoneNumber: from.mobilePhone
+            phoneNumber: from.mobilePhone,
+            ageGateIdentifier: nil
         )
         return AgeVerificationEventInternal(
             status: status,
