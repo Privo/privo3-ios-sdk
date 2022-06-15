@@ -46,11 +46,13 @@ internal class PrivoAgeVerificationInternal {
                  if let verification = verification,
                     let event = self?.toInternalEvent(verification,userIdentifier: userIdentifier).toEvent() {
                      completionHandler(event);
-                     return
-                  }
+                 } else {
+                     completionHandler(AgeVerificationEvent(status: AgeVerificationStatus.Undefined, profile: nil));
+                 }
              }
+       } else {
+           completionHandler(AgeVerificationEvent(status: AgeVerificationStatus.Undefined, profile: nil));
        }
-        completionHandler(AgeVerificationEvent(status: AgeVerificationStatus.Undefined, profile: nil));
     };
     
     internal func runAgeVerification(
