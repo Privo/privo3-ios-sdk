@@ -8,8 +8,8 @@
 import Foundation
 
 public struct AgeVerificationEvent : Encodable, Decodable {
-   let status: AgeVerificationStatus;
-   let profile: AgeVerificationProfile?;
+    public let status: AgeVerificationStatus;
+    public let profile: AgeVerificationProfile?;
 }
 
 struct AgeVerificationEventInternal: Encodable, Decodable {

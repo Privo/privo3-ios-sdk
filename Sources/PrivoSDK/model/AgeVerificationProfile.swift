@@ -9,10 +9,10 @@ import Foundation
 
 
 public struct AgeVerificationProfile : Encodable, Decodable {
-    let userIdentifier: String?;
-    let ageGateIdentifier: String?; // for internal usage.
-    let firstName: String?;
-    let email: String?;
-    let birthDateYYYYMMDD: String?; // "yyyy-MM-dd" format
-    let phoneNumber: String?; // in the full international format (E.164, e.g. “+17024181234”)
+    public let userIdentifier: String?;
+    public let ageGateIdentifier: String?; // for internal usage.
+    public let firstName: String?;
+    public let email: String?;
+    public let birthDateYYYYMMDD: String?; // "yyyy-MM-dd" format
+    public let phoneNumber: String?; // in the full international format (E.164, e.g. “+17024181234”)
 }
