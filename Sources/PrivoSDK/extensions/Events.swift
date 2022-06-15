@@ -27,3 +27,26 @@ extension AgeGateEventInternal {
     }
 }
 
+
+extension AgeVerificationEventInternal {
+    
+    private func toStatus() -> AgeVerificationStatus? {
+        if (status == AgeVerificationStatusInternal.Closed) {
+            // Skip internal statuses
+            return nil
+        } else {
+            return AgeVerificationStatus.init(rawValue: status.rawValue)
+        }
+        
+    }
+    
+    func toEvent() -> AgeVerificationEvent? {
+        if let status = toStatus() {
+            return AgeVerificationEvent(
+                status: status,
+                profile: profile
+            )
+        }
+        return nil
+    }
+}
