@@ -10,7 +10,6 @@ import Foundation
 
 public struct AgeVerificationProfile : Encodable, Decodable {
     public let userIdentifier: String?;
-    public let ageGateIdentifier: String?; // for internal usage.
     public let firstName: String?;
     public let email: String?;
     public let birthDateYYYYMMDD: String?; // "yyyy-MM-dd" format
@@ -21,15 +20,13 @@ public struct AgeVerificationProfile : Encodable, Decodable {
         firstName: String? = nil,
         email: String? = nil,
         birthDateYYYYMMDD: String? = nil,
-        phoneNumber: String? = nil,
-        ageGateIdentifier: String? = nil
+        phoneNumber: String? = nil
     ) {
         self.userIdentifier = userIdentifier
         self.firstName = firstName
         self.email = email
         self.birthDateYYYYMMDD = birthDateYYYYMMDD
         self.phoneNumber = phoneNumber
-        self.ageGateIdentifier = ageGateIdentifier
 
     }
 }

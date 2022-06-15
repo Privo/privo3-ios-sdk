@@ -22,8 +22,7 @@ internal class PrivoAgeVerificationInternal {
             firstName: from.firstName,
             email: from.email,
             birthDateYYYYMMDD: from.birthDate,
-            phoneNumber: from.mobilePhone,
-            ageGateIdentifier: nil
+            phoneNumber: from.mobilePhone
         )
         return AgeVerificationEventInternal(
             status: status,
