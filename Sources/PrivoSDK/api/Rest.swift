@@ -108,6 +108,13 @@ class Rest {
             completionHandler(r.value)
         }
     }
+    func getAgeVerification(verificationIdentifier: String, completionHandler: @escaping (AgeVerificationTO?) -> Void) {
+        let url = String(format: "%@/age-verification?verification_identifier=%@", PrivoInternal.configuration.ageVerificationBaseUrl.absoluteString, verificationIdentifier)
+        AF.request(url).responseDecodable(of: AgeVerificationTO.self) { r in
+            self.trackPossibleAFError(r.error, r.response?.statusCode)
+            completionHandler(r.value)
+        }
+    }
     func generateFingerprint(fingerprint: DeviceFingerprint, completionHandler: @escaping (DeviceFingerprintResponse?) -> Void) {
         let url = String(format: "%@/fp", PrivoInternal.configuration.authBaseUrl.absoluteString)
         AF.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default).responseDecodable(of: DeviceFingerprintResponse.self ) { r in

@@ -333,7 +333,9 @@ struct AgeGateView : View {
                      state.inProgress = true
                      PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<AgeGateEventInternal>?) in
                          let publicEvents = events?.map { $0.toEvent() }.compactMap { $0 }
-                         finishView(publicEvents)
+                         let nonCanceledEvents = publicEvents?.filter { $0.status != AgeGateStatus.Canceled };
+                         let resultEvents = (nonCanceledEvents?.isEmpty ?? true) ? publicEvents : nonCanceledEvents
+                         finishView(resultEvents)
                      }
                  } else {
                      finishView(nil)
