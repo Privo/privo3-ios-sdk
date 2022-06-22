@@ -10,16 +10,16 @@ import Foundation
 public enum AgeVerificationStatus: String, Decodable, Encodable, Hashable {
     case Undefined = "Undefined"
     case Pending = "Pending"
-    case Blocked = "Declined"
-    case Allowed = "Confirmed"
+    case Declined = "Declined"
+    case Confirmed = "Confirmed"
     case Canceled = "Canceled"
 }
 
 public enum AgeVerificationStatusInternal: String, Decodable, Encodable, Hashable {
     case Undefined = "Undefined"
     case Pending = "Pending"
-    case Blocked = "Declined"
-    case Allowed = "Confirmed"
+    case Declined = "Declined"
+    case Confirmed = "Confirmed"
     case Canceled = "Canceled"
     case Closed = "Closed"
 }
