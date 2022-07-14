@@ -107,11 +107,11 @@ internal class PrivoAgeGateInternal {
             case AgeGateStatus.Pending:
                 return "verification-pending"
             case AgeGateStatus.Blocked:
-                return "sorry";
+                return "access-restricted";
             case AgeGateStatus.ConsentRequired:
                 return "request-consent";
             case AgeGateStatus.AgeVerificationRequired:
-                return "request-consent";
+                return "request-age-verification";
             case AgeGateStatus.IdentityVerificationRequired:
                 return "request-verification";
             default:
@@ -333,7 +333,9 @@ struct AgeGateView : View {
                      state.inProgress = true
                      PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<AgeGateEventInternal>?) in
                          let publicEvents = events?.map { $0.toEvent() }.compactMap { $0 }
-                         finishView(publicEvents)
+                         let nonCanceledEvents = publicEvents?.filter { $0.status != AgeGateStatus.Canceled };
+                         let resultEvents = (nonCanceledEvents?.isEmpty ?? true) ? publicEvents : nonCanceledEvents
+                         finishView(resultEvents)
                      }
                  } else {
                      finishView(nil)
