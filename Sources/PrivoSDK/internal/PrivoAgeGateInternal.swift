@@ -147,13 +147,14 @@ internal class PrivoAgeGateInternal {
     
     internal func runAgeGateByBirthDay(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
         self.getFpId() { fpId in
-            if let birthDateYYYMMDD = data.birthDateYYYYMMDD,
-               let fpId = fpId {
+            if let fpId = fpId {
                 // make a rest call
                 let record = FpStatusRecord(
                     serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                     fpId: fpId,
-                    birthDate: birthDateYYYMMDD,
+                    birthDate: data.birthDateYYYYMMDD,
+                    birthDateYYYYMM: data.birthDateYYYYMM,
+                    birthDateYYYY: data.birthDateYYYY,
                     extUserId: data.userIdentifier,
                     countryCode: data.countryCode
                 )
@@ -187,13 +188,14 @@ internal class PrivoAgeGateInternal {
         lastEvent: AgeGateEvent,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
-            if let birthDateYYYMMDD = data.birthDateYYYYMMDD,
-               let agId = lastEvent.agId {
+            if let agId = lastEvent.agId {
                 // make a rest call
                 let record = RecheckStatusRecord(
                     serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                     agId: agId,
-                    birthDate: birthDateYYYMMDD,
+                    birthDate: data.birthDateYYYYMMDD,
+                    birthDateYYYYMM: data.birthDateYYYYMM,
+                    birthDateYYYY: data.birthDateYYYY,
                     countryCode: data.countryCode
                 )
                 PrivoInternal.rest.processRecheck(data: record) { [weak self] r in
@@ -243,6 +245,8 @@ internal class PrivoAgeGateInternal {
                 userIdentifier: data.userIdentifier,
                 countryCode: data.countryCode,
                 birthDateYYYYMMDD: data.birthDateYYYYMMDD,
+                birthDateYYYYMM: data.birthDateYYYYMM,
+                birthDateYYYY: data.birthDateYYYY,
                 redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString,
                 agId: agId,
                 fpId: fpId
