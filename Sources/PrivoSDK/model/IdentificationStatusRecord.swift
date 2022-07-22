@@ -20,7 +20,7 @@ struct FpStatusRecord: Decodable, Encodable, Hashable {
 struct StatusRecord: Decodable, Encodable, Hashable {
     let serviceIdentifier: String
     let fpId: String
-    let agId: String
+    let agId: String?
     let extUserId: String?
 }
 struct RecheckStatusRecord: Decodable, Encodable, Hashable {

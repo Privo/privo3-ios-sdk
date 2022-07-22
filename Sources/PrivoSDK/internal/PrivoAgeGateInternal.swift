@@ -65,8 +65,7 @@ internal class PrivoAgeGateInternal {
             let event = expireEvent?.event
             self?.getFpId { fpId in
                 let agId = expireEvent?.event.agId
-                if let agId = agId,
-                   let fpId = fpId {
+                if let fpId = fpId {
                     let record = StatusRecord(
                         serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                         fpId: fpId,
