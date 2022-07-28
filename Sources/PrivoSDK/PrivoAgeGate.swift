@@ -35,7 +35,7 @@ public class PrivoAgeGate {
             ) {
                 completionHandler(event)
             } else {
-                if (data.birthDateYYYYMMDD != nil) {
+                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
                     self?.ageGate.runAgeGateByBirthDay(data) { event in
                         self?.ageGate.storeAgeGateEvent(event)
                         completionHandler(event)
@@ -58,7 +58,7 @@ public class PrivoAgeGate {
             if let event = expireEvent?.event,
                let _ = event.agId {
                 
-                if data.birthDateYYYYMMDD != nil {
+                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
                     self?.ageGate.recheckAgeGateByBirthDay(data,lastEvent: event) { [weak self] event in
                         self?.ageGate.storeAgeGateEvent(event)
                         completionHandler(event)
