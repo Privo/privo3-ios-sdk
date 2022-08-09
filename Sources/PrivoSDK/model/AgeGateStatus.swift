@@ -42,6 +42,8 @@ public enum AgeGateStatusInternal: String, Decodable, Encodable, Hashable {
     case Closed = "Closed"
 }
 
+
+
 public enum AgeGateStatusTO: Int, Decodable, Encodable, Hashable {
     case Undefined = 0
     case Pending
