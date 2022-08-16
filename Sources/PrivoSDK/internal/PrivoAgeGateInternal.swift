@@ -74,7 +74,11 @@ internal class PrivoAgeGateInternal {
                     )
                     PrivoInternal.rest.processStatus(data: record) { response in
                         if let response = response {
-                            let event = AgeGateEvent(status: response.toStatus(), userIdentifier: userIdentifier, agId: agId)
+                            let event = AgeGateEvent(
+                                status: response.status.toStatus(),
+                                userIdentifier: userIdentifier,
+                                agId: response.agId ?? agId
+                            )
                             completionHandler(event)
                         } else {
                             completionHandler(AgeGateEvent(
@@ -163,7 +167,7 @@ internal class PrivoAgeGateInternal {
                         let event = AgeGateEvent(
                             status: status,
                             userIdentifier: data.userIdentifier,
-                            agId: response.ageGateIdentifier
+                            agId: response.agId
                         )
                         if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
                             self?.runAgeGate(
@@ -203,7 +207,7 @@ internal class PrivoAgeGateInternal {
                         let event = AgeGateEvent(
                             status: status,
                             userIdentifier: data.userIdentifier,
-                            agId: agId
+                            agId: response.agId
                         )
                         if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
                             self?.runAgeGate(
