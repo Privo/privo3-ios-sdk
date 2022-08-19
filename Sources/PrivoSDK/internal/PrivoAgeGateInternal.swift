@@ -329,6 +329,7 @@ struct AgeGateView : View {
         let ageGateUrl = PrivoInternal.configuration.ageGatePublicUrl
              .withPath("/index.html")?
              .withQueryParam(name: "privo_age_gate_state_id", value: stateId)?
+             .withQueryParam(name: "service_identifier", value: PrivoInternal.settings.serviceIdentifier)?
              .withPath("#/\(targetPage)")
          return WebviewConfig(
              url: ageGateUrl!,
