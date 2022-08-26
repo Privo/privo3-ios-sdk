@@ -304,7 +304,7 @@ internal class PrivoAgeGateInternal {
             case .IdentityVerify:
                 return AgeGateStatus.IdentityVerificationRequired
             case .AgeVerify:
-                return AgeGateStatus.AgeVerified
+                return AgeGateStatus.AgeVerificationRequired
             default:
                 return AgeGateStatus.Undefined
         }
