@@ -26,7 +26,7 @@ internal class PrivoAgeGateInternal {
         };
         
         if let event = event {
-            if (event.status != AgeGateStatus.Canceled && event.status != AgeGateStatus.Undefined) {
+            if (event.status != AgeGateStatus.Canceled) {
                 serviceSettings.getSettings { [weak self] settings in
                     let interval = Double(settings.poolAgeGateStatusInterval)
                     let expireEvent = AgeGateExpireEvent(event: event, expires: getEventExpiration(interval))
