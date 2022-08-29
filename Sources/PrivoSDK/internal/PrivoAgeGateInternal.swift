@@ -26,7 +26,7 @@ internal class PrivoAgeGateInternal {
         };
         
         if let event = event {
-            if (event.status != AgeGateStatus.Undefined) {
+            if (event.status == AgeGateStatus.Undefined) {
                 let key = "\(self.AGE_EVENT_KEY_PREFIX)-\(event.userIdentifier ?? "")"
                 self.keychain.delete(key)
             } else if (event.status != AgeGateStatus.Canceled) {
