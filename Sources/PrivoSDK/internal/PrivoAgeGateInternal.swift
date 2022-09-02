@@ -26,7 +26,10 @@ internal class PrivoAgeGateInternal {
         };
         
         if let event = event {
-            if (event.status != AgeGateStatus.Canceled && event.status != AgeGateStatus.Undefined) {
+            if (event.status == AgeGateStatus.Undefined) {
+                let key = "\(self.AGE_EVENT_KEY_PREFIX)-\(event.userIdentifier ?? "")"
+                self.keychain.delete(key)
+            } else if (event.status != AgeGateStatus.Canceled) {
                 serviceSettings.getSettings { [weak self] settings in
                     let interval = Double(settings.poolAgeGateStatusInterval)
                     let expireEvent = AgeGateExpireEvent(event: event, expires: getEventExpiration(interval))
@@ -304,7 +307,7 @@ internal class PrivoAgeGateInternal {
             case .IdentityVerify:
                 return AgeGateStatus.IdentityVerificationRequired
             case .AgeVerify:
-                return AgeGateStatus.AgeVerified
+                return AgeGateStatus.AgeVerificationRequired
             default:
                 return AgeGateStatus.Undefined
         }
@@ -329,6 +332,7 @@ struct AgeGateView : View {
         let ageGateUrl = PrivoInternal.configuration.ageGatePublicUrl
              .withPath("/index.html")?
              .withQueryParam(name: "privo_age_gate_state_id", value: stateId)?
+             .withQueryParam(name: "service_identifier", value: PrivoInternal.settings.serviceIdentifier)?
              .withPath("#/\(targetPage)")
          return WebviewConfig(
              url: ageGateUrl!,
