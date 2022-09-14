@@ -8,6 +8,6 @@
 import Foundation
 
 
-enum PrivoError: Error {
+public enum PrivoError: Error {
     case noInternetConnection
 }

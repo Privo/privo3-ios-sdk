@@ -7,6 +7,6 @@
 
 import Foundation
 
-enum AgeGateError: Error {
+public enum AgeGateError: Error {
     case incorrectDateOfBirht
 }
