@@ -317,17 +317,6 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    /*
-     const getDateAndFormat = (data: CheckAgeData) => {
-         if (!!data.birthDateYYYYMMDD) {
-             return { date: data.birthDateYYYYMMDD, format: AGE_FORMAT_YYYYMMDD };
-         } else if (!!data.birthDateYYYYMM) {
-             return { date: data.birthDateYYYYMM, format: AGE_FORMAT_YYYYMM };
-         } else if (!!data.birthDateYYYY) {
-             return { date: data.birthDateYYYY, format: AGE_FORMAT_YYYY };
-         }
-     };
-     */
     internal func getDateAndFormat(_ data: CheckAgeData) -> (String,String)? {
         if let birthDateYYYYMMDD = data.birthDateYYYYMMDD {
             return ( birthDateYYYYMMDD, AGE_FORMAT_YYYYMMDD );
