@@ -13,7 +13,8 @@ public class PrivoAgeGate {
     public init() {
     }
     
-    public func getStatus(_ userIdentifier: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) {
+    public func getStatus(_ userIdentifier: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
+        try ageGate.checkNetwork()
         ageGate.getStatusEvent(userIdentifier) { [weak self] event in
             self?.ageGate.storeAgeGateEvent(event)
             completionHandler(event)
@@ -23,8 +24,8 @@ public class PrivoAgeGate {
     public func run(
         _ data: CheckAgeData,
         completionHandler: @escaping (AgeGateEvent?) -> Void
-    ) {
-        
+    ) throws {
+        try ageGate.checkRequest(data)
         ageGate.getAgeGateEvent(data.userIdentifier) { [weak self] expireEvent in
             
             let event = expireEvent?.event
@@ -53,7 +54,8 @@ public class PrivoAgeGate {
     public func recheck(
         _ data: CheckAgeData,
         completionHandler: @escaping (AgeGateEvent?) -> Void
-    ) {
+    ) throws {
+        try ageGate.checkRequest(data)
         ageGate.getAgeGateEvent(data.userIdentifier) { [weak self] expireEvent in
             if let event = expireEvent?.event,
                let _ = event.agId {
@@ -69,8 +71,8 @@ public class PrivoAgeGate {
                         completionHandler(event)
                     }
                 }
-                
-                
+            } else {
+                completionHandler(nil)
             }
         }
     }

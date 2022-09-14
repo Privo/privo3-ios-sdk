@@ -152,5 +152,12 @@ class Rest {
             print(r)
         }
     }
+    
+    func checkNetwork() throws {
+        let rManager = NetworkReachabilityManager()
+        if (rManager?.isReachable == false) {
+            throw PrivoError.noInternetConnection
+        }
+    }
 
 }

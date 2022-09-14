@@ -14,6 +14,10 @@ internal class PrivoAgeGateInternal {
     private let keychain = PrivoKeychain()
     private let serviceSettings = PrivoAgeSettingsInternal()
     
+    private let AGE_FORMAT_YYYYMMDD = "yyyy-MM-dd";
+    private let AGE_FORMAT_YYYYMM = "yyyy-MM";
+    private let AGE_FORMAT_YYYY = "yyyy";
+    
     internal func storeAgeGateEvent(_ event: AgeGateEvent?) {
         
         func getEventExpiration (_ interval: Double) -> TimeInterval {
@@ -313,6 +317,59 @@ internal class PrivoAgeGateInternal {
         }
     }
     
+    /*
+     const getDateAndFormat = (data: CheckAgeData) => {
+         if (!!data.birthDateYYYYMMDD) {
+             return { date: data.birthDateYYYYMMDD, format: AGE_FORMAT_YYYYMMDD };
+         } else if (!!data.birthDateYYYYMM) {
+             return { date: data.birthDateYYYYMM, format: AGE_FORMAT_YYYYMM };
+         } else if (!!data.birthDateYYYY) {
+             return { date: data.birthDateYYYY, format: AGE_FORMAT_YYYY };
+         }
+     };
+     */
+    internal func getDateAndFormat(_ data: CheckAgeData) -> (String,String)? {
+        if let birthDateYYYYMMDD = data.birthDateYYYYMMDD {
+            return ( birthDateYYYYMMDD, AGE_FORMAT_YYYYMMDD );
+        } else if let birthDateYYYYMM = data.birthDateYYYYMM {
+            return (birthDateYYYYMM, AGE_FORMAT_YYYYMM);
+        } else if let birthDateYYYYMMDD = data.birthDateYYYY {
+            return (birthDateYYYYMMDD, AGE_FORMAT_YYYY );
+        }
+        return nil
+    }
+    
+    internal func isAgeCorrect(rawDate: String, format: String) -> Bool {
+        let calendar = Calendar.current
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+        dateFormatter.dateFormat = format
+        
+        if let date = dateFormatter.date(from:rawDate) {
+            let birthYear = calendar.dateComponents([.year], from: date).year
+            let currentYear = calendar.dateComponents([.year], from: Date()).year
+            if let birthYear = birthYear,
+               let currentYear = currentYear {
+                let age = currentYear - birthYear;
+                return age > 0 && age <= 120;
+            }
+        }
+        return false
+    }
+    
+    internal func checkNetwork() throws {
+        try PrivoInternal.rest.checkNetwork()
+    }
+    
+    internal func checkRequest(_ data: CheckAgeData) throws {
+        try checkNetwork()
+        if let (date, format) = getDateAndFormat(data) {
+            if (isAgeCorrect(rawDate: date, format: format) == false) {
+                throw AgeGateError.incorrectDateOfBirht
+            }
+        }
+        
+    }
 }
 
 struct PrivoAgeGateState {
