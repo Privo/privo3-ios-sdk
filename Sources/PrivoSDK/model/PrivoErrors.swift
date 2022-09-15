@@ -11,3 +11,7 @@ import Foundation
 public enum PrivoError: Error {
     case noInternetConnection
 }
+
+public enum AgeGateError: Error {
+    case incorrectDateOfBirht
+}
