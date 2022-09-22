@@ -11,6 +11,7 @@ internal struct AgeGateEventInternal: Decodable, Encodable, Hashable {
     let status: AgeGateStatusInternal;
     let userIdentifier: String?;
     let agId: String?;
+    let ageRange: AgeRange?
 }
 
 internal struct AgeGateExpireEvent: Decodable, Encodable, Hashable {
