@@ -21,7 +21,7 @@ extension AgeGateEventInternal {
     
     func toEvent() -> AgeGateEvent? {
         if let status = toStatus() {
-            return AgeGateEvent(status: status, userIdentifier: userIdentifier, agId: agId)
+            return AgeGateEvent(status: status, userIdentifier: userIdentifier, agId: agId, ageRange: ageRange)
         }
         return nil
     }

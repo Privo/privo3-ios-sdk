@@ -84,14 +84,16 @@ internal class PrivoAgeGateInternal {
                             let event = AgeGateEvent(
                                 status: response.status.toStatus(),
                                 userIdentifier: userIdentifier,
-                                agId: response.agId ?? agId
+                                agId: response.agId ?? agId,
+                                ageRange: response.ageRange
                             )
                             completionHandler(event)
                         } else {
                             completionHandler(AgeGateEvent(
                                 status: AgeGateStatus.Undefined,
                                 userIdentifier: userIdentifier,
-                                agId: agId
+                                agId: agId,
+                                ageRange: nil
                             ))
                         }
                     }
@@ -99,7 +101,8 @@ internal class PrivoAgeGateInternal {
                     completionHandler(AgeGateEvent(
                         status: event?.status ?? AgeGateStatus.Undefined,
                         userIdentifier: userIdentifier,
-                        agId: event?.agId
+                        agId: event?.agId,
+                        ageRange: event?.ageRange
                     ))
                 }
             }
@@ -174,7 +177,8 @@ internal class PrivoAgeGateInternal {
                         let event = AgeGateEvent(
                             status: status,
                             userIdentifier: data.userIdentifier,
-                            agId: response.agId
+                            agId: response.agId,
+                            ageRange: response.ageRange
                         )
                         if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
                             self?.runAgeGate(
@@ -214,7 +218,8 @@ internal class PrivoAgeGateInternal {
                         let event = AgeGateEvent(
                             status: status,
                             userIdentifier: data.userIdentifier,
-                            agId: response.agId
+                            agId: response.agId,
+                            ageRange: response.ageRange
                         )
                         if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
                             self?.runAgeGate(
@@ -422,7 +427,7 @@ struct AgeGateView : View {
         
         if (state.isPresented == true) {
             state.isPresented = false
-            onFinish(events ?? [AgeGateEvent(status: AgeGateStatus.Canceled, userIdentifier: nil, agId: nil)])
+            onFinish(events ?? [AgeGateEvent(status: AgeGateStatus.Canceled, userIdentifier: nil, agId: nil, ageRange: nil)])
         }
     }
     
