@@ -11,4 +11,5 @@ public struct AgeGateEvent: Decodable, Encodable, Hashable {
     public let status: AgeGateStatus;
     public let userIdentifier: String?;
     public let agId: String?;
+    public let ageRange: AgeRange?
 }
