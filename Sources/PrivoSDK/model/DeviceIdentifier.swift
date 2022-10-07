@@ -10,12 +10,12 @@ import UIKit
 struct DeviceIdentifier {
     public let identifier: String
     private let deviceIdentifierKey = "privo-device-identifier"
-    init () throws {
+    init () {
         let keychain = PrivoKeychain()
         if let identifier = keychain.get(deviceIdentifierKey) {
             self.identifier = identifier
         } else {
-            let newIdentifier = UIDevice.current.identifierForVendor!.uuidString
+            let newIdentifier = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
             let result = keychain.set(key: deviceIdentifierKey, value: newIdentifier)
             if (result) {
                 print("Fail to save user identifier to keychain")

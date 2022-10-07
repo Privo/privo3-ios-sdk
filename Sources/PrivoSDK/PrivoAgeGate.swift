@@ -14,39 +14,24 @@ public class PrivoAgeGate {
     }
     
     public func getStatus(_ userIdentifier: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
-        try ageGate.checkNetwork()
-        ageGate.getStatusEvent(userIdentifier) { [weak self] event in
-            self?.ageGate.storeAgeGateEvent(event)
-            completionHandler(event)
-        }
+        try ageGate.helpers.checkNetwork()
+        ageGate.getStatusEvent(userIdentifier, completionHandler: completionHandler)
     }
     
     public func run(
         _ data: CheckAgeData,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) throws {
-        try ageGate.checkRequest(data)
-        ageGate.getAgeGateEvent(data.userIdentifier) { [weak self] expireEvent in
-            
-            let event = expireEvent?.event
-            if (event != nil &&
-                event?.status != AgeGateStatus.ConsentRequired &&
-                event?.status != AgeGateStatus.IdentityVerificationRequired &&
-                event?.status != AgeGateStatus.AgeVerificationRequired
-            ) {
+        try ageGate.helpers.checkRequest(data)
+        if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
+            ageGate.runAgeGateByBirthDay(data) {  [weak self] event in
+                self?.ageGate.storage.storeAgeGateEvent(event)
                 completionHandler(event)
-            } else {
-                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
-                    self?.ageGate.runAgeGateByBirthDay(data) { event in
-                        self?.ageGate.storeAgeGateEvent(event)
-                        completionHandler(event)
-                    }
-                } else {
-                    self?.ageGate.runAgeGate(data, lastEvent: event, recheckRequired: false) { event in
-                        self?.ageGate.storeAgeGateEvent(event)
-                        completionHandler(event)
-                    }
-                }
+            }
+        } else {
+            ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: false) {  [weak self] event in
+                self?.ageGate.storage.storeAgeGateEvent(event)
+                completionHandler(event)
             }
         }
 
@@ -55,24 +40,16 @@ public class PrivoAgeGate {
         _ data: CheckAgeData,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) throws {
-        try ageGate.checkRequest(data)
-        ageGate.getAgeGateEvent(data.userIdentifier) { [weak self] expireEvent in
-            if let event = expireEvent?.event,
-               let _ = event.agId {
-                
-                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
-                    self?.ageGate.recheckAgeGateByBirthDay(data,lastEvent: event) { [weak self] event in
-                        self?.ageGate.storeAgeGateEvent(event)
-                        completionHandler(event)
-                    }
-                } else {
-                    self?.ageGate.runAgeGate(data,lastEvent: event, recheckRequired: true) { [weak self] event in
-                        self?.ageGate.storeAgeGateEvent(event)
-                        completionHandler(event)
-                    }
-                }
-            } else {
-                completionHandler(nil)
+        try ageGate.helpers.checkRequest(data)
+        if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
+            ageGate.recheckAgeGateByBirthDay(data) { [weak self] event in
+                self?.ageGate.storage.storeAgeGateEvent(event)
+                completionHandler(event)
+            }
+        } else {
+            ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: true) { [weak self] event in
+                self?.ageGate.storage.storeAgeGateEvent(event)
+                completionHandler(event)
             }
         }
     }
