@@ -36,7 +36,7 @@ struct DeviceFingerprint: Decodable, Encodable {
     let gpu: GPU
     let fonts: Fonts
     
-    init () throws {
+    init () {
         var isMobile = true
         #if os(macOS)
             isMobile = false
@@ -53,7 +53,7 @@ struct DeviceFingerprint: Decodable, Encodable {
         self.browserInfo = BrowserInfo(name: "WKWebView", version: "1", plugins: [])
         self.gpu = GPU()
         self.fonts = Fonts(fonts: [])
-        self.idForVendor = try! DeviceIdentifier().identifier
+        self.idForVendor = DeviceIdentifier().identifier
     }
 }
 
