@@ -259,8 +259,10 @@ internal class PrivoAgeGateInternal {
                         AgeGateView(
                             ageGateData : ageGateData,
                             targetPage: "age-gate-identifier",
-                            onFinish: nil,
-                            finishCriteria: "identifier-closed"
+                            finishCriteria: "identifier-closed",
+                            onFinish:  { _ in
+                                UIApplication.shared.dismissTopView()
+                            }
                         )
                     }
                 }

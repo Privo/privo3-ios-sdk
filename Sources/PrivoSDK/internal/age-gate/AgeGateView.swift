@@ -19,8 +19,8 @@ struct AgeGateView : View {
     @State fileprivate var state: PrivoAgeGateState = PrivoAgeGateState()
     let ageGateData: CheckAgeStoreData?
     let targetPage:  String
-    let onFinish: ((Array<AgeGateEvent>) -> Void)?
     var finishCriteria: String = "age-gate-loading"
+    let onFinish: ((Array<AgeGateEvent>) -> Void)?
 
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let ageGateUrl = PrivoInternal.configuration.ageGatePublicUrl
