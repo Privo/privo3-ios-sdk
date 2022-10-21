@@ -121,8 +121,6 @@ struct Webview: UIViewRepresentable {
                let scheme = url.scheme {
                 if (scheme.lowercased() == "mailto") {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                    // here I decide to .cancel, do as you wish
-                    decisionHandler(.cancel)
                     return
                 }
             }
