@@ -19,7 +19,8 @@ struct AgeGateView : View {
     @State fileprivate var state: PrivoAgeGateState = PrivoAgeGateState()
     let ageGateData: CheckAgeStoreData?
     let targetPage:  String
-    let onFinish: ((Array<AgeGateEvent>) -> Void)
+    let onFinish: ((Array<AgeGateEvent>) -> Void)?
+    var finishCriteria: String = "age-gate-loading"
 
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let ageGateUrl = PrivoInternal.configuration.ageGatePublicUrl
@@ -30,7 +31,7 @@ struct AgeGateView : View {
          return WebviewConfig(
              url: ageGateUrl!,
              showCloseIcon: false,
-             finishCriteria: "age-gate-loading",
+             finishCriteria: finishCriteria,
              onFinish: { url in
                  if let items = URLComponents(string: url)?.queryItems,
                     let eventId = items.first(where: {$0.name == "privo_age_gate_events_id"})?.value {
@@ -69,7 +70,7 @@ struct AgeGateView : View {
         
         if (state.isPresented == true) {
             state.isPresented = false
-            onFinish(events ?? [AgeGateEvent(status: AgeGateStatus.Canceled, userIdentifier: nil, agId: nil, ageRange: nil)])
+            onFinish?(events ?? [AgeGateEvent(status: AgeGateStatus.Canceled, userIdentifier: nil, agId: nil, ageRange: nil)])
         }
     }
     

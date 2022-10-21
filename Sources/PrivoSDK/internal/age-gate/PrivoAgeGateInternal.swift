@@ -239,6 +239,34 @@ internal class PrivoAgeGateInternal {
             }
         }
     }
+    internal func showAgeGateIdentifier(_ userIdentifier: String?) {
+        storage.getStoredAgeGateId(userIdentifier) { [weak self] agId in
+            self?.storage.getFpId() { fpId in
+                self?.storage.serviceSettings.getSettings { settings in
+                    let ageGateData = CheckAgeStoreData(
+                        serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
+                        settings: settings,
+                        userIdentifier: userIdentifier,
+                        countryCode: nil,
+                        birthDateYYYYMMDD: nil,
+                        birthDateYYYYMM: nil,
+                        birthDateYYYY: nil,
+                        redirectUrl: nil,
+                        agId: agId,
+                        fpId: fpId
+                    )
+                    UIApplication.shared.showView(false) {
+                        AgeGateView(
+                            ageGateData : ageGateData,
+                            targetPage: "age-gate-identifier",
+                            onFinish: nil,
+                            finishCriteria: "identifier-closed"
+                        )
+                    }
+                }
+            }
+        }
+    }
     
     internal func hide() {
         UIApplication.shared.dismissTopView()
