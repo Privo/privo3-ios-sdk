@@ -114,6 +114,16 @@ struct Webview: UIViewRepresentable {
                let onFinish = onFinish {
                 if  url.contains(finishCriteria) {
                     onFinish(url)
+                    return
+                }
+            }
+            if let url = navigationAction.request.url,
+               let scheme = url.scheme {
+                if (scheme.lowercased() == "mailto") {
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                    // here I decide to .cancel, do as you wish
+                    decisionHandler(.cancel)
+                    return
                 }
             }
         }
@@ -133,6 +143,7 @@ struct Webview: UIViewRepresentable {
         }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+            
             if let mimeType = navigationResponse.response.mimeType {
                 if (mimeType.lowercased().contains("pdf")) {
                     // Will be used in future releases
