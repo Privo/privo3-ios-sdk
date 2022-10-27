@@ -53,6 +53,10 @@ public class PrivoAgeGate {
             }
         }
     }
+    public func showIdentifierModal(_ userIdentifier: String? = nil) throws {
+        try ageGate.helpers.checkNetwork()
+        ageGate.showAgeGateIdentifier(userIdentifier)
+    }
     public func hide() {
         ageGate.hide()
     }
