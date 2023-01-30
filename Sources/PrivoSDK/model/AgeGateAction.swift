@@ -13,4 +13,5 @@ public enum AgeGateAction: Int, Decodable, Encodable, Hashable {
     case IdentityVerify
     case AgeVerify
     case Allow
+    case MultiUserBlock
 }

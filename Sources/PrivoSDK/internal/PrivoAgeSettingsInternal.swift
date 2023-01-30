@@ -38,4 +38,10 @@ class PrivoAgeSettingsInternal {
             updateSettings(completion)
         }
     }
+    
+    func getSettingsT(_ completion: @escaping (AgeServiceSettings) throws -> Void) {
+        getSettings() { s in
+            try! completion(s)
+        }
+    }
 }

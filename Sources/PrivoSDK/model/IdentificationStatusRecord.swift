@@ -31,3 +31,9 @@ struct RecheckStatusRecord: Decodable, Encodable, Hashable {
     let birthDateYYYY: String? // "2021"
     let countryCode: String?
 }
+struct LinkUserStatusRecord: Decodable, Encodable, Hashable {
+    let serviceIdentifier: String
+    let agId: String
+    let extUserId: String
+    
+}

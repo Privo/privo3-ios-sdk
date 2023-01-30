@@ -101,6 +101,13 @@ class Rest {
             completionHandler(r.value)
         }
     }
+    func processLinkUser(data: LinkUserStatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
+        let url = String(format: "%@/link-user", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
+        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatusResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
+            self.trackPossibleAFError(r.error, r.response?.statusCode)
+            completionHandler(r.value)
+        }
+    }
     func getAgeServiceSettings(serviceIdentifier: String, completionHandler: @escaping (AgeServiceSettings?) -> Void) {
         let url = String(format: "%@/settings?service_identifier=%@", PrivoInternal.configuration.ageGateBaseUrl.absoluteString, serviceIdentifier)
         AF.request(url).responseDecodable(of: AgeServiceSettings.self) { r in

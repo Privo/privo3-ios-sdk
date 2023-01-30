@@ -14,4 +14,8 @@ public enum PrivoError: Error {
 
 public enum AgeGateError: Error {
     case incorrectDateOfBirht
+    case notAllowedMultiUserUsage
+    case notAllowedEmptyStringUserIdentifier
+    case notAllowedEmptyStringNickname
+    case notAllowedEmptyStringAgId
 }

@@ -37,7 +37,7 @@ struct AgeGateView : View {
                     let eventId = items.first(where: {$0.name == "privo_age_gate_events_id"})?.value {
                      state.inProgress = true
                      PrivoInternal.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<AgeGateEventInternal>?) in
-                         let publicEvents = events?.map { $0.toEvent() }.compactMap { $0 }
+                         let publicEvents = events?.map { $0.toEvent(nickname: ageGateData?.nickname) }.compactMap { $0 }
                          let nonCanceledEvents = publicEvents?.filter { $0.status != AgeGateStatus.Canceled };
                          let resultEvents = (nonCanceledEvents?.isEmpty ?? true) ? publicEvents : nonCanceledEvents
                          finishView(resultEvents)
@@ -70,7 +70,7 @@ struct AgeGateView : View {
         
         if (state.isPresented == true) {
             state.isPresented = false
-            onFinish?(events ?? [AgeGateEvent(status: AgeGateStatus.Canceled, userIdentifier: nil, agId: nil, ageRange: nil)])
+            onFinish?(events ?? [AgeGateEvent(status: AgeGateStatus.Canceled, userIdentifier: nil, nickname: nil, agId: nil, ageRange: nil)])
         }
     }
     

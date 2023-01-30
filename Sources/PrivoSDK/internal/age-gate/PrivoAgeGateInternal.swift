@@ -10,11 +10,17 @@ import SwiftUI
 
 internal class PrivoAgeGateInternal {
     
-    let helpers = PrivoAgeHelpers()
-    let storage = AgeGateStorage()
+    let storage: AgeGateStorage
+    let helpers: PrivoAgeHelpers
+    
+    init() {
+        self.storage = AgeGateStorage()
+        self.helpers = PrivoAgeHelpers(self.storage.serviceSettings)
+    }
     
     public func processStatus(
         userIdentifier: String?,
+        nickname: String?,
         agId: String?,
         fpId: String,
         completionHandler: @escaping (AgeGateEvent) -> Void) {
@@ -29,6 +35,7 @@ internal class PrivoAgeGateInternal {
                 let event = AgeGateEvent(
                     status: response.status.toStatus(),
                     userIdentifier: userIdentifier,
+                    nickname: nickname,
                     agId: response.agId ?? agId,
                     ageRange: response.ageRange
                 )
@@ -37,6 +44,7 @@ internal class PrivoAgeGateInternal {
                 completionHandler(AgeGateEvent(
                     status: AgeGateStatus.Undefined,
                     userIdentifier: userIdentifier,
+                    nickname: nickname,
                     agId: agId,
                     ageRange: nil
                 ))
@@ -44,79 +52,80 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    internal func getStatusEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeGateEvent) -> Void) {
-        let expireEvent = storage.getStoredAgeGateEvent(userIdentifier)
-        if (expireEvent?.isExpire == false) {
-            if let event = expireEvent?.event {
-                // Force return event if we found non-expired one
-                completionHandler(event)
-                return
-            }
-        }
-        storage.getStoredAgeGateId(userIdentifier) { [weak self] agId in
+    internal func getStatusEvent(_ userIdentifier: String?, nickname: String?, completionHandler: @escaping (AgeGateEvent) -> Void) {
+        storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname) { [weak self] agId in
             self?.storage.getFpId { fpId in
-                self?.processStatus(
-                    userIdentifier: userIdentifier,
-                    agId: agId,
-                    fpId: fpId
-                ) { event in
-                    self?.storage.storeAgeGateEvent(event)
-                    completionHandler(event)
+                if (agId == nil && nickname != nil) {
+                    // for case of a new nickname
+                    self?.processStatus(
+                        userIdentifier: nil,
+                        nickname: nickname,
+                        agId: nil,
+                        fpId: fpId,
+                        completionHandler: completionHandler
+                    )
+                } else {
+                    self?.processStatus(
+                        userIdentifier: userIdentifier,
+                        nickname: nickname,
+                        agId: agId,
+                        fpId: fpId,
+                        completionHandler: completionHandler
+                    )
                 }
             }
         }
     }
     
-    private func getCurrentAgeState(
-        _ userIdentifier: String?,
-        prevEvent: AgeGateEvent?,
-        completionHandler: @escaping (AgeState?) -> Void)
-    {
-        var settings: AgeServiceSettings?
-        var event: AgeGateEvent?
-        
-        storage.getStoredAgeGateId(userIdentifier) { [weak self] agId in
-            self?.storage.getFpId() { fpId in
-                
-                let group = DispatchGroup()
-
-                group.enter()
-                group.enter()
-                
-                self?.storage.serviceSettings.getSettings { s in
-                    settings = s
-                    group.leave()
-                }
-                if let prevEvent = prevEvent {
-                    event = prevEvent
-                    group.leave()
-                } else {
-                    self?.processStatus(
-                        userIdentifier: userIdentifier,
-                        agId: agId,
-                        fpId: fpId
-                    ) { e in
-                        event = e
-                        group.leave()
-                    }
-                }
-                
-                group.notify(queue: .main) {
-                       if let settings = settings {
-                        completionHandler(AgeState(
-                            fpId: fpId,
-                            agId: agId,
-                            settings: settings,
-                            event: event
-                        ))
-                    } else {
-                        completionHandler(nil)
-                    }
-                }
-                
+    public func linkUser(
+        userIdentifier: String,
+        agId: String,
+        nickname: String?,
+        completionHandler: @escaping (AgeGateEvent) -> Void) {
+        let record = LinkUserStatusRecord(
+            serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
+            agId: agId,
+            extUserId: userIdentifier
+        )
+        PrivoInternal.rest.processLinkUser(data: record) { response in
+            if let response = response {
+                let event = AgeGateEvent(
+                    status: response.status.toStatus(),
+                    userIdentifier: userIdentifier,
+                    nickname: nickname,
+                    agId: response.agId ?? agId,
+                    ageRange: response.ageRange
+                )
+                completionHandler(event)
+            } else {
+                completionHandler(AgeGateEvent(
+                    status: AgeGateStatus.Undefined,
+                    userIdentifier: userIdentifier,
+                    nickname: nickname,
+                    agId: agId,
+                    ageRange: nil
+                ))
             }
         }
     }
+    
+    internal func getAgeGateState(userIdentifier: String?,
+                                  niсkname: String?,
+                                  completionHandler: @escaping (AgeState?) -> Void
+    ) {
+        storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: niсkname) { [weak self] agId in
+            self?.storage.getFpId() { fpId in
+                self?.storage.serviceSettings.getSettings { settings in
+                    completionHandler(AgeState(
+                        fpId: fpId,
+                        agId: agId,
+                        settings: settings
+                    ))
+                }
+            }
+        }
+    }
+    
     
     internal func runAgeGateByBirthDay(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
         storage.getFpId() { fpId in
@@ -136,6 +145,7 @@ internal class PrivoAgeGateInternal {
                     let event = AgeGateEvent(
                         status: status,
                         userIdentifier: data.userIdentifier,
+                        nickname: data.userNickname,
                         agId: response.agId,
                         ageRange: response.ageRange
                     )
@@ -159,7 +169,7 @@ internal class PrivoAgeGateInternal {
         _ data: CheckAgeData,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
-        storage.getStoredAgeGateId(data.userIdentifier) { [weak self] agId in
+        storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.userNickname) { [weak self] agId in
             if let agId = agId {
                 // make a rest call
                 let record = RecheckStatusRecord(
@@ -176,6 +186,7 @@ internal class PrivoAgeGateInternal {
                         let event = AgeGateEvent(
                             status: status,
                             userIdentifier: data.userIdentifier,
+                            nickname: data.userNickname,
                             agId: response.agId,
                             ageRange: response.ageRange
                         )
@@ -204,7 +215,7 @@ internal class PrivoAgeGateInternal {
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
         
-        getCurrentAgeState(data.userIdentifier, prevEvent: prevEvent) { state  in
+        getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.userNickname) { state  in
             
             guard let state = state else {
                 completionHandler(nil)
@@ -215,6 +226,7 @@ internal class PrivoAgeGateInternal {
                 serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                 settings: state.settings,
                 userIdentifier: data.userIdentifier,
+                nickname: data.userNickname,
                 countryCode: data.countryCode,
                 birthDateYYYYMMDD: data.birthDateYYYYMMDD,
                 birthDateYYYYMM: data.birthDateYYYYMM,
@@ -226,7 +238,7 @@ internal class PrivoAgeGateInternal {
             UIApplication.shared.showView(false) {
                 AgeGateView(
                     ageGateData : ageGateData,
-                    targetPage: self.helpers.getStatusTargetPage(state.event?.status, recheckRequired: recheckRequired),
+                    targetPage: self.helpers.getStatusTargetPage(prevEvent?.status, recheckRequired: recheckRequired),
                     onFinish: { events in
                         events.forEach { event in
                             completionHandler(event)
@@ -239,14 +251,15 @@ internal class PrivoAgeGateInternal {
             }
         }
     }
-    internal func showAgeGateIdentifier(_ userIdentifier: String?) {
-        storage.getStoredAgeGateId(userIdentifier) { [weak self] agId in
+    internal func showAgeGateIdentifier(userIdentifier: String?, nickname: String?) {
+        storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname) { [weak self] agId in
             self?.storage.getFpId() { fpId in
                 self?.storage.serviceSettings.getSettings { settings in
                     let ageGateData = CheckAgeStoreData(
                         serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                         settings: settings,
                         userIdentifier: userIdentifier,
+                        nickname: nickname,
                         countryCode: nil,
                         birthDateYYYYMMDD: nil,
                         birthDateYYYYMM: nil,
