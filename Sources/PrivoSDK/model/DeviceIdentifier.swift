@@ -16,10 +16,7 @@ struct DeviceIdentifier {
             self.identifier = identifier
         } else {
             let newIdentifier = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
-            let result = keychain.set(key: deviceIdentifierKey, value: newIdentifier)
-            if (result) {
-                print("Fail to save user identifier to keychain")
-            }
+            keychain.set(key: deviceIdentifierKey, value: newIdentifier)
             self.identifier = newIdentifier
         }
     }

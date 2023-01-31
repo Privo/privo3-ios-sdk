@@ -14,6 +14,7 @@ internal struct CheckAgeStoreData: Encodable {
     let serviceIdentifier: String;
     let settings: AgeServiceSettings;
     let userIdentifier: String?;
+    let nickname: String?;
     let countryCode: String?;
     let birthDateYYYYMMDD: String?
     let birthDateYYYYMM: String?
@@ -29,19 +30,22 @@ public struct CheckAgeData: Hashable {
     public let birthDateYYYYMM: String? // "2021-03" format
     public let birthDateYYYY: String? // "2021" format
     public let countryCode: String?; // Alpha-2 country code, e.g US
+    public let userNickname: String?; // Nikname of user for multi-user integration. Can not be an empty string ("").
     
     public init(
         userIdentifier: String? = nil,
         birthDateYYYYMMDD: String? = nil,
         birthDateYYYYMM: String? = nil,
         birthDateYYYY: String? = nil,
-        countryCode: String? = nil
+        countryCode: String? = nil,
+        userNickname: String? = nil
     ) {
         self.userIdentifier = userIdentifier
         self.birthDateYYYYMMDD = birthDateYYYYMMDD
         self.birthDateYYYYMM = birthDateYYYYMM
         self.birthDateYYYY = birthDateYYYY
         self.countryCode = countryCode
+        self.userNickname = userNickname
     }
 }
 

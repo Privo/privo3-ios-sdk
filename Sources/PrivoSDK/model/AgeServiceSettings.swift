@@ -17,5 +17,6 @@ internal struct AgeServiceSettings: Encodable, Decodable {
     let p2SiteId: Int?
     let logoUrl: String?
     let customerSupportEmail: String?
+    let isMultiUserOn: Bool
 }
 

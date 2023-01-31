@@ -13,6 +13,12 @@ internal class PrivoAgeHelpers {
     private let AGE_FORMAT_YYYYMM = "yyyy-MM";
     private let AGE_FORMAT_YYYY = "yyyy";
     
+    let serviceSettings: PrivoAgeSettingsInternal
+    
+    init(_ serviceSettings: PrivoAgeSettingsInternal) {
+        self.serviceSettings = serviceSettings
+    }
+    
     internal func getStatusTargetPage(_ status: AgeGateStatus?, recheckRequired: Bool) -> String {
         guard let status = status else {
             return "dob"
@@ -24,6 +30,8 @@ internal class PrivoAgeHelpers {
             case AgeGateStatus.Pending:
                 return "verification-pending"
             case AgeGateStatus.Blocked:
+                return "access-restricted";
+            case AgeGateStatus.MultiUserBlocked:
                 return "access-restricted";
             case AgeGateStatus.ConsentRequired:
                 return "request-consent";
@@ -48,6 +56,8 @@ internal class PrivoAgeHelpers {
                 return AgeGateStatus.IdentityVerificationRequired
             case .AgeVerify:
                 return AgeGateStatus.AgeVerificationRequired
+            case .MultiUserBlock:
+                return AgeGateStatus.MultiUserBlocked
             default:
                 return AgeGateStatus.Undefined
         }
@@ -86,14 +96,40 @@ internal class PrivoAgeHelpers {
         try PrivoInternal.rest.checkNetwork()
     }
     
+    internal func checkUserData(userIdentifier: String?, nickname: String?, agId: String? = nil) throws {
+        if let userIdentifier = userIdentifier {
+            if (userIdentifier.isEmpty) {
+                throw AgeGateError.notAllowedEmptyStringUserIdentifier
+            }
+        }
+        if let nickname = nickname {
+            
+            if (nickname.isEmpty) {
+                throw AgeGateError.notAllowedEmptyStringNickname
+            }
+            serviceSettings.getSettingsT { settings in
+                if (!settings.isMultiUserOn) {
+                    // we have a Nickname but isMultiUserOn not allowed in partner configuration
+                    throw AgeGateError.notAllowedMultiUserUsage
+                }
+            }
+        }
+        if let agId = agId {
+            if (agId.isEmpty) {
+                throw AgeGateError.notAllowedEmptyStringAgId
+            }
+        }
+    }
+    
     internal func checkRequest(_ data: CheckAgeData) throws {
+
         try checkNetwork()
+        try checkUserData(userIdentifier: data.userNickname, nickname: data.userNickname)
         if let (date, format) = getDateAndFormat(data) {
             if (isAgeCorrect(rawDate: date, format: format) == false) {
                 throw AgeGateError.incorrectDateOfBirht
             }
         }
-        
     }
 }
 
