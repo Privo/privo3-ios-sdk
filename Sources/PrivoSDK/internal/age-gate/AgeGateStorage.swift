@@ -9,7 +9,7 @@ import Foundation
 
 internal class AgeGateStorage {
     private let FP_ID_KEY = "privoFpId";
-    private let AGE_GATE_NIKNAMES_KEY = "AgeGateNiknames"
+    private let AGE_GATE_STORED_ENTITY_KEY = "AgeGateStoredEntity"
     private let AGE_EVENT_KEY_PREFIX = "AgeGateEvent"
     private let AGE_GATE_ID_KEY_PREFIX = "AgeGateID"
     
@@ -17,66 +17,65 @@ internal class AgeGateStorage {
     
     let serviceSettings = PrivoAgeSettingsInternal()
     
-    internal func getAgIdKey(userIdentifier: String?, nickname: String?) -> String {
-        if let nickname = nickname {
-            return "\(self.AGE_GATE_ID_KEY_PREFIX)-\(userIdentifier ?? "")-\(nickname)"
-        } else {
-            return "\(self.AGE_GATE_ID_KEY_PREFIX)-\(userIdentifier ?? "")"
-        }
-    }
-    
     internal func storeInfoFromEvent(event: AgeGateEvent?) {
         if let agId = event?.agId {
-            let key = getAgIdKey(userIdentifier: event?.userIdentifier, nickname: event?.nickname)
-            keychain.set(key: key, value: agId)
+            storeAgId(userIdentifier: event?.userIdentifier, nickname: event?.nickname, agId: agId)
         }
-        if let nickname = event?.nickname {
-            getStoredNiknames { [weak self] nicknames in
-                var newNiknames = nicknames
-                newNiknames.insert(nickname)
-                if let data = try? JSONEncoder().encode(newNiknames) {
-                    let stringData = String(decoding: data, as: UTF8.self)
-                    if let keychain = self?.keychain,
-                       let AGE_GATE_NIKNAMES_KEY = self?.AGE_GATE_NIKNAMES_KEY {
-                        keychain.set(key: AGE_GATE_NIKNAMES_KEY, value: stringData)
-                    }
+    }
+    internal func storeAgId(userIdentifier: String?, nickname: String?, agId: String) {
+        let newEntity = AgeGateStoredEntity(userIdentifier: userIdentifier, nickname:nickname, agId: agId)
+        getAgeGateStoredEntities { [weak self] entities in
+            var newEntities = entities
+            newEntities.insert(newEntity)
+            if let data = try? JSONEncoder().encode(newEntities) {
+                let stringData = String(decoding: data, as: UTF8.self)
+                if let keychain = self?.keychain,
+                   let AGE_GATE_STORED_ENTITY_KEY = self?.AGE_GATE_STORED_ENTITY_KEY {
+                    keychain.set(key: AGE_GATE_STORED_ENTITY_KEY, value: stringData)
                 }
-                
             }
         }
     }
-    //TODO: we don't need a list of nicknames without age-gate
-    internal func getStoredNiknames(completionHandler: @escaping (Set<String>) -> Void) {
-        if let jsonString = keychain.get(AGE_GATE_NIKNAMES_KEY),
+    internal func getAgeGateStoredEntities(completionHandler: @escaping (Set<AgeGateStoredEntity>) -> Void) {
+        if let jsonString = keychain.get(AGE_GATE_STORED_ENTITY_KEY),
            let jsonData = jsonString.data(using: .utf8),
-           let nicknames = try? JSONDecoder().decode(Set<String>.self, from: jsonData) {
-            completionHandler(nicknames)
+           let entities = try? JSONDecoder().decode(Set<AgeGateStoredEntity>.self, from: jsonData) {
+            completionHandler(entities)
         } else {
             completionHandler([])
         }
     }
-    internal func getIsNicknameStored(completionHandler: @escaping (Bool) -> Void) {
-        
-    }
-    
     
     internal func getStoredAgeGateId(userIdentifier: String?, nickname: String?, completionHandler: @escaping (String?) -> Void) {
-        let key = getAgIdKey(userIdentifier: userIdentifier, nickname: nickname)
-        let agIdFromKeychain = keychain.get(key)
-        if (agIdFromKeychain != nil) {
-            completionHandler(agIdFromKeychain)
-        } else {
-            // follback. TODO: remove it later (after all users will use a new storage)
-            let oldKey = "\(AGE_EVENT_KEY_PREFIX)-\(userIdentifier ?? "")"
-            if let jsonString = keychain.get(oldKey),
-               let jsonData = jsonString.data(using: .utf8),
-               let value = try? JSONDecoder().decode(AgeGateExpireEvent.self, from: jsonData),
-               let agId = value.event.agId {
-                keychain.set(key: key, value: agId) // store agId in the new place
-                completionHandler(agId)
-             } else {
-                 completionHandler(nil)
-             }
+        
+        getAgeGateStoredEntities() { [weak self] entities in
+            let ageGateData = entities.first {$0.userIdentifier == userIdentifier && $0.nickname == nickname}
+            if let ageGateData = ageGateData {
+                completionHandler(ageGateData.agId)
+            } else {
+                // fallback 1 TODO: remove it later (after all users will use a new storage)
+                if let AGE_GATE_ID_KEY_PREFIX = self?.AGE_GATE_ID_KEY_PREFIX,
+                   let AGE_EVENT_KEY_PREFIX = self?.AGE_EVENT_KEY_PREFIX,
+                   let keychain = self?.keychain {
+                    let oldKey = "\(AGE_GATE_ID_KEY_PREFIX)-\(userIdentifier ?? "")"
+                    if let agIdFromKeychain = keychain.get(oldKey) {
+                        self?.storeAgId(userIdentifier: userIdentifier, nickname: nickname, agId: agIdFromKeychain) // store agId in the new place
+                        completionHandler(agIdFromKeychain)
+                    } else {
+                        // follback 2. TODO: remove it later (after all users will use a new storage)
+                        let oldKey2 = "\(AGE_EVENT_KEY_PREFIX)-\(userIdentifier ?? "")"
+                        if let jsonString = keychain.get(oldKey2),
+                           let jsonData = jsonString.data(using: .utf8),
+                           let value = try? JSONDecoder().decode(AgeGateExpireEvent.self, from: jsonData),
+                           let agId = value.event.agId {
+                            self?.storeAgId(userIdentifier: userIdentifier, nickname: nickname, agId: agId) // store agId in the new place
+                            completionHandler(agId)
+                         } else {
+                             completionHandler(nil)
+                         }
+                    }
+                }
+            }
         }
     }
     

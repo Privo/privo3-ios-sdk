@@ -82,31 +82,45 @@ internal class PrivoAgeGateInternal {
         agId: String,
         nickname: String?,
         completionHandler: @escaping (AgeGateEvent) -> Void) {
-        let record = LinkUserStatusRecord(
-            serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
-            agId: agId,
-            extUserId: userIdentifier
-        )
-        PrivoInternal.rest.processLinkUser(data: record) { response in
-            if let response = response {
-                let event = AgeGateEvent(
-                    status: response.status.toStatus(),
-                    userIdentifier: userIdentifier,
-                    nickname: nickname,
-                    agId: response.agId ?? agId,
-                    ageRange: response.ageRange
-                )
-                completionHandler(event)
-            } else {
-                completionHandler(AgeGateEvent(
-                    status: AgeGateStatus.Undefined,
-                    userIdentifier: userIdentifier,
-                    nickname: nickname,
+            
+            storage.getAgeGateStoredEntities() { entities in
+                let isKnownAgId = entities.contains { $0.agId == agId}
+                if (isKnownAgId == false) {
+                    // send flag to metrics and continue (not stop)
+                    let warning = AgeGateLinkWarning(descripteion: "Age Gate Id wasn't found in the store during Age Gate 'link user' call", agIdEntities: entities)
+                    if let data = try? JSONEncoder().encode(warning) {
+                        let stringData = String(decoding: data, as: UTF8.self)
+                        let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: stringData)
+                        PrivoInternal.rest.sendAnalyticEvent(event)
+                    }
+                }
+                
+                let record = LinkUserStatusRecord(
+                    serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                     agId: agId,
-                    ageRange: nil
-                ))
+                    extUserId: userIdentifier
+                )
+                PrivoInternal.rest.processLinkUser(data: record) { response in
+                    if let response = response {
+                        let event = AgeGateEvent(
+                            status: response.status.toStatus(),
+                            userIdentifier: userIdentifier,
+                            nickname: nickname,
+                            agId: response.agId ?? agId,
+                            ageRange: response.ageRange
+                        )
+                        completionHandler(event)
+                    } else {
+                        completionHandler(AgeGateEvent(
+                            status: AgeGateStatus.Undefined,
+                            userIdentifier: userIdentifier,
+                            nickname: nickname,
+                            agId: agId,
+                            ageRange: nil
+                        ))
+                    }
+                }
             }
-        }
     }
     
     internal func getAgeGateState(userIdentifier: String?,
