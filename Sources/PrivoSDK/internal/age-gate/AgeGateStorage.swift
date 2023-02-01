@@ -49,7 +49,13 @@ internal class AgeGateStorage {
     internal func getStoredAgeGateId(userIdentifier: String?, nickname: String?, completionHandler: @escaping (String?) -> Void) {
         
         getAgeGateStoredEntities() { [weak self] entities in
-            let ageGateData = entities.first {$0.userIdentifier == userIdentifier && $0.nickname == nickname}
+            let ageGateData = entities.first(where: { ent in
+                if let userIdentifier = userIdentifier {
+                    return ent.userIdentifier == userIdentifier
+                } else {
+                    return ent.nickname == nickname
+                }
+            })
             if let ageGateData = ageGateData {
                 completionHandler(ageGateData.agId)
             } else {
