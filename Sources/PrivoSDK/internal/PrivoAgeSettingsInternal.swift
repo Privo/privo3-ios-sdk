@@ -44,7 +44,7 @@ class PrivoAgeSettingsInternal {
             do {
                 try completion(s)
             } catch {
-                fatalError("Configaration Error: \(error).")
+                fatalError("Configuration Error: \(error).")
             }
         }
     }
