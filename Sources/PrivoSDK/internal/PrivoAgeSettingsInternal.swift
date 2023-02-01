@@ -41,7 +41,11 @@ class PrivoAgeSettingsInternal {
     
     func getSettingsT(_ completion: @escaping (AgeServiceSettings) throws -> Void) {
         getSettings() { s in
-            try! completion(s)
+            do {
+                try completion(s)
+            } catch {
+                fatalError("Configaration Error: \(error).")
+            }
         }
     }
 }
