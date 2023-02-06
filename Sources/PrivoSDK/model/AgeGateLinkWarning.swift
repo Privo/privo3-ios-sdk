@@ -8,6 +8,6 @@
 import Foundation
 
 struct AgeGateLinkWarning: Encodable {
-    let descripteion: String
+    let description: String
     let agIdEntities: Set<AgeGateStoredEntity>
 }

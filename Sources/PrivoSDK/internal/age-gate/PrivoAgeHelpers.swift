@@ -124,7 +124,7 @@ internal class PrivoAgeHelpers {
     internal func checkRequest(_ data: CheckAgeData) throws {
 
         try checkNetwork()
-        try checkUserData(userIdentifier: data.userNickname, nickname: data.userNickname)
+        try checkUserData(userIdentifier: data.userIdentifier, nickname: data.nickname)
         if let (date, format) = getDateAndFormat(data) {
             if (isAgeCorrect(rawDate: date, format: format) == false) {
                 throw AgeGateError.incorrectDateOfBirht

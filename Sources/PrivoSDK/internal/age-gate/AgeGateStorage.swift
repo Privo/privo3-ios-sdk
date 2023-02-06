@@ -68,7 +68,7 @@ internal class AgeGateStorage {
                         self?.storeAgId(userIdentifier: userIdentifier, nickname: nickname, agId: agIdFromKeychain) // store agId in the new place
                         completionHandler(agIdFromKeychain)
                     } else {
-                        // follback 2. TODO: remove it later (after all users will use a new storage)
+                        // fallback 2. TODO: remove it later (after all users will use a new storage)
                         let oldKey2 = "\(AGE_EVENT_KEY_PREFIX)-\(userIdentifier ?? "")"
                         if let jsonString = keychain.get(oldKey2),
                            let jsonData = jsonString.data(using: .utf8),

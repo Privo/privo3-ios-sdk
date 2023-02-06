@@ -87,7 +87,7 @@ internal class PrivoAgeGateInternal {
                 let isKnownAgId = entities.contains { $0.agId == agId}
                 if (isKnownAgId == false) {
                     // send flag to metrics and continue (not stop)
-                    let warning = AgeGateLinkWarning(descripteion: "Age Gate Id wasn't found in the store during Age Gate 'link user' call", agIdEntities: entities)
+                    let warning = AgeGateLinkWarning(description: "Age Gate Id wasn't found in the store during Age Gate 'link user' call", agIdEntities: entities)
                     if let data = try? JSONEncoder().encode(warning) {
                         let stringData = String(decoding: data, as: UTF8.self)
                         let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: stringData)
@@ -159,7 +159,7 @@ internal class PrivoAgeGateInternal {
                     let event = AgeGateEvent(
                         status: status,
                         userIdentifier: data.userIdentifier,
-                        nickname: data.userNickname,
+                        nickname: data.nickname,
                         agId: response.agId,
                         ageRange: response.ageRange
                     )
@@ -183,7 +183,7 @@ internal class PrivoAgeGateInternal {
         _ data: CheckAgeData,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
-        storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.userNickname) { [weak self] agId in
+        storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.nickname) { [weak self] agId in
             if let agId = agId {
                 // make a rest call
                 let record = RecheckStatusRecord(
@@ -200,7 +200,7 @@ internal class PrivoAgeGateInternal {
                         let event = AgeGateEvent(
                             status: status,
                             userIdentifier: data.userIdentifier,
-                            nickname: data.userNickname,
+                            nickname: data.nickname,
                             agId: response.agId,
                             ageRange: response.ageRange
                         )
@@ -229,7 +229,7 @@ internal class PrivoAgeGateInternal {
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
         
-        getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.userNickname) { state  in
+        getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname) { state  in
             
             guard let state = state else {
                 completionHandler(nil)
@@ -240,7 +240,7 @@ internal class PrivoAgeGateInternal {
                 serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                 settings: state.settings,
                 userIdentifier: data.userIdentifier,
-                nickname: data.userNickname,
+                nickname: data.nickname,
                 countryCode: data.countryCode,
                 birthDateYYYYMMDD: data.birthDateYYYYMMDD,
                 birthDateYYYYMM: data.birthDateYYYYMM,

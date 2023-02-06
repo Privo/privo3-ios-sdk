@@ -13,7 +13,7 @@ public class PrivoAgeGate {
     public init() {
     }
     
-    public func getStatus(userIdentifier: String?, nickname: String?, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
+    public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
         try ageGate.helpers.checkNetwork()
         try ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
         ageGate.getStatusEvent(userIdentifier, nickname: nickname) {  [weak self] event in
@@ -67,7 +67,7 @@ public class PrivoAgeGate {
         }
     }
     
-    public func showIdentifierModal(userIdentifier: String?, nickname: String?) throws {
+    public func showIdentifierModal(userIdentifier: String?, nickname: String? = nil) throws {
         try ageGate.helpers.checkNetwork()
         ageGate.showAgeGateIdentifier(userIdentifier: userIdentifier, nickname: nickname)
     }
