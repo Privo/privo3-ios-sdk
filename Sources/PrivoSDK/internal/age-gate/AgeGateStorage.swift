@@ -17,6 +17,11 @@ internal class AgeGateStorage {
     
     let serviceSettings = PrivoAgeSettingsInternal()
     
+    
+    internal func getStoredEntitiesKey () -> String {
+        return "\(AGE_GATE_STORED_ENTITY_KEY)-\(PrivoInternal.settings.envType)"
+    }
+    
     internal func storeInfoFromEvent(event: AgeGateEvent?) {
         if let agId = event?.agId {
             storeAgId(userIdentifier: event?.userIdentifier, nickname: event?.nickname, agId: agId)
@@ -30,14 +35,14 @@ internal class AgeGateStorage {
             if let data = try? JSONEncoder().encode(newEntities) {
                 let stringData = String(decoding: data, as: UTF8.self)
                 if let keychain = self?.keychain,
-                   let AGE_GATE_STORED_ENTITY_KEY = self?.AGE_GATE_STORED_ENTITY_KEY {
-                    keychain.set(key: AGE_GATE_STORED_ENTITY_KEY, value: stringData)
+                   let this = self {
+                    keychain.set(key: this.getStoredEntitiesKey(), value: stringData)
                 }
             }
         }
     }
     internal func getAgeGateStoredEntities(completionHandler: @escaping (Set<AgeGateStoredEntity>) -> Void) {
-        if let jsonString = keychain.get(AGE_GATE_STORED_ENTITY_KEY),
+        if let jsonString = keychain.get(getStoredEntitiesKey()),
            let jsonData = jsonString.data(using: .utf8),
            let entities = try? JSONDecoder().decode(Set<AgeGateStoredEntity>.self, from: jsonData) {
             completionHandler(entities)
