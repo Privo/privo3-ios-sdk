@@ -7,11 +7,12 @@
 
 import Security
 import Foundation
+import os.log
 
 struct PrivoKeychain {
     private let privoPrefix = "com.privo.ios.sdk"
     
-    func set (key: String, value: String) -> Bool {
+    func set (key: String, value: String) {
         delete(key);
         if let data = value.data(using: String.Encoding.utf8) {
             let query: [String : Any] = [
@@ -22,9 +23,12 @@ struct PrivoKeychain {
             ]
                   
             let result = SecItemAdd(query as CFDictionary, nil)
-            return result == noErr
+            if (result != noErr) {
+                os_log("Failed to store value for key %@ in keychain", log: .default, type: .error, key)
+            }
+        } else {
+            os_log("Failed to store value for key %@ in keychain (data-encoding issue)", log: .default, type: .error, key)
         }
-        return false
     }
     
     func get(_ key: String) -> String? {
@@ -53,7 +57,7 @@ struct PrivoKeychain {
         return nil;
     }
     
-    func delete(_ key: String) -> Bool {
+    func delete(_ key: String) {
       
       let query: [String: Any] = [
         kSecClass as String       : kSecClassGenericPassword,
@@ -63,6 +67,8 @@ struct PrivoKeychain {
       
       let response = SecItemDelete(query as CFDictionary)
       
-      return response == noErr
+      if (response != noErr) {
+        os_log("Failed to delete value for key %@ in keychain", log: .default, type: .error, key)
+      }
     }
 }

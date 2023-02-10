@@ -9,71 +9,84 @@ import Foundation
 
 internal class AgeGateStorage {
     private let FP_ID_KEY = "privoFpId";
+    private let AGE_GATE_STORED_ENTITY_KEY = "AgeGateStoredEntity"
     private let AGE_EVENT_KEY_PREFIX = "AgeGateEvent"
     private let AGE_GATE_ID_KEY_PREFIX = "AgeGateID"
     
     private let keychain = PrivoKeychain()
-    private var lastEvents: [String: AgeGateExpireEvent] = [:]
     
     let serviceSettings = PrivoAgeSettingsInternal()
     
-    internal func getAgIdKey(_ userIdentifier: String?) -> String {
-        return "\(self.AGE_GATE_ID_KEY_PREFIX)-\(userIdentifier ?? "")"
+    
+    internal func getStoredEntitiesKey () -> String {
+        return "\(AGE_GATE_STORED_ENTITY_KEY)-\(PrivoInternal.settings.envType)"
     }
     
-    internal func storeAgeGateEvent(_ event: AgeGateEvent?) {
+    internal func storeInfoFromEvent(event: AgeGateEvent?) {
+        if let agId = event?.agId {
+            storeAgId(userIdentifier: event?.userIdentifier, nickname: event?.nickname, agId: agId)
+        }
+    }
+    internal func storeAgId(userIdentifier: String?, nickname: String?, agId: String) {
+        let newEntity = AgeGateStoredEntity(userIdentifier: userIdentifier, nickname:nickname, agId: agId)
+        getAgeGateStoredEntities { [weak self] entities in
+            var newEntities = entities
+            newEntities.insert(newEntity)
+            if let data = try? JSONEncoder().encode(newEntities) {
+                let stringData = String(decoding: data, as: UTF8.self)
+                if let keychain = self?.keychain,
+                   let this = self {
+                    keychain.set(key: this.getStoredEntitiesKey(), value: stringData)
+                }
+            }
+        }
+    }
+    internal func getAgeGateStoredEntities(completionHandler: @escaping (Set<AgeGateStoredEntity>) -> Void) {
+        if let jsonString = keychain.get(getStoredEntitiesKey()),
+           let jsonData = jsonString.data(using: .utf8),
+           let entities = try? JSONDecoder().decode(Set<AgeGateStoredEntity>.self, from: jsonData) {
+            completionHandler(entities)
+        } else {
+            completionHandler([])
+        }
+    }
+    
+    internal func getStoredAgeGateId(userIdentifier: String?, nickname: String?, completionHandler: @escaping (String?) -> Void) {
         
-        func getEventExpiration (_ interval: Double) -> TimeInterval {
-            if (event?.status == AgeGateStatus.Pending) {
-                // Pending Events are always expired and should be re-fetched
-                return Date().timeIntervalSince1970
+        getAgeGateStoredEntities() { [weak self] entities in
+            let ageGateData = entities.first(where: { ent in
+                if let userIdentifier = userIdentifier {
+                    return ent.userIdentifier == userIdentifier
+                } else {
+                    return ent.nickname == nickname
+                }
+            })
+            if let ageGateData = ageGateData {
+                completionHandler(ageGateData.agId)
             } else {
-                return (Date() + interval).timeIntervalSince1970
-            }
-        };
-        
-        if let event = event {
-            if (event.status != AgeGateStatus.Canceled) {
-                serviceSettings.getSettings { [weak self] settings in
-                    let interval = Double(settings.poolAgeGateStatusInterval)
-                    let expireEvent = AgeGateExpireEvent(event: event, expires: getEventExpiration(interval))
-                    let key = event.userIdentifier ?? ""
-                    self?.lastEvents[key] = expireEvent
+                // fallback 1 TODO: remove it later (after all users will use a new storage)
+                if let AGE_GATE_ID_KEY_PREFIX = self?.AGE_GATE_ID_KEY_PREFIX,
+                   let AGE_EVENT_KEY_PREFIX = self?.AGE_EVENT_KEY_PREFIX,
+                   let keychain = self?.keychain {
+                    let oldKey = "\(AGE_GATE_ID_KEY_PREFIX)-\(userIdentifier ?? "")"
+                    if let agIdFromKeychain = keychain.get(oldKey) {
+                        self?.storeAgId(userIdentifier: userIdentifier, nickname: nickname, agId: agIdFromKeychain) // store agId in the new place
+                        completionHandler(agIdFromKeychain)
+                    } else {
+                        // fallback 2. TODO: remove it later (after all users will use a new storage)
+                        let oldKey2 = "\(AGE_EVENT_KEY_PREFIX)-\(userIdentifier ?? "")"
+                        if let jsonString = keychain.get(oldKey2),
+                           let jsonData = jsonString.data(using: .utf8),
+                           let value = try? JSONDecoder().decode(AgeGateExpireEvent.self, from: jsonData),
+                           let agId = value.event.agId {
+                            self?.storeAgId(userIdentifier: userIdentifier, nickname: nickname, agId: agId) // store agId in the new place
+                            completionHandler(agId)
+                         } else {
+                             completionHandler(nil)
+                         }
+                    }
                 }
-                if let agId = event.agId {
-                    let key = getAgIdKey(event.userIdentifier)
-                    keychain.set(key: key, value: agId)
-                }
             }
-        }
-    }
-    
-    internal func getStoredAgeGateId(_ userIdentifier: String?, completionHandler: @escaping (String?) -> Void) {
-        let key = getAgIdKey(userIdentifier)
-        let agIdFromKeychain = keychain.get(key)
-        if (agIdFromKeychain != nil) {
-            completionHandler(agIdFromKeychain)
-        } else {
-            // follback. TODO: remove it later (after all users will use a new storage)
-            let oldKey = "\(AGE_EVENT_KEY_PREFIX)-\(userIdentifier ?? "")"
-            if let jsonString = keychain.get(oldKey),
-               let jsonData = jsonString.data(using: .utf8),
-               let value = try? JSONDecoder().decode(AgeGateExpireEvent.self, from: jsonData),
-               let agId = value.event.agId {
-                keychain.set(key: key, value: agId) // store agId in the new place
-                completionHandler(agId)
-             } else {
-                 completionHandler(nil)
-             }
-        }
-    }
-    
-    internal func getStoredAgeGateEvent(_ userIdentifier: String?) -> AgeGateIsExpireEvent? {
-        let key = userIdentifier ?? ""
-        if let value = lastEvents[key]{
-            return AgeGateIsExpireEvent(event: value.event, isExpire: value.expires < Date().timeIntervalSince1970)
-        } else {
-            return nil
         }
     }
     

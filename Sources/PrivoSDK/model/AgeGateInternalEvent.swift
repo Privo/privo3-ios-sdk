@@ -14,12 +14,8 @@ internal struct AgeGateEventInternal: Decodable, Encodable, Hashable {
     let ageRange: AgeRange?
 }
 
+@available(*, deprecated, message: "We don't store previous events anymore, so we don't need expiration")
 internal struct AgeGateExpireEvent: Decodable, Encodable, Hashable {
     let event: AgeGateEvent
     let expires: TimeInterval
-}
-
-internal struct AgeGateIsExpireEvent: Decodable, Encodable, Hashable {
-    let event: AgeGateEvent
-    let isExpire: Bool
 }
