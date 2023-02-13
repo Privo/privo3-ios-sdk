@@ -70,7 +70,14 @@ struct AgeGateView : View {
         
         if (state.isPresented == true) {
             state.isPresented = false
-            onFinish?(events ?? [AgeGateEvent(status: AgeGateStatus.Canceled, userIdentifier: nil, nickname: nil, agId: nil, ageRange: nil)])
+            onFinish?(events ?? [AgeGateEvent(
+                status: AgeGateStatus.Canceled,
+                userIdentifier: nil,
+                nickname: nil,
+                agId: nil,
+                ageRange: nil,
+                countryCode: nil
+            )])
         }
     }
     

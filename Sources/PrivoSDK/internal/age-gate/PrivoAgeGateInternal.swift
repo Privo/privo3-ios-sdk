@@ -34,10 +34,11 @@ internal class PrivoAgeGateInternal {
             if let response = response {
                 let event = AgeGateEvent(
                     status: response.status.toStatus(),
-                    userIdentifier: userIdentifier,
+                    userIdentifier: response.extUserId,
                     nickname: nickname,
                     agId: response.agId ?? agId,
-                    ageRange: response.ageRange
+                    ageRange: response.ageRange,
+                    countryCode: response.countryCode
                 )
                 completionHandler(event)
             } else {
@@ -46,7 +47,8 @@ internal class PrivoAgeGateInternal {
                     userIdentifier: userIdentifier,
                     nickname: nickname,
                     agId: agId,
-                    ageRange: nil
+                    ageRange: nil,
+                    countryCode: nil
                 ))
             }
         }
@@ -104,10 +106,11 @@ internal class PrivoAgeGateInternal {
                     if let response = response {
                         let event = AgeGateEvent(
                             status: response.status.toStatus(),
-                            userIdentifier: userIdentifier,
+                            userIdentifier: response.extUserId,
                             nickname: nickname,
                             agId: response.agId ?? agId,
-                            ageRange: response.ageRange
+                            ageRange: response.ageRange,
+                            countryCode: response.countryCode
                         )
                         completionHandler(event)
                     } else {
@@ -116,7 +119,8 @@ internal class PrivoAgeGateInternal {
                             userIdentifier: userIdentifier,
                             nickname: nickname,
                             agId: agId,
-                            ageRange: nil
+                            ageRange: nil,
+                            countryCode: nil
                         ))
                     }
                 }
@@ -158,10 +162,11 @@ internal class PrivoAgeGateInternal {
                    let status = self?.helpers.toStatus(response.action) {
                     let event = AgeGateEvent(
                         status: status,
-                        userIdentifier: data.userIdentifier,
+                        userIdentifier: response.extUserId,
                         nickname: data.nickname,
                         agId: response.agId,
-                        ageRange: response.ageRange
+                        ageRange: response.ageRange,
+                        countryCode: response.countryCode
                     )
                     if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
                         self?.runAgeGate(
@@ -199,10 +204,11 @@ internal class PrivoAgeGateInternal {
                        let status = self?.helpers.toStatus(response.action) {
                         let event = AgeGateEvent(
                             status: status,
-                            userIdentifier: data.userIdentifier,
+                            userIdentifier: response.extUserId,
                             nickname: data.nickname,
                             agId: response.agId,
-                            ageRange: response.ageRange
+                            ageRange: response.ageRange,
+                            countryCode: response.countryCode
                         )
                         if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
                             self?.runAgeGate(
