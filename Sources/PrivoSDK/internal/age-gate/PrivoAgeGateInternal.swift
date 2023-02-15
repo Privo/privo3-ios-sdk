@@ -261,7 +261,18 @@ internal class PrivoAgeGateInternal {
                     targetPage: self.helpers.getStatusTargetPage(prevEvent?.status, recheckRequired: recheckRequired),
                     onFinish: { events in
                         events.forEach { event in
-                            completionHandler(event)
+                            if (event.status == AgeGateStatus.IdentityVerified || event.status == AgeGateStatus.AgeVerified) {
+                                // sunc status to get Correct Age Range
+                                self.processStatus(
+                                    userIdentifier: event.userIdentifier,
+                                    nickname: data.nickname,
+                                    agId: event.agId,
+                                    fpId: state.fpId,
+                                    completionHandler: completionHandler
+                                )
+                            } else {
+                                completionHandler(event)
+                            }
                         }
                         if (events.isEmpty) {
                             completionHandler(nil)
