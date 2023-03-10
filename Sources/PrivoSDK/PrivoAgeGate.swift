@@ -27,18 +27,25 @@ public class PrivoAgeGate {
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) throws {
         try ageGate.helpers.checkRequest(data)
-        if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
-            ageGate.runAgeGateByBirthDay(data) {  [weak self] event in
-                self?.ageGate.storage.storeInfoFromEvent(event: event)
-                completionHandler(event)
-            }
-        } else {
-            ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: false) {  [weak self] event in
-                self?.ageGate.storage.storeInfoFromEvent(event: event)
-                completionHandler(event)
+        
+        ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname) {  [weak self] statusEvent in
+            self?.ageGate.storage.storeInfoFromEvent(event: statusEvent)
+            if (statusEvent.status != AgeGateStatus.Undefined) {
+                completionHandler(statusEvent)
+            } else {
+                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
+                    self?.ageGate.runAgeGateByBirthDay(data) { event in
+                        self?.ageGate.storage.storeInfoFromEvent(event: event)
+                        completionHandler(event)
+                    }
+                } else {
+                    self?.ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: false) { event in
+                        self?.ageGate.storage.storeInfoFromEvent(event: event)
+                        completionHandler(event)
+                    }
+                }
             }
         }
-
     }
     public func recheck(
         _ data: CheckAgeData,
