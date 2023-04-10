@@ -18,9 +18,10 @@ struct PrivoAuthView: View {
         self.onFinish = onFinish
     }
     func getConfig() -> WebviewConfig {
-        // let serviceIdentifier = PrivoInternal.shared.settings.serviceIdentifier; // Uncomment it later when Alex fix a backend
-        let url = PrivoInternal.configuration.authStartUrl
-        // url.appendQueryParam(name: "service_identifier", value: serviceIdentifier) // Uncomment it later when Alex fix a backend
+        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier;
+        var urlComponents = URLComponents(url: PrivoInternal.configuration.authStartUrl, resolvingAgainstBaseURL: false)
+        urlComponents?.queryItems?.append(URLQueryItem(name: "service_identifier", value: serviceIdentifier))
+        let url = urlComponents?.url ?? PrivoInternal.configuration.authStartUrl
         return WebviewConfig(
             url: url,
             closeIcon: closeIcon,
