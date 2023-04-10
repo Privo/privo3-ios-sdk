@@ -6,7 +6,8 @@
 //
 import Foundation
 
-class Configuration {
+
+public class PrivoConfiguration {
     let type: EnviromentType
     let authBaseUrl: URL
     let authStartUrl: URL
@@ -19,7 +20,7 @@ class Configuration {
     let ageVerificationPublicUrl: URL
     let tokenStorageKey: String
     let privoServiceKey: String
-    init (type: EnviromentType) {
+    private init (type: EnviromentType) {
         self.type = type
         self.privoServiceKey = "com.privo.sdk"
         switch type {
@@ -79,6 +80,35 @@ class Configuration {
             self.ageVerificationPublicUrl = URL(string: "https://age.privo.com/verification")!
             self.tokenStorageKey = "privo-token"
         }
+    }
+    public init (
+        type: EnviromentType,
+        authBaseUrl: URL? = nil,
+        authStartUrl: URL? = nil,
+        verificationUrl: URL? = nil,
+        helperUrl: URL? = nil,
+        lgsRegistrationUrl: URL? = nil,
+        ageGateBaseUrl: URL? = nil,
+        ageGatePublicUrl: URL? = nil,
+        ageVerificationBaseUrl: URL? = nil,
+        ageVerificationPublicUrl: URL? = nil,
+        tokenStorageKey: String? = nil,
+        privoServiceKey: String? = nil
+    ) {
+        self.type = type
+        let defaultValues = PrivoConfiguration(type: type)
+
+        self.authBaseUrl = authBaseUrl ?? defaultValues.authBaseUrl
+        self.authStartUrl = authStartUrl ?? defaultValues.authStartUrl
+        self.verificationUrl = verificationUrl ?? defaultValues.verificationUrl
+        self.helperUrl = helperUrl ?? defaultValues.helperUrl
+        self.lgsRegistrationUrl = lgsRegistrationUrl ?? defaultValues.lgsRegistrationUrl
+        self.ageGateBaseUrl = ageGateBaseUrl ?? defaultValues.ageGateBaseUrl
+        self.ageGatePublicUrl = ageGatePublicUrl ?? defaultValues.ageGatePublicUrl
+        self.ageVerificationBaseUrl = ageVerificationBaseUrl ?? defaultValues.ageVerificationBaseUrl
+        self.ageVerificationPublicUrl = ageVerificationPublicUrl ?? defaultValues.ageVerificationPublicUrl
+        self.tokenStorageKey = tokenStorageKey ?? defaultValues.tokenStorageKey
+        self.privoServiceKey = tokenStorageKey ?? defaultValues.tokenStorageKey
     }
     
 }

@@ -7,14 +7,17 @@
 
 
 internal class PrivoInternal {
-    static private var _configuration: Configuration?
+    static private var _configuration: PrivoConfiguration?
     static private var _settings: PrivoSettings?
     private init () {}
     static func initialize (settings: PrivoSettings) {
         self._settings = settings
-        self._configuration = Configuration(type: settings.envType)
+        self._configuration = PrivoConfiguration(type: settings.envType)
     }
-    static var configuration: Configuration {
+    static func overrideConfiguration (configuration: PrivoConfiguration) {
+        self._configuration = configuration
+    }
+    static var configuration: PrivoConfiguration {
         get {
             guard let configuration = PrivoInternal._configuration else {
                 preconditionFailure("Privo SDK is not initialized, call Privo.initialize first")
