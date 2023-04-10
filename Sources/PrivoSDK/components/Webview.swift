@@ -46,6 +46,7 @@ struct Webview: UIViewRepresentable {
         configuration.preferences = wkPreferences
         
         let webview = WKWebView(frame: .zero, configuration: configuration)
+        webview.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
         webview.isOpaque = false
         webview.backgroundColor = .clear
         webview.scrollView.backgroundColor = .clear
