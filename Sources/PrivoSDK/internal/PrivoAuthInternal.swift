@@ -11,7 +11,7 @@ struct PrivoAuthView: View {
     @Binding var isPresented: Bool
     var closeIcon: Image?
     let onFinish: ((String?) -> Void)?
-    private let accessIdKey = "accessId"
+    private let accessIdKey = "access_id"
     public init(isPresented: Binding<Bool>, onFinish: ((String?) -> Void)? = nil, closeIcon: Image? = nil) {
         self._isPresented = isPresented
         self.closeIcon = closeIcon
@@ -25,8 +25,10 @@ struct PrivoAuthView: View {
         return WebviewConfig(
             url: url,
             closeIcon: closeIcon,
-            onPrivoEvent: { event in
-                if let accessId = event?[accessIdKey] as? String {
+            finishCriteria: accessIdKey,
+            onFinish: { url in
+                if let items = URLComponents(string: url)?.queryItems,
+                   let accessId = items.first(where: {$0.name == accessIdKey})?.value {
                     PrivoInternal.rest.getValueFromTMPStorage(key: accessId) { resp in
                         let token = resp?.data
                         if (token != nil) {
