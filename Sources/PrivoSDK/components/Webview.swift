@@ -47,11 +47,13 @@ struct Webview: UIViewRepresentable {
         
         let webview = WKWebView(frame: .zero, configuration: configuration)
         webview.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        /*
         if #available(iOS 16.4, *) {
             webview.isInspectable = true
         } else {
             // Fallback on earlier versions
         };
+         */
         webview.isOpaque = false
         webview.backgroundColor = .clear
         webview.scrollView.backgroundColor = .clear
