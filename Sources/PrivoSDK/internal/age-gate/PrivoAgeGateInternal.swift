@@ -154,6 +154,7 @@ internal class PrivoAgeGateInternal {
                 birthDate: data.birthDateYYYYMMDD,
                 birthDateYYYYMM: data.birthDateYYYYMM,
                 birthDateYYYY: data.birthDateYYYY,
+                age: data.age,
                 extUserId: data.userIdentifier,
                 countryCode: data.countryCode
             )
@@ -197,6 +198,7 @@ internal class PrivoAgeGateInternal {
                     birthDate: data.birthDateYYYYMMDD,
                     birthDateYYYYMM: data.birthDateYYYYMM,
                     birthDateYYYY: data.birthDateYYYY,
+                    age: data.age,
                     countryCode: data.countryCode
                 )
                 PrivoInternal.rest.processRecheck(data: record) { r in
