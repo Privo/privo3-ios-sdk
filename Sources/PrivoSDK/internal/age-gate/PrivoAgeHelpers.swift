@@ -74,6 +74,10 @@ internal class PrivoAgeHelpers {
         return nil
     }
     
+    internal func isAgeIntCorrect(_ age: Int) -> Bool {
+        return age > 0 && age <= 120;
+    }
+    
     internal func isAgeCorrect(rawDate: String, format: String) -> Bool {
         let calendar = Calendar.current
         let dateFormatter = DateFormatter()
@@ -86,7 +90,7 @@ internal class PrivoAgeHelpers {
             if let birthYear = birthYear,
                let currentYear = currentYear {
                 let age = currentYear - birthYear;
-                return age > 0 && age <= 120;
+                return isAgeIntCorrect(age);
             }
         }
         return false
@@ -128,6 +132,11 @@ internal class PrivoAgeHelpers {
         if let (date, format) = getDateAndFormat(data) {
             if (isAgeCorrect(rawDate: date, format: format) == false) {
                 throw AgeGateError.incorrectDateOfBirht
+            }
+        }
+        if let age = data.age {
+            if (isAgeIntCorrect(age) == false) {
+                throw AgeGateError.incorrectAge
             }
         }
     }

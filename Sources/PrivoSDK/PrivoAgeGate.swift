@@ -33,7 +33,7 @@ public class PrivoAgeGate {
             if (statusEvent.status != AgeGateStatus.Undefined) {
                 completionHandler(statusEvent)
             } else {
-                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
+                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
                     self?.ageGate.runAgeGateByBirthDay(data) { event in
                         self?.ageGate.storage.storeInfoFromEvent(event: event)
                         completionHandler(event)
@@ -52,7 +52,7 @@ public class PrivoAgeGate {
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) throws {
         try ageGate.helpers.checkRequest(data)
-        if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil) {
+        if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
             ageGate.recheckAgeGateByBirthDay(data) { [weak self] event in
                 self?.ageGate.storage.storeInfoFromEvent(event: event)
                 completionHandler(event)
