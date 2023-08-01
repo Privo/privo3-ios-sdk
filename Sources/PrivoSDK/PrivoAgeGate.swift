@@ -34,12 +34,12 @@ public class PrivoAgeGate {
                 completionHandler(statusEvent)
             } else {
                 if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
-                    self?.ageGate.runAgeGateByBirthDay(data) { event in
+                    self?.ageGate.runAgeGateByBirthDay(data) { [weak self] event in
                         self?.ageGate.storage.storeInfoFromEvent(event: event)
                         completionHandler(event)
                     }
                 } else {
-                    self?.ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: false) { event in
+                    self?.ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: nil) { event in
                         self?.ageGate.storage.storeInfoFromEvent(event: event)
                         completionHandler(event)
                     }
@@ -58,7 +58,7 @@ public class PrivoAgeGate {
                 completionHandler(event)
             }
         } else {
-            ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: true) { [weak self] event in
+            ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired) { [weak self] event in
                 self?.ageGate.storage.storeInfoFromEvent(event: event)
                 completionHandler(event)
             }
