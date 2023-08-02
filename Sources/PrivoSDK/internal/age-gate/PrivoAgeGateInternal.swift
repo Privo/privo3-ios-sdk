@@ -12,9 +12,9 @@ internal class PrivoAgeGateInternal {
     
     let storage: AgeGateStorage
     let helpers: PrivoAgeHelpers
-    let cameraPermissionService: PrivoCameraPermissionService
+    private let cameraPermissionService: PrivoCameraPermissionServiceType
     
-    init(cameraPermissionService: PrivoCameraPermissionService = .shared) {
+    init(cameraPermissionService: PrivoCameraPermissionServiceType = PrivoCameraPermissionService.shared) {
         self.cameraPermissionService = cameraPermissionService
         self.storage = AgeGateStorage()
         self.helpers = PrivoAgeHelpers(self.storage.serviceSettings)
@@ -175,8 +175,6 @@ internal class PrivoAgeGateInternal {
                 guard let self = self else { return }
                 cameraPermissionService.checkCameraPermission { [weak self] granted in
                     guard let self = self else { return }
-                    ///TO DO: - NEED TO HANDLE WHEN USER DECIDED NOT GIVE AN ACCESS TO THE CAMERA
-                    guard granted else { completionHandler(nil); return }
                     self.runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRequired, completionHandler: completionHandler)
                 }
             })
@@ -213,8 +211,6 @@ internal class PrivoAgeGateInternal {
                 guard let self = self else { return }
                 self.cameraPermissionService.checkCameraPermission { [weak self] granted in
                     guard let self = self else { return }
-                    ///TO DO: - NEED TO HANDLE WHEN USER DECIDED NOT GIVE AN ACCESS TO THE CAMERA
-                    guard granted else { completionHandler(nil); return }
                     self.runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRecheckRequired, completionHandler: completionHandler)
                 }
             })

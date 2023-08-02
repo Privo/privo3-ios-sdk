@@ -1,7 +1,14 @@
 import Foundation
+import WebKit
 import AVFoundation
 
-class PrivoCameraPermissionService {
+protocol PrivoCameraPermissionServiceType {
+    func checkCameraPermission(completion: @escaping (Bool) -> Void)
+    @available(iOS 15.0, *)
+    func checkPermission(for type: WKMediaCaptureType, completion: @escaping (WKPermissionDecision) -> Void)
+}
+
+class PrivoCameraPermissionService: PrivoCameraPermissionServiceType {
     
     //MARK: - Static properties
     
@@ -26,8 +33,21 @@ class PrivoCameraPermissionService {
             if currentPermission {
                 completion(currentPermission)
             } else {
-                AVCaptureDevice.requestAccess(for: mediaType, completionHandler: completion)
+                AVCaptureDevice.requestAccess(for: mediaType, completionHandler: { [weak self] result in
+                    guard let self = self else { return }
+                    self.queue.async { completion(result) }
+                })
             }
+        }
+    }
+    
+    @available(iOS 15.0, *)
+    func checkPermission(for type: WKMediaCaptureType, completion: @escaping (WKPermissionDecision) -> Void) {
+        guard type == .camera else { completion(.prompt); return }
+        checkCameraPermission { [weak self] result in
+            guard let self = self else { return }
+            let decision: WKPermissionDecision = result ? .grant : .deny
+            queue.async { completion(decision) }
         }
     }
     
