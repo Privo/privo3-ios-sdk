@@ -12,11 +12,24 @@ struct WebviewConfig {
     var onClose: (() -> Void)?
 }
 class WebViewModel: ObservableObject {
-    @Published var isLoading: Bool = true
+    @Published
+    var isLoading: Bool = true
+    
+    let permissionService: PrivoCameraPermissionServiceType
+    
+    init(permissionService: PrivoCameraPermissionServiceType) {
+        self.permissionService = permissionService
+    }
+    
 }
 struct Webview: UIViewRepresentable {
-    @ObservedObject var viewModel: WebViewModel
+    
+    //MARK: - Internal properties
+    
+    @ObservedObject
+    var viewModel: WebViewModel
     let config: WebviewConfig
+    
     /*
     init (config: WebviewConfig) {
         self.config = config
@@ -31,7 +44,7 @@ struct Webview: UIViewRepresentable {
      */
     
     func makeCoordinator() -> WebViewCoordinator {
-        let coordinator = WebViewCoordinator(self.viewModel)
+        let coordinator = WebViewCoordinator(viewModel)
         coordinator.finishCriteria = config.finishCriteria
         coordinator.onFinish = config.onFinish
         coordinator.printCriteria = config.printCriteria
@@ -65,9 +78,10 @@ struct Webview: UIViewRepresentable {
             webview.configuration.userContentController.add(contentController, name: "privo")
         }
         
-        if (config.printCriteria != nil) {
-            webview.uiDelegate = context.coordinator
-        }
+        webview.uiDelegate = context.coordinator  //COULD BE POTENTIAL PITFALLS: - BUT ITS CRUCIAL FOR ELIMINATING DOBELLING PERMISSION FOR CAMERA
+//        if (config.printCriteria != nil) {
+//            webview.uiDelegate = context.coordinator
+//        }
         
         let request = URLRequest(url: config.url, cachePolicy: .returnCacheDataElseLoad)
         webview.load(request)
@@ -183,6 +197,16 @@ struct Webview: UIViewRepresentable {
             }
             return nil
         }
+        
+        @available(iOS 15.0, *)
+        func webView(_ webView: WKWebView,
+                     requestMediaCapturePermissionFor origin: WKSecurityOrigin,
+                     initiatedByFrame frame: WKFrameInfo,
+                     type: WKMediaCaptureType,
+                     decisionHandler: @escaping (WKPermissionDecision) -> Void) {
+            viewModel.permissionService.checkPermission(for: type, completion: decisionHandler)
+        }
+        
         class PrintLoadingHelper: NSObject, WKNavigationDelegate {
             
             func printWebViewPage(_ webView: WKWebView) {

@@ -12,8 +12,10 @@ internal class PrivoAgeGateInternal {
     
     let storage: AgeGateStorage
     let helpers: PrivoAgeHelpers
+    private let permissionService: PrivoPermissionServiceType
     
-    init() {
+    init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared) {
+        self.permissionService = permissionService
         self.storage = AgeGateStorage()
         self.helpers = PrivoAgeHelpers(self.storage.serviceSettings)
     }
@@ -146,104 +148,84 @@ internal class PrivoAgeGateInternal {
     
     
     internal func runAgeGateByBirthDay(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
-        storage.getFpId() { fpId in
-            // make a rest call
-            let record = FpStatusRecord(
-                serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
-                fpId: fpId,
-                birthDate: data.birthDateYYYYMMDD,
-                birthDateYYYYMM: data.birthDateYYYYMM,
-                birthDateYYYY: data.birthDateYYYY,
-                age: data.age,
-                extUserId: data.userIdentifier,
-                countryCode: data.countryCode
-            )
-            PrivoInternal.rest.processBirthDate(data: record) { [weak self] r in
-                if let response = r,
-                   let status = self?.helpers.toStatus(response.action) {
-                    let event = AgeGateEvent(
-                        status: status,
-                        userIdentifier: response.extUserId,
-                        nickname: data.nickname,
-                        agId: response.agId,
-                        ageRange: response.ageRange,
-                        countryCode: response.countryCode
-                    )
-                    if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
-                        self?.runAgeGate(
-                            data,
-                            prevEvent: event,
-                            recheckRequired: false,
-                            completionHandler: completionHandler
-                        )
-                    } else {
-                        completionHandler(event)
-                    }
-                } else {
-                    completionHandler(nil)
+        storage.getFpId { fpId in
+            let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
+                                        fpId: fpId,
+                                        birthDate: data.birthDateYYYYMMDD,
+                                        birthDateYYYYMM: data.birthDateYYYYMM,
+                                        birthDateYYYY: data.birthDateYYYY,
+                                        age: data.age,
+                                        extUserId: data.userIdentifier,
+                                        countryCode: data.countryCode)
+            PrivoInternal.rest.processBirthDate(data: record, completionHandler: { [weak self] r in
+                guard let self = self else { return }
+                guard let response = r, let status = self.helpers.toStatus(response.action) else {
+                    completionHandler(nil); return
                 }
-            }
+                let event = AgeGateEvent(status: status,
+                                         userIdentifier: response.extUserId,
+                                         nickname: data.nickname,
+                                         agId: response.agId,
+                                         ageRange: response.ageRange,
+                                         countryCode: response.countryCode)
+                let runAgeGateActions: [AgeGateAction] = [.Consent, .IdentityVerify, .AgeVerify]
+                guard (runAgeGateActions.contains(response.action)) else { completionHandler(event); return  }
+                self.runAgeGate(data, prevEvent: event, recheckRequired: nil, completionHandler: completionHandler)
+            }, ageEstimationHandler: { [weak self] error in
+                guard let self = self else { return }
+                permissionService.checkCameraPermission { [weak self] granted in
+                    guard let self = self else { return }
+                    self.runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRequired, completionHandler: completionHandler)
+                }
+            })
         }
     }
-    internal func recheckAgeGateByBirthDay(
-        _ data: CheckAgeData,
-        completionHandler: @escaping (AgeGateEvent?) -> Void
-    ) {
+    internal func recheckAgeGateByBirthDay(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
         storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.nickname) { [weak self] agId in
-            if let agId = agId {
-                // make a rest call
-                let record = RecheckStatusRecord(
-                    serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
-                    agId: agId,
-                    birthDate: data.birthDateYYYYMMDD,
-                    birthDateYYYYMM: data.birthDateYYYYMM,
-                    birthDateYYYY: data.birthDateYYYY,
-                    age: data.age,
-                    countryCode: data.countryCode
-                )
-                PrivoInternal.rest.processRecheck(data: record) { r in
-                    if let response = r,
-                       let status = self?.helpers.toStatus(response.action) {
-                        let event = AgeGateEvent(
-                            status: status,
-                            userIdentifier: response.extUserId,
-                            nickname: data.nickname,
-                            agId: response.agId,
-                            ageRange: response.ageRange,
-                            countryCode: response.countryCode
-                        )
-                        if (response.action == AgeGateAction.Consent || response.action == AgeGateAction.IdentityVerify || response.action == AgeGateAction.AgeVerify) {
-                            self?.runAgeGate(
-                                data,
-                                prevEvent: event,
-                                recheckRequired: false,
-                                completionHandler: completionHandler
-                            )
-                        } else {
-                            completionHandler(event)
-                        }
-                    } else {
-                        completionHandler(nil)
-                    }
+            guard let agId = agId else { return }
+            // make a rest call
+            let record = RecheckStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
+                                             agId: agId,
+                                             birthDate: data.birthDateYYYYMMDD,
+                                             birthDateYYYYMM: data.birthDateYYYYMM,
+                                             birthDateYYYY: data.birthDateYYYY,
+                                             age: data.age,
+                                             countryCode: data.countryCode)
+            PrivoInternal.rest.processRecheck(data: record, completionHandler: { [weak self] r in
+                guard let self = self else { return }
+                guard let response = r, let status = self.helpers.toStatus(response.action) else {
+                    completionHandler(nil)
+                    return
                 }
-            }
+                let event = AgeGateEvent(status: status,
+                                         userIdentifier: response.extUserId,
+                                         nickname: data.nickname,
+                                         agId: response.agId,
+                                         ageRange: response.ageRange,
+                                         countryCode: response.countryCode)
+                guard (response.action == AgeGateAction.Consent ||
+                       response.action == AgeGateAction.IdentityVerify ||
+                       response.action == AgeGateAction.AgeVerify) else { completionHandler(event); return }
+                self.runAgeGate(data, prevEvent: event, recheckRequired: nil, completionHandler: completionHandler)
+            }, ageEstimationHandler: { [weak self] error in
+                guard let self = self else { return }
+                permissionService.checkCameraPermission { [weak self] granted in
+                    guard let self = self else { return }
+                    self.runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRecheckRequired, completionHandler: completionHandler)
+                }
+            })
         }
     }
     
     internal func runAgeGate(
         _ data: CheckAgeData,
         prevEvent: AgeGateEvent?,
-        recheckRequired: Bool,
+        recheckRequired: AgeGateInternalAction?,
         completionHandler: @escaping (AgeGateEvent?) -> Void
     ) {
         
         getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname) { state  in
-            
-            guard let state = state else {
-                completionHandler(nil)
-                return
-            }
-            
+            guard let state = state else { completionHandler(nil); return }
             let ageGateData = CheckAgeStoreData(
                 serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                 settings: state.settings,
@@ -284,6 +266,7 @@ internal class PrivoAgeGateInternal {
             }
         }
     }
+    
     internal func showAgeGateIdentifier(userIdentifier: String?, nickname: String?) {
         storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname) { [weak self] agId in
             self?.storage.getFpId() { fpId in

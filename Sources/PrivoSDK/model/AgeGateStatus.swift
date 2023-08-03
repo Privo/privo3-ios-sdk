@@ -22,6 +22,7 @@ public enum AgeGateStatus: String, Decodable, Encodable, Hashable {
     case AgeBlocked = "AgeBlocked"
     case MultiUserBlocked = "MultiUserBlocked"
     case Canceled = "Canceled"
+    case AgeEstimationBlocked = "AgeEstimationBlocked"
 }
 
 public enum AgeGateStatusInternal: String, Decodable, Encodable, Hashable {
@@ -39,7 +40,7 @@ public enum AgeGateStatusInternal: String, Decodable, Encodable, Hashable {
     case AgeBlocked = "AgeBlocked"
     case Canceled = "Canceled"
     case MultiUserBlocked = "MultiUserBlocked"
-    
+    case AgeEstimationBlocked = "AgeEstimationBlocked"
     // Internal statuses
     case Closed = "Closed"
 }
@@ -60,4 +61,5 @@ public enum AgeGateStatusTO: Int, Decodable, Encodable, Hashable {
     case AgeVerified
     case AgeBlocked
     case MultiUserBlocked
+    case AgeEstimationBlocked
 }
