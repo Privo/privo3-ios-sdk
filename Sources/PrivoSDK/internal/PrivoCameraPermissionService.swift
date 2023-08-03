@@ -29,14 +29,12 @@ class PrivoCameraPermissionService: PrivoCameraPermissionServiceType {
     func checkCameraPermission(completion: @escaping (Bool) -> Void) {
         queue.async {
             let mediaType: AVMediaType = .video
-            let currentPermission = AVCaptureDevice.authorizationStatus(for: mediaType) == .authorized
-            if currentPermission {
-                completion(currentPermission)
-            } else {
-                AVCaptureDevice.requestAccess(for: mediaType, completionHandler: { [weak self] result in
-                    guard let self = self else { return }
-                    self.queue.async { completion(result) }
-                })
+            let currentPermission = AVCaptureDevice.authorizationStatus(for: mediaType)
+            guard currentPermission == .notDetermined else {
+                completion(currentPermission == .authorized); return
+            }
+            AVCaptureDevice.requestAccess(for: mediaType) { [weak self] result in
+                self?.queue.async { completion(result) }
             }
         }
     }
