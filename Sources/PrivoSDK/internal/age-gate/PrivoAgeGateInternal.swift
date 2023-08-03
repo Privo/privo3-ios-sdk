@@ -12,10 +12,10 @@ internal class PrivoAgeGateInternal {
     
     let storage: AgeGateStorage
     let helpers: PrivoAgeHelpers
-    private let cameraPermissionService: PrivoCameraPermissionServiceType
+    private let permissionService: PrivoPermissionServiceType
     
-    init(cameraPermissionService: PrivoCameraPermissionServiceType = PrivoCameraPermissionService.shared) {
-        self.cameraPermissionService = cameraPermissionService
+    init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared) {
+        self.permissionService = permissionService
         self.storage = AgeGateStorage()
         self.helpers = PrivoAgeHelpers(self.storage.serviceSettings)
     }
@@ -173,7 +173,7 @@ internal class PrivoAgeGateInternal {
                 self.runAgeGate(data, prevEvent: event, recheckRequired: nil, completionHandler: completionHandler)
             }, ageEstimationHandler: { [weak self] error in
                 guard let self = self else { return }
-                cameraPermissionService.checkCameraPermission { [weak self] granted in
+                permissionService.checkCameraPermission { [weak self] granted in
                     guard let self = self else { return }
                     self.runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRequired, completionHandler: completionHandler)
                 }
@@ -209,7 +209,7 @@ internal class PrivoAgeGateInternal {
                 self.runAgeGate(data, prevEvent: event, recheckRequired: nil, completionHandler: completionHandler)
             }, ageEstimationHandler: { [weak self] error in
                 guard let self = self else { return }
-                self.cameraPermissionService.checkCameraPermission { [weak self] granted in
+                permissionService.checkCameraPermission { [weak self] granted in
                     guard let self = self else { return }
                     self.runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRecheckRequired, completionHandler: completionHandler)
                 }

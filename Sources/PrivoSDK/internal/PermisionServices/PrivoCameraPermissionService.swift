@@ -14,7 +14,7 @@ class PrivoCameraPermissionService: PrivoCameraPermissionServiceType {
     
     public static var shared = PrivoCameraPermissionService()
     
-    //MARK: - Private properties
+    //MARK: - Internal properties
     
     let queue: DispatchQueue
     
