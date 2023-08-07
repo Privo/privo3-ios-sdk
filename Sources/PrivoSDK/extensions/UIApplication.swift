@@ -19,32 +19,36 @@ extension UIApplication {
         }
         return nil
     }
-    public func showAlert(title: String?, message: String?, acceptText: String, cancelText: String, acceptAction: @escaping () -> Void) {
-
+    public func showAlert(title: String?,
+                          message: String?,
+                          acceptText: String,
+                          cancelText: String,
+                          acceptAction: @escaping () -> Void) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-
         let primaryButton = UIAlertAction(title: acceptText, style: .default) { _ in
             acceptAction()
         }
-
         let cancelButton = UIAlertAction(title: cancelText, style: .cancel, handler: nil)
-
         alertController.addAction(primaryButton)
         alertController.addAction(cancelButton)
-
-        self.topMostViewController()?.present(alertController, animated: true)
+        topMostViewController()?.present(alertController, animated: true)
     }
     
-    public func showView<Content>(_ isTransparent: Bool, @ViewBuilder content: @escaping () -> Content) where Content : View {
-        let view = content()
-        let viewController = UIHostingController(rootView: view)
-        if (isTransparent) {
-            viewController.view.backgroundColor = .clear
+    public func showView<Content>(_ isTransparent: Bool,
+                                  @ViewBuilder content: @escaping () -> Content) where Content : View {
+        Task.init(priority: .userInitiated) {
+            let view = content()
+            let viewController = UIHostingController(rootView: view)
+            if (isTransparent) {
+                viewController.view.backgroundColor = .clear
+            }
+            viewController.modalPresentationStyle = .automatic
+            guard let topView = topMostViewController() else { return }
+            topView.present(viewController, animated: true, completion: nil)
         }
-        viewController.modalPresentationStyle = .automatic
-        UIApplication.shared.topMostViewController()?.present(viewController, animated: true, completion: nil)
     }
+    
     public func dismissTopView() {
-        UIApplication.shared.topMostViewController()?.dismiss(animated: true, completion: nil)
+        topMostViewController()?.dismiss(animated: true, completion: nil)
     }
 }

@@ -189,3 +189,192 @@ class Rest {
     }
 
 }
+
+
+//MARK: - async function's wrappers
+
+fileprivate extension Session {
+    func requestAsync<T:Decodable,P:Encodable>(_ url: URLConvertible,
+                                               method: HTTPMethod = .get,
+                                               parameters: P? = nil,
+                                               emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
+        return await withCheckedContinuation { promise in
+            request(url, method: method, parameters: parameters)
+                .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
+                promise.resume(returning: $0)
+            }
+        }
+    }
+    func requestAsync<T:Decodable>(_ url: URLConvertible,
+                                   method: HTTPMethod = .get,
+                                   emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
+      return await withCheckedContinuation { promise in
+          request(url, method: method)
+              .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
+              promise.resume(returning: $0)
+          }
+      }
+    }
+    func requestAsync<T:Decodable>(_ url: URLConvertible,
+                                   method: HTTPMethod = .get,
+                                   encoding: ParameterEncoding) async -> DataResponse<T,AFError> {
+        return await withCheckedContinuation { promise in
+            request(url, method: method, encoding: encoding)
+                .responseDecodable(of: T.self) { promise.resume(returning: $0) }
+        }
+    }
+    func requestAsync(_ url: URLConvertible) async -> AFDataResponse<Data?> {
+        return await withCheckedContinuation{ promise in
+            request(url).response() { promise.resume(returning: $0) }
+        }
+    }
+    func requestAsync<T:Decodable,
+                      P:Encodable>(_ url: URLConvertible,
+                                   method: HTTPMethod = .get,
+                                   parameter: P? = nil,
+                                   encoder: ParameterEncoder = URLEncodedFormParameterEncoder.default,
+                                   emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
+        return await withCheckedContinuation { promise in
+            request(url, method: method, parameters: parameter, encoder: encoder)
+                .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
+                    promise.resume(returning: $0)
+                }
+        }
+    }
+}
+
+extension Rest {
+    
+    static var shared: Rest = .init()
+    
+    private static let storageComponent = "storage"
+    private static let putComponent = "put"
+    private static let sessionID = "session_id"
+    private static let emptyResponsesCodes: Set<Int> = .init([200,204,205])
+    
+    func getValueFromTMPStorage(key: String) async -> TmpStorageString? {
+        var tmpStorageURL = PrivoInternal.configuration.helperUrl
+        tmpStorageURL.appendPathComponent(Rest.storageComponent)
+        tmpStorageURL.appendPathComponent(key)
+        let response: DataResponse<TmpStorageString,AFError> = await AF.requestAsync(tmpStorageURL)
+        trackPossibleAFError(response.error, response.response?.statusCode)
+        return response.value
+    }
+    
+    func addValueToTMPStorage(value: String, ttl: Int? = nil) async -> String? {
+        var tmpStorageURL = PrivoInternal.configuration.helperUrl
+        tmpStorageURL.appendPathComponent(Rest.storageComponent)
+        tmpStorageURL.appendPathComponent(Rest.putComponent)
+        let data = TmpStorageString(data: value, ttl: ttl)
+        typealias R = DataResponse<TmpStorageResponse,AFError>
+        let result: R = await AF.requestAsync(tmpStorageURL, method: .post, parameter: data)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        let id = result.value?.id
+        return id
+    }
+    
+    func getObjectFromTMPStorage<T: Decodable>(key: String) async -> T? {
+        let response = await getValueFromTMPStorage(key: key)
+        guard let jsonString = response?.data,
+              let jsonData = jsonString.data(using: .utf8),
+              let value = try? JSONDecoder().decode(T.self, from: jsonData) else { return nil }
+        return value
+    }
+    
+    func addObjectToTMPStorage<T: Encodable>(value: T) async -> String? {
+        guard let jsonData = try? JSONEncoder().encode(value) else { return nil }
+        let jsonString = String(decoding: jsonData, as: UTF8.self)
+        let result = await addValueToTMPStorage(value: jsonString)
+        return result
+    }
+    
+    func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo? {
+        let url = String(format: "%@/info/svc?service_identifier=%@", PrivoInternal.configuration.authBaseUrl.absoluteString, serviceIdentifier)
+        let result: DataResponse<ServiceInfo,AFError> = await AF.requestAsync(url)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        return result.value
+    }
+    
+    func getAuthSessionId() async -> String? {
+        let authStartUrl = PrivoInternal.configuration.authStartUrl
+        let sessionIdKey = Rest.sessionID
+        let result = await AF.requestAsync(authStartUrl)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        guard let redirectUrl = result.response?.url,
+              let components = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: true),
+              let sessionId = components.queryItems?.first(where: { $0.name == sessionIdKey })?.value else {
+            return nil
+        }
+        return sessionId
+    }
+    
+    func renewToken(oldToken: String, sessionId: String) async -> String? {
+        let loginUrl = String(format: "%@/privo/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
+        typealias R = DataResponse<LoginResponse,AFError>
+        let result: R = await AF.requestAsync(loginUrl, method: .post, encoding: BodyStringEncoding(body: oldToken))
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        let token = result.value?.token
+        return token
+    }
+    
+    func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+        let url = String(format: "%@/status", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
+        typealias R = DataResponse<AgeGateStatusResponse,AFError>
+        let result: R = await AF.requestAsync(url, method: .put, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        return result.value
+    }
+    
+    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
+        let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
+        typealias R = DataResponse<AgeGateActionResponse,AFError>
+        let result: R = await AF.requestAsync(url,
+                                              method: .post,
+                                              parameter: data,
+                                              encoder: JSONParameterEncoder.default, emptyResponseCodes: Rest.emptyResponsesCodes)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        if let ageEstimationError = existedAgeEstimationError(result) { throw ageEstimationError }
+        return result.value
+    }
+    
+    func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse? {
+        let url = String(format: "%@/recheck", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
+        typealias R = DataResponse<AgeGateActionResponse,AFError>
+        let result: R = await AF.requestAsync(url, method: .put, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        if let ageEstimationError = existedAgeEstimationError(result) {
+            throw ageEstimationError
+        }
+        return result.value
+    }
+    
+    func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
+        let url = String(format: "%@/link-user", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
+        typealias R = DataResponse<AgeGateStatusResponse,AFError>
+        let result: R = await AF.requestAsync(url, method: .post, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        return result.value
+    }
+    
+    func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings? {
+        let url = String(format: "%@/settings?service_identifier=%@", PrivoInternal.configuration.ageGateBaseUrl.absoluteString, serviceIdentifier)
+        let result: DataResponse<AgeServiceSettings,AFError> = await AF.requestAsync(url)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        return result.value
+    }
+    
+    func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO? {
+        let url = String(format: "%@/age-verification?verification_identifier=%@", PrivoInternal.configuration.ageVerificationBaseUrl.absoluteString, verificationIdentifier)
+        let result: DataResponse<AgeVerificationTO,AFError> = await AF.requestAsync(url)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        return result.value
+    }
+    
+    func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
+        let url = String(format: "%@/fp", PrivoInternal.configuration.authBaseUrl.absoluteString)
+        typealias R = DataResponse<DeviceFingerprintResponse,AFError>
+        let result: R = await AF.requestAsync(url, method: .post, parameters: fingerprint)
+        trackPossibleAFError(result.error, result.response?.statusCode)
+        return result.value
+    }
+}
