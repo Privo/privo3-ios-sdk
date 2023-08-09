@@ -13,69 +13,6 @@ public class PrivoAgeGate {
 
     public init() { }
     
-    //MARK: - OLD VERSION THAT DIDN'T USE ASYNC/AWAIT, SHOULD BE REMOVED WHEN REGRESSION WILL BE DONE
-    
-//    public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
-//        try ageGate.helpers.checkNetwork()
-//        try ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
-//        ageGate.getStatusEvent(userIdentifier, nickname: nickname) {  [weak self] event in
-//            self?.ageGate.storage.storeInfoFromEvent(event: event)
-//            completionHandler(event)
-//        }
-//    }
-//
-//    public func run(
-//        _ data: CheckAgeData,
-//        completionHandler: @escaping (AgeGateEvent?) -> Void
-//    ) throws {
-//        try ageGate.helpers.checkRequest(data)
-//
-//        ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname) {  [weak self] statusEvent in
-//            self?.ageGate.storage.storeInfoFromEvent(event: statusEvent)
-//            if (statusEvent.status != AgeGateStatus.Undefined) {
-//                completionHandler(statusEvent)
-//            } else {
-//                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
-//                    self?.ageGate.runAgeGateByBirthDay(data) { [weak self] event in
-//                        self?.ageGate.storage.storeInfoFromEvent(event: event)
-//                        completionHandler(event)
-//                    }
-//                } else {
-//                    self?.ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: nil) { event in
-//                        self?.ageGate.storage.storeInfoFromEvent(event: event)
-//                        completionHandler(event)
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    public func recheck(
-//        _ data: CheckAgeData,
-//        completionHandler: @escaping (AgeGateEvent?) -> Void
-//    ) throws {
-//        try ageGate.helpers.checkRequest(data)
-//        if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
-//            ageGate.recheckAgeGateByBirthDay(data) { [weak self] event in
-//                self?.ageGate.storage.storeInfoFromEvent(event: event)
-//                completionHandler(event)
-//            }
-//        } else {
-//            ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired) { [weak self] event in
-//                self?.ageGate.storage.storeInfoFromEvent(event: event)
-//                completionHandler(event)
-//            }
-//        }
-//    }
-//
-//    public func linkUser(userIdentifier: String, agId: String, nickname: String?, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
-//        try ageGate.helpers.checkNetwork()
-//        try ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
-//        ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname) {  [weak self] event in
-//            self?.ageGate.storage.storeInfoFromEvent(event: event)
-//            completionHandler(event)
-//        }
-//    }
-    
     public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
         Task.init {
             try ageGate.helpers.checkNetwork()
