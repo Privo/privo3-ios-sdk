@@ -70,12 +70,16 @@ public class PrivoAgeGate {
     }
     
     public func showIdentifierModal(userIdentifier: String?, nickname: String? = nil) throws {
-        try ageGate.helpers.checkNetwork()
-        ageGate.showAgeGateIdentifier(userIdentifier: userIdentifier, nickname: nickname)
+        Task.init(priority: .userInitiated) {
+            try ageGate.helpers.checkNetwork()
+            await ageGate.showAgeGateIdentifier(userIdentifier: userIdentifier, nickname: nickname)
+        }
     }
     
     public func hide() {
-        ageGate.hide()
+        Task.init(priority: .userInitiated) {
+            await ageGate.hide()
+        }
     }
     
 }

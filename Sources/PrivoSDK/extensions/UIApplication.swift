@@ -9,6 +9,7 @@ import UIKit
 import SwiftUI
 
 extension UIApplication {
+    
     public func topMostViewController() -> UIViewController? {
         let keyWindow = UIApplication.shared.windows.filter {$0.isKeyWindow}.first
         if var topController = keyWindow?.rootViewController {
@@ -19,6 +20,7 @@ extension UIApplication {
         }
         return nil
     }
+    
     public func showAlert(title: String?,
                           message: String?,
                           acceptText: String,

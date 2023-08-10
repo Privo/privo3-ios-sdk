@@ -67,4 +67,5 @@ class PrivoCameraPermissionService: PrivoCameraPermissionServiceType {
             checkPermission(for: type) { promise.resume(returning: $0)}
         })
     }
+    
 }

@@ -9,6 +9,20 @@ import Alamofire
 import Foundation
 
 class Rest {
+    
+    //MARK: - Static Shared object
+    
+    static var shared: Rest = .init()
+    
+    //MARK: - Private properties
+    
+    private static let storageComponent = "storage"
+    private static let putComponent = "put"
+    private static let sessionID = "session_id"
+    private static let emptyResponsesCodes: Set<Int> = .init([200,204,205])
+    
+    //MARK: - Internal functions
+    
     func getValueFromTMPStorage(key: String, completionHandler: @escaping (TmpStorageString?) -> Void) {
         var tmpStorageURL = PrivoInternal.configuration.helperUrl
         tmpStorageURL.appendPathComponent("storage")
@@ -18,6 +32,7 @@ class Rest {
             completionHandler(response.value)
         }
     }
+    
     func addValueToTMPStorage(value: String, ttl: Int? = nil, completionHandler: ((String?) -> Void)? = nil) {
         var tmpStorageURL = PrivoInternal.configuration.helperUrl
         tmpStorageURL.appendPathComponent("storage")
@@ -29,6 +44,7 @@ class Rest {
             completionHandler?(id)
         }
     }
+    
     func getObjectFromTMPStorage<T: Decodable>(key: String, completionHandler: @escaping (T?) -> Void) {
         getValueFromTMPStorage(key: key) { response in
             if let jsonString = response?.data,
@@ -40,6 +56,7 @@ class Rest {
             }
         }
     }
+    
     func addObjectToTMPStorage<T: Encodable>(value: T, completionHandler: ((String?) -> Void)? = nil) {
         if let jsonData = try? JSONEncoder().encode(value) {
             let jsonString = String(decoding: jsonData, as: UTF8.self)
@@ -48,6 +65,7 @@ class Rest {
             completionHandler?(nil)
         }
     }
+    
     func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void) {
         let url = String(format: "%@/info/svc?service_identifier=%@", PrivoInternal.configuration.authBaseUrl.absoluteString, serviceIdentifier)
         AF.request(url).responseDecodable(of: ServiceInfo.self) { r in
@@ -72,6 +90,7 @@ class Rest {
             }
         }
     }
+    
     func renewToken(oldToken: String, sessionId: String, completionHandler: @escaping (String?) -> Void) {
         let loginUrl = String(format: "%@/privo/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
         AF.request(loginUrl, method: .post, parameters: nil, encoding: BodyStringEncoding(body: oldToken)).responseDecodable(of: LoginResponse.self) { r in
@@ -80,6 +99,7 @@ class Rest {
             completionHandler(token)
         }
     }
+    
     func processStatus(data: StatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
         let url = String(format: "%@/status", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatusResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
@@ -87,6 +107,7 @@ class Rest {
             completionHandler(r.value)
         }
     }
+    
     func processBirthDate(data: FpStatusRecord,
                           completionHandler: @escaping (AgeGateActionResponse?) -> Void,
                           ageEstimationHandler: @escaping (CustomServerErrorResponse) -> Void) {
@@ -103,6 +124,7 @@ class Rest {
                 ageEstimationHandler(ageEstimationError)
         }
     }
+    
     func processRecheck(data: RecheckStatusRecord,
                         completionHandler: @escaping (AgeGateActionResponse?) -> Void,
                         ageEstimationHandler: @escaping (CustomServerErrorResponse) -> Void) {
@@ -114,6 +136,7 @@ class Rest {
             ageEstimationHandler(ageEstimationError)
         }
     }
+    
     func processLinkUser(data: LinkUserStatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
         let url = String(format: "%@/link-user", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatusResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
@@ -121,6 +144,7 @@ class Rest {
             completionHandler(r.value)
         }
     }
+    
     func getAgeServiceSettings(serviceIdentifier: String, completionHandler: @escaping (AgeServiceSettings?) -> Void) {
         let url = String(format: "%@/settings?service_identifier=%@", PrivoInternal.configuration.ageGateBaseUrl.absoluteString, serviceIdentifier)
         AF.request(url).responseDecodable(of: AgeServiceSettings.self) { r in
@@ -128,6 +152,7 @@ class Rest {
             completionHandler(r.value)
         }
     }
+    
     func getAgeVerification(verificationIdentifier: String, completionHandler: @escaping (AgeVerificationTO?) -> Void) {
         let url = String(format: "%@/age-verification?verification_identifier=%@", PrivoInternal.configuration.ageVerificationBaseUrl.absoluteString, verificationIdentifier)
         AF.request(url).responseDecodable(of: AgeVerificationTO.self) { r in
@@ -135,6 +160,7 @@ class Rest {
             completionHandler(r.value)
         }
     }
+    
     func generateFingerprint(fingerprint: DeviceFingerprint, completionHandler: @escaping (DeviceFingerprintResponse?) -> Void) {
         let url = String(format: "%@/fp", PrivoInternal.configuration.authBaseUrl.absoluteString)
         AF.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default).responseDecodable(of: DeviceFingerprintResponse.self ) { r in
@@ -142,6 +168,7 @@ class Rest {
             completionHandler(r.value)
         }
     }
+    
     func trackCustomError(_ errorDescr: String) {
         let settings = PrivoInternal.settings;
         let data = AnalyticEventErrorData(errorMessage: errorDescr, errorCode: nil, privoSettings: settings)
@@ -152,6 +179,7 @@ class Rest {
             sendAnalyticEvent(event)
         }
     }
+    
     func trackPossibleAFError(_ error: AFError?, _ code: Int?) {
         if (code != 200 && code != 204 && code != 205) {
             if let error = error {
@@ -164,6 +192,7 @@ class Rest {
             }
         }
     }
+    
     func sendAnalyticEvent(_ event: AnalyticEvent) {
         var metricsURL = PrivoInternal.configuration.helperUrl
         metricsURL.appendPathComponent("metrics")
@@ -179,78 +208,6 @@ class Rest {
             throw PrivoError.noInternetConnection
         }
     }
-    
-    private func existedAgeEstimationError<T:Decodable>(_ response: DataResponse<T,AFError>) -> CustomServerErrorResponse? {
-        guard response.response?.statusCode == 500,
-              let data = response.data,
-              let customServiceError = try? JSONDecoder().decode(CustomServerErrorResponse.self, from: data),
-              customServiceError.code == CustomServerErrorResponse.AGE_ESTIMATION_ERROR else { return nil }
-        return customServiceError
-    }
-
-}
-
-
-//MARK: - async function's wrappers
-
-fileprivate extension Session {
-    func requestAsync<T:Decodable,P:Encodable>(_ url: URLConvertible,
-                                               method: HTTPMethod = .get,
-                                               parameters: P? = nil,
-                                               emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
-        return await withCheckedContinuation { promise in
-            request(url, method: method, parameters: parameters)
-                .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
-                promise.resume(returning: $0)
-            }
-        }
-    }
-    func requestAsync<T:Decodable>(_ url: URLConvertible,
-                                   method: HTTPMethod = .get,
-                                   emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
-      return await withCheckedContinuation { promise in
-          request(url, method: method)
-              .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
-              promise.resume(returning: $0)
-          }
-      }
-    }
-    func requestAsync<T:Decodable>(_ url: URLConvertible,
-                                   method: HTTPMethod = .get,
-                                   encoding: ParameterEncoding) async -> DataResponse<T,AFError> {
-        return await withCheckedContinuation { promise in
-            request(url, method: method, encoding: encoding)
-                .responseDecodable(of: T.self) { promise.resume(returning: $0) }
-        }
-    }
-    func requestAsync(_ url: URLConvertible) async -> AFDataResponse<Data?> {
-        return await withCheckedContinuation{ promise in
-            request(url).response() { promise.resume(returning: $0) }
-        }
-    }
-    func requestAsync<T:Decodable,
-                      P:Encodable>(_ url: URLConvertible,
-                                   method: HTTPMethod = .get,
-                                   parameter: P? = nil,
-                                   encoder: ParameterEncoder = URLEncodedFormParameterEncoder.default,
-                                   emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
-        return await withCheckedContinuation { promise in
-            request(url, method: method, parameters: parameter, encoder: encoder)
-                .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
-                    promise.resume(returning: $0)
-                }
-        }
-    }
-}
-
-extension Rest {
-    
-    static var shared: Rest = .init()
-    
-    private static let storageComponent = "storage"
-    private static let putComponent = "put"
-    private static let sessionID = "session_id"
-    private static let emptyResponsesCodes: Set<Int> = .init([200,204,205])
     
     func getValueFromTMPStorage(key: String) async -> TmpStorageString? {
         var tmpStorageURL = PrivoInternal.configuration.helperUrl
@@ -377,4 +334,15 @@ extension Rest {
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
+    
+    //MARK: - Private functions
+    
+    private func existedAgeEstimationError<T:Decodable>(_ response: DataResponse<T,AFError>) -> CustomServerErrorResponse? {
+        guard response.response?.statusCode == 500,
+              let data = response.data,
+              let customServiceError = try? JSONDecoder().decode(CustomServerErrorResponse.self, from: data),
+              customServiceError.code == CustomServerErrorResponse.AGE_ESTIMATION_ERROR else { return nil }
+        return customServiceError
+    }
+
 }

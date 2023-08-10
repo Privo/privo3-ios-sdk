@@ -9,54 +9,20 @@ import Foundation
 import os.log
 
 class PrivoAgeSettingsInternal {
+    
+    //MARK: - Private properties
+    
     private var lastSettings: (String,EnviromentType,AgeServiceSettings)? = nil
     private let api: Rest
     
+    //MARK: - Internal initialisers
+    
     init (api: Rest = .shared) {
         self.api = api
-        updateSettings() {_ in}
+        Task.detached(priority: .userInitiated) { [weak self] in try? await self?.updateSettings() }
     }
     
-    private func updateSettings(_ completion: @escaping (AgeServiceSettings) -> Void) {
-        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
-        let envType = PrivoInternal.settings.envType
-        PrivoInternal.rest.getAgeServiceSettings(serviceIdentifier: serviceIdentifier) { [weak self] s in
-            guard let settings = s else {
-                os_log("Failed to get privo service settings", log: .default, type: .error)
-                return
-            }
-            self?.lastSettings = (serviceIdentifier,envType,settings)
-            completion(settings)
-        }
-    }
-    
-    func getSettings(_ completion: @escaping (AgeServiceSettings) -> Void) {
-        let envType = PrivoInternal.settings.envType
-        if (lastSettings?.0 == PrivoInternal.settings.serviceIdentifier && lastSettings?.1 == envType) {
-            if let settings = lastSettings?.2 {
-                completion(settings)
-            } else {
-                updateSettings(completion)
-            }
-        } else {
-            updateSettings(completion)
-        }
-    }
-    
-    func getSettingsT(_ completion: @escaping (AgeServiceSettings) throws -> Void) {
-        getSettings() { s in
-            do {
-                try completion(s)
-            } catch {
-                fatalError("Configuration Error: \(error).")
-            }
-        }
-    }
-}
-
-//MARK: - Async Wrappers for functions
-
-extension PrivoAgeSettingsInternal {
+    //MARK: - Internal functions
     
     func getSettings() async throws -> AgeServiceSettings? {
         let envType = PrivoInternal.settings.envType
@@ -80,6 +46,8 @@ extension PrivoAgeSettingsInternal {
         }
     }
     
+    //MARK: - Private functions
+    
     private func updateSettings() async throws -> AgeServiceSettings? {
         let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
         let envType = PrivoInternal.settings.envType
@@ -91,5 +59,5 @@ extension PrivoAgeSettingsInternal {
         lastSettings = (serviceIdentifier, envType, settings)
         return settings
     }
-
+    
 }

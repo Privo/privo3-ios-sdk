@@ -10,35 +10,31 @@ import SwiftUI
 
 internal class PrivoAgeVerificationInternal {
     
+    //MARK: - Private properties
+    
     private let AGE_VERIFICATION_EVENT_KEY = "AgeVerificationEvent"
     private let PRIVO_STATE_ID = "privo_state_id";
     
     private let keychain = PrivoKeychain()
      
-    internal func toInternalEvent(_ from: AgeVerificationTO, userIdentifier: String?) -> AgeVerificationEventInternal {
+    func toInternalEvent(_ from: AgeVerificationTO, userIdentifier: String?) -> AgeVerificationEventInternal {
         let status = from.status;
-        let profile = AgeVerificationProfile(
-            userIdentifier: userIdentifier,
-            firstName: from.firstName,
-            email: from.email,
-            birthDateYYYYMMDD: from.birthDate,
-            phoneNumber: from.mobilePhone
-        )
-        return AgeVerificationEventInternal(
-            status: status,
-            profile: profile,
-            ageVerificationId: from.verificationIdentifier
-        )
-    };
+        let profile = AgeVerificationProfile(userIdentifier: userIdentifier,
+                                             firstName: from.firstName,
+                                             email: from.email,
+                                             birthDateYYYYMMDD: from.birthDate,
+                                             phoneNumber: from.mobilePhone)
+        return .init(status: status,profile: profile, ageVerificationId: from.verificationIdentifier)
+    }
     
-    internal func saveVerificationIdentifier(userIdentifier: String?, verificationIdentifier: String?) {
+    func saveVerificationIdentifier(userIdentifier: String?, verificationIdentifier: String?) {
         if let verificationIdentifier = verificationIdentifier {
             let key = "\(AGE_VERIFICATION_EVENT_KEY)-\(userIdentifier ?? "")"
             self.keychain.set(key: key, value: verificationIdentifier)
         }
-    };
+    }
     
-    internal func getLastEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeVerificationEvent) -> Void ) {
+    func getLastEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeVerificationEvent) -> Void ) {
        let key = "\(AGE_VERIFICATION_EVENT_KEY)-\(userIdentifier ?? "")"
        if let verificationIdentifier = self.keychain.get(key) {
              PrivoInternal.rest.getAgeVerification(verificationIdentifier: verificationIdentifier) { [weak self] verification in
@@ -52,29 +48,33 @@ internal class PrivoAgeVerificationInternal {
        } else {
            completionHandler(AgeVerificationEvent(status: AgeVerificationStatus.Undefined, profile: nil));
        }
-    };
+    }
     
-    internal func runAgeVerification(
-        _ profile: AgeVerificationProfile?,
-        completionHandler: @escaping (AgeVerificationEventInternal?) -> Void
-    ) {
-        
-        let ageVerificationData = AgeVerificationStoreData(
-            serviceIdentifier:PrivoInternal.settings.serviceIdentifier,
-            redirectUrl: PrivoInternal.configuration.ageVerificationPublicUrl.withPath("/index.html#/age-verification-loading")!.absoluteString,
-            profile: profile
-        )
+    func getLastEvent(_ userIdentifier: String?) async -> AgeVerificationEvent {
+       let key = "\(AGE_VERIFICATION_EVENT_KEY)-\(userIdentifier ?? "")"
+        guard let verificationIdentifier = keychain.get(key) else { return .init(status: .Undefined, profile: nil) }
+        let verification = await PrivoInternal.rest.getAgeVerification(verificationIdentifier: verificationIdentifier)
+        guard let verification = verification,
+              let event = toInternalEvent(verification,userIdentifier: userIdentifier).toEvent() else {
+            return .init(status: .Undefined, profile: nil)
+        }
+        return event
+    }
+    
+    func runAgeVerification(_ profile: AgeVerificationProfile?,completionHandler: @escaping (AgeVerificationEventInternal?) -> Void) {
+        let redirectUrl = PrivoInternal.configuration.ageVerificationPublicUrl.withPath("/index.html#/age-verification-loading")!.absoluteString
+        let ageVerificationData = AgeVerificationStoreData(serviceIdentifier:PrivoInternal.settings.serviceIdentifier,
+                                                           redirectUrl: redirectUrl,
+                                                           profile: profile)
         UIApplication.shared.showView(false) {
-            AgeVerificationView(
-                ageVerificationData : ageVerificationData,
+            AgeVerificationView(ageVerificationData : ageVerificationData,
                 onFinish: { events in
- 
                     let nonCanceledEvents = events.filter { $0.status != AgeVerificationStatusInternal.Canceled && $0.status != AgeVerificationStatusInternal.Closed };
                     let publicEvents = nonCanceledEvents.isEmpty ? events : nonCanceledEvents
                     publicEvents.forEach { event in
                         completionHandler(event)
                     }
-                    if (publicEvents.isEmpty) {
+                    if publicEvents.isEmpty {
                         completionHandler(nil)
                     }
                     UIApplication.shared.dismissTopView()
@@ -82,7 +82,7 @@ internal class PrivoAgeVerificationInternal {
         }
     }
     
-    internal func hide() {
+    func hide() {
         UIApplication.shared.dismissTopView()
     }
 }
