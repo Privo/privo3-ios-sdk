@@ -57,6 +57,7 @@ struct Webview: UIViewRepresentable {
         wkPreferences.javaScriptCanOpenWindowsAutomatically = true
         let configuration = WKWebViewConfiguration()
         configuration.preferences = wkPreferences
+        configuration.allowsInlineMediaPlayback = true
         
         let webview = WKWebView(frame: .zero, configuration: configuration)
         webview.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
