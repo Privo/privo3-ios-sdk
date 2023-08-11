@@ -213,7 +213,7 @@ class Rest {
         var tmpStorageURL = PrivoInternal.configuration.helperUrl
         tmpStorageURL.appendPathComponent(Rest.storageComponent)
         tmpStorageURL.appendPathComponent(key)
-        let response: DataResponse<TmpStorageString,AFError> = await AF.requestAsync(tmpStorageURL)
+        let response: DataResponse<TmpStorageString,AFError> = await AF.request(tmpStorageURL)
         trackPossibleAFError(response.error, response.response?.statusCode)
         return response.value
     }
@@ -224,7 +224,7 @@ class Rest {
         tmpStorageURL.appendPathComponent(Rest.putComponent)
         let data = TmpStorageString(data: value, ttl: ttl)
         typealias R = DataResponse<TmpStorageResponse,AFError>
-        let result: R = await AF.requestAsync(tmpStorageURL, method: .post, parameter: data)
+        let result: R = await AF.request(tmpStorageURL, method: .post, parameter: data)
         trackPossibleAFError(result.error, result.response?.statusCode)
         let id = result.value?.id
         return id
@@ -247,7 +247,7 @@ class Rest {
     
     func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo? {
         let url = String(format: "%@/info/svc?service_identifier=%@", PrivoInternal.configuration.authBaseUrl.absoluteString, serviceIdentifier)
-        let result: DataResponse<ServiceInfo,AFError> = await AF.requestAsync(url)
+        let result: DataResponse<ServiceInfo,AFError> = await AF.request(url)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
@@ -255,7 +255,7 @@ class Rest {
     func getAuthSessionId() async -> String? {
         let authStartUrl = PrivoInternal.configuration.authStartUrl
         let sessionIdKey = Rest.sessionID
-        let result = await AF.requestAsync(authStartUrl)
+        let result = await AF.request(authStartUrl)
         trackPossibleAFError(result.error, result.response?.statusCode)
         guard let redirectUrl = result.response?.url,
               let components = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: true),
@@ -268,7 +268,7 @@ class Rest {
     func renewToken(oldToken: String, sessionId: String) async -> String? {
         let loginUrl = String(format: "%@/privo/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
         typealias R = DataResponse<LoginResponse,AFError>
-        let result: R = await AF.requestAsync(loginUrl, method: .post, encoding: BodyStringEncoding(body: oldToken))
+        let result: R = await AF.request(loginUrl, method: .post, encoding: BodyStringEncoding(body: oldToken))
         trackPossibleAFError(result.error, result.response?.statusCode)
         let token = result.value?.token
         return token
@@ -277,7 +277,7 @@ class Rest {
     func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
         let url = String(format: "%@/status", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateStatusResponse,AFError>
-        let result: R = await AF.requestAsync(url, method: .put, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        let result: R = await AF.request(url, method: .put, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
@@ -285,10 +285,11 @@ class Rest {
     func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateActionResponse,AFError>
-        let result: R = await AF.requestAsync(url,
-                                              method: .post,
-                                              parameter: data,
-                                              encoder: JSONParameterEncoder.default, emptyResponseCodes: Rest.emptyResponsesCodes)
+        let result: R = await AF.request(url,
+                                         method: .post,
+                                         parameter: data,
+                                         encoder: JSONParameterEncoder.default,
+                                         emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.response?.statusCode)
         if let ageEstimationError = existedAgeEstimationError(result) { throw ageEstimationError }
         return result.value
@@ -297,7 +298,7 @@ class Rest {
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse? {
         let url = String(format: "%@/recheck", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateActionResponse,AFError>
-        let result: R = await AF.requestAsync(url, method: .put, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        let result: R = await AF.request(url, method: .put, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.response?.statusCode)
         if let ageEstimationError = existedAgeEstimationError(result) {
             throw ageEstimationError
@@ -308,21 +309,21 @@ class Rest {
     func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
         let url = String(format: "%@/link-user", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateStatusResponse,AFError>
-        let result: R = await AF.requestAsync(url, method: .post, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        let result: R = await AF.request(url, method: .post, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
     
     func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings? {
         let url = String(format: "%@/settings?service_identifier=%@", PrivoInternal.configuration.ageGateBaseUrl.absoluteString, serviceIdentifier)
-        let result: DataResponse<AgeServiceSettings,AFError> = await AF.requestAsync(url)
+        let result: DataResponse<AgeServiceSettings,AFError> = await AF.request(url)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
     
     func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO? {
         let url = String(format: "%@/age-verification?verification_identifier=%@", PrivoInternal.configuration.ageVerificationBaseUrl.absoluteString, verificationIdentifier)
-        let result: DataResponse<AgeVerificationTO,AFError> = await AF.requestAsync(url)
+        let result: DataResponse<AgeVerificationTO,AFError> = await AF.request(url)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
@@ -330,7 +331,7 @@ class Rest {
     func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
         let url = String(format: "%@/fp", PrivoInternal.configuration.authBaseUrl.absoluteString)
         typealias R = DataResponse<DeviceFingerprintResponse,AFError>
-        let result: R = await AF.requestAsync(url, method: .post, parameters: fingerprint)
+        let result: R = await AF.request(url, method: .post, parameters: fingerprint)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
