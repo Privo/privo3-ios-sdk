@@ -45,15 +45,17 @@ public class PrivoVerification {
     public init() {}
     
     public func showVerification(_ profile: UserVerificationProfile?, completion: ((Array<VerificationEvent>) -> Void)?) {
-        UIApplication.shared.showView(true) {
-            VerificationStateView(
-                profile: profile,
-                onClose: {
+        Task.init(priority: .userInitiated) { @MainActor in
+           await UIApplication.shared.showView(true) {
+                VerificationStateView(
+                    profile: profile,
+                    onClose: {
+                        UIApplication.shared.dismissTopView()
+                    })
+                { e in
                     UIApplication.shared.dismissTopView()
-                })
-            { e in
-                UIApplication.shared.dismissTopView()
-                completion?(e)
+                    completion?(e)
+                }
             }
         }
     }
