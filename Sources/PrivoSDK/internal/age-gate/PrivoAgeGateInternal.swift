@@ -175,20 +175,14 @@ internal class PrivoAgeGateInternal {
     }
     
     func runAgeGate(_ data: CheckAgeData,
-                   prevEvent: AgeGateEvent?,
-                   recheckRequired: AgeGateInternalAction?) async -> AgeGateEvent? {
+                    prevEvent: AgeGateEvent?,
+                    recheckRequired: AgeGateInternalAction?) async -> AgeGateEvent? {
         guard let state = await getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname) else { return nil }
+        let redirectUrl = PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString
         let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
-                                           settings: state.settings,
-                                           userIdentifier: data.userIdentifier,
-                                           nickname: data.nickname,
-                                           countryCode: data.countryCode,
-                                           birthDateYYYYMMDD: data.birthDateYYYYMMDD,
-                                           birthDateYYYYMM: data.birthDateYYYYMM,
-                                           birthDateYYYY: data.birthDateYYYY,
-                                           redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString,
-                                           agId: state.agId,
-                                           fpId: state.fpId)
+                                                state: state,
+                                                data: data,
+                                                redirectUrl: redirectUrl)
         let targetPage = helpers.getStatusTargetPage(prevEvent?.status, recheckRequired: recheckRequired)
         let result: AgeGateEvent? = await withCheckedContinuation { @MainActor promise in
            UIApplication.shared.showView(false, content: {
@@ -213,7 +207,7 @@ internal class PrivoAgeGateInternal {
         }
         return result
     }
-    
+                                                                                       
     func showAgeGateIdentifier(userIdentifier: String?, nickname: String?) async {
         do {
             let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname)
@@ -229,7 +223,8 @@ internal class PrivoAgeGateInternal {
                                                 birthDateYYYY: nil,
                                                 redirectUrl: nil,
                                                 agId: agId,
-                                                fpId: fpId)
+                                                fpId: fpId,
+                                                age: nil)
             await UIApplication.shared.showView(false) {
                 AgeGateView(ageGateData : ageGateData,
                             targetPage: "age-gate-identifier",
