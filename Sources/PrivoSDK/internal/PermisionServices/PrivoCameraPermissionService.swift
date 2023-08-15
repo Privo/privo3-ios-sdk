@@ -4,8 +4,11 @@ import AVFoundation
 
 protocol PrivoCameraPermissionServiceType {
     func checkCameraPermission(completion: @escaping (Bool) -> Void)
+    func checkCameraPermission() async -> Bool
     @available(iOS 15.0, *)
     func checkPermission(for type: WKMediaCaptureType, completion: @escaping (WKPermissionDecision) -> Void)
+    @available(iOS 15.0, *)
+    func checkPermission(for type: WKMediaCaptureType) async -> WKPermissionDecision
 }
 
 class PrivoCameraPermissionService: PrivoCameraPermissionServiceType {
@@ -39,6 +42,14 @@ class PrivoCameraPermissionService: PrivoCameraPermissionServiceType {
         }
     }
     
+    @MainActor
+    func checkCameraPermission() async -> Bool {
+        return await withCheckedContinuation { promise in
+            checkCameraPermission { promise.resume(returning: $0) }
+        }
+    }
+    
+    
     @available(iOS 15.0, *)
     func checkPermission(for type: WKMediaCaptureType, completion: @escaping (WKPermissionDecision) -> Void) {
         guard type == .camera else { completion(.prompt); return }
@@ -47,6 +58,14 @@ class PrivoCameraPermissionService: PrivoCameraPermissionServiceType {
             let decision: WKPermissionDecision = result ? .grant : .deny
             queue.async { completion(decision) }
         }
+    }
+    
+    @MainActor
+    @available(iOS 15.0, *)
+    func checkPermission(for type: WKMediaCaptureType) async -> WKPermissionDecision {
+        return await withCheckedContinuation({ promise in
+            checkPermission(for: type) { promise.resume(returning: $0)}
+        })
     }
     
 }

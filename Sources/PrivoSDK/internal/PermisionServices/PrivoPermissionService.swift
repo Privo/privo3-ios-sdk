@@ -29,8 +29,17 @@ class PrivoPermissionService: PrivoPermissionServiceType {
 
 extension PrivoPermissionService: PrivoCameraPermissionServiceType {
     
+    func checkCameraPermission() async -> Bool {
+        await cameraPermission.checkCameraPermission()
+    }
+    
     func checkCameraPermission(completion: @escaping (Bool) -> Void) {
         cameraPermission.checkCameraPermission(completion: completion)
+    }
+    
+    @available(iOS 15.0, *)
+    func checkPermission(for type: WKMediaCaptureType) async -> WKPermissionDecision {
+        await cameraPermission.checkPermission(for: type)
     }
     
     @available(iOS 15.0, *)

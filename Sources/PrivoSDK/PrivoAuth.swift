@@ -9,16 +9,28 @@ import SwiftUI
 import JWTDecode
 
 public struct PrivoAuthButton<Label> : View where Label : View {
+    
+    //MARK: - Internal properties
+    
     @State var isPresented = false
     let label: Label
     var closeIcon: Image?
     let onFinish: ((String?) -> Void)?
+    
+    //MARK: - Private properties
+    
     private let accessIdKey = "accessId"
+    
+    //MARK: - Public initialisers
+    
     public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: (() -> Image)? = nil) {
         self.label = label()
         self.closeIcon = closeIcon?()
         self.onFinish = onFinish
     }
+    
+    //MARK: - Body builder
+    
     public var body: some View {
         return Button {
             isPresented = true
@@ -34,16 +46,26 @@ public struct PrivoAuthButton<Label> : View where Label : View {
 }
 
 public struct PrivoRegisterButton<Label> : View where Label : View {
+    
+    
+    //MARK: - Internal properties
+    
     @Binding var isPresented: Bool
     let label: Label
     var closeIcon: Image?
     let onFinish: (() -> Void)?
+    
+    //MARK: - Public initialisers
+    
     public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Image)? = nil ) {
         self.label = label()
         self.closeIcon = closeIcon?()
         self._isPresented = isPresented
         self.onFinish = onFinish
     }
+    
+    //MARK: - Body builder
+    
     public var body: some View {
         return Button {
             isPresented = true
@@ -56,32 +78,41 @@ public struct PrivoRegisterButton<Label> : View where Label : View {
 }
 
 public class PrivoAuth {
+    
+    //MARK: - Public initialisers
+    
     public init() {}
     public struct AuthDialog {
         fileprivate init() {}
         public func hide() { UIApplication.shared.dismissTopView() }
     }
     
+    //MARK: - Public functions
+    
     public func showRegister(_ completion: ((AuthDialog) -> Void)?) {
-        let authDialog = AuthDialog()
-        UIApplication.shared.showView(false) {
-            PrivoRegisterStateView(onClose: {
-                authDialog.hide()
-            }) {
-                completion?(authDialog)
+        Task.init(priority: .userInitiated) { @MainActor in
+            let authDialog = AuthDialog()
+            await UIApplication.shared.showView(false) {
+                PrivoRegisterStateView(onClose: {
+                    authDialog.hide()
+                }) {
+                    completion?(authDialog)
+                }
             }
         }
     }
+    
     public func showAuth(_ completion: ((String?) -> Void)?) {
-        let authDialog = AuthDialog()
-
-        UIApplication.shared.showView(false) {
-            PrivoAuthStateView(onClose: {
-                authDialog.hide()
-            }, onFinish: { r in
-                authDialog.hide()
-                completion?(r)
-            })
+        Task.init(priority: .userInitiated) { @MainActor in
+            let authDialog = AuthDialog()
+            await UIApplication.shared.showView(false) {
+                PrivoAuthStateView(onClose: {
+                    authDialog.hide()
+                }, onFinish: { r in
+                    authDialog.hide()
+                    completion?(r)
+                })
+            }
         }
     }
     
@@ -100,27 +131,28 @@ public class PrivoAuth {
         logout()
         return nil
     }
+    
     public func renewToken(completionHandler: @escaping (TokenStatus?) -> Void) {
-        if let oldToken = getToken() {
-            PrivoInternal.rest.getAuthSessionId { sessionId in
-                if let sessionId = sessionId {
-                    PrivoInternal.rest.renewToken(oldToken: oldToken, sessionId: sessionId) { token in
-                        if let token = token {
-                            UserDefaults.standard.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
-                            completionHandler(TokenStatus(token: token, isRenewed: true))
-                        } else {
-                            completionHandler(TokenStatus(token: oldToken, isRenewed: false))
-                        }
-                    }
-                } else {
-                    completionHandler(nil)
-                }
+        Task.init(priority: .userInitiated) {
+            guard let oldToken = getToken() else {
+                completionHandler(nil)
+                return
             }
-        } else {
-            completionHandler(nil)
+            guard let sessionId = await PrivoInternal.rest.getAuthSessionId() else {
+                completionHandler(nil)
+                return
+            }
+            guard let newToken = await PrivoInternal.rest.renewToken(oldToken: oldToken, sessionId: sessionId) else {
+                completionHandler(.init(token: oldToken, isRenewed: false))
+                return
+            }
+            UserDefaults.standard.set(newToken, forKey: PrivoInternal.configuration.tokenStorageKey)
+            completionHandler(.init(token: newToken, isRenewed: true))
         }
     }
+    
     public func logout() -> Void {
         UserDefaults.standard.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
+    
 }
