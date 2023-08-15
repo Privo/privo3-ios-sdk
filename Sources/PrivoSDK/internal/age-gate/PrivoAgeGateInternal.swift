@@ -226,19 +226,11 @@ internal class PrivoAgeGateInternal {
         
         getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname) { state  in
             guard let state = state else { completionHandler(nil); return }
-            let ageGateData = CheckAgeStoreData(
-                serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
-                settings: state.settings,
-                userIdentifier: data.userIdentifier,
-                nickname: data.nickname,
-                countryCode: data.countryCode,
-                birthDateYYYYMMDD: data.birthDateYYYYMMDD,
-                birthDateYYYYMM: data.birthDateYYYYMM,
-                birthDateYYYY: data.birthDateYYYY,
-                redirectUrl: PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString,
-                agId: state.agId,
-                fpId: state.fpId
-            )
+            let redirectUrl = PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString
+            let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
+                                                state: state,
+                                                data: data,
+                                                redirectUrl: redirectUrl)
             UIApplication.shared.showView(false) {
                 AgeGateView(
                     ageGateData : ageGateData,
@@ -282,7 +274,8 @@ internal class PrivoAgeGateInternal {
                         birthDateYYYY: nil,
                         redirectUrl: nil,
                         agId: agId,
-                        fpId: fpId
+                        fpId: fpId,
+                        age: nil
                     )
                     UIApplication.shared.showView(false) {
                         AgeGateView(
