@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 09.06.2021.
-//
-
 import Alamofire
 import Foundation
 
@@ -22,14 +15,10 @@ struct BodyStringEncoding: ParameterEncoding {
     }
 }
 
-extension BodyStringEncoding {
-    enum Errors: Error {
-        case emptyURLRequest
-        case encodingProblem
-    }
-}
-
-extension BodyStringEncoding.Errors: LocalizedError {
+fileprivate enum Errors: Error, LocalizedError {
+    case emptyURLRequest
+    case encodingProblem
+    
     var errorDescription: String? {
         switch self {
             case .emptyURLRequest: return "Empty url request"

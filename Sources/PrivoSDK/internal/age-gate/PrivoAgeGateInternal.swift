@@ -38,7 +38,7 @@ internal class PrivoAgeGateInternal {
                                      countryCode: nil)
             return event
         }
-        let event = AgeGateEvent(status: response.status.toStatus(),
+        let event = AgeGateEvent(status: response.status.toStatus,
                                  userIdentifier: response.extUserId,
                                  nickname: nickname,
                                  agId: response.agId ?? agId,
@@ -72,7 +72,7 @@ internal class PrivoAgeGateInternal {
                                      countryCode: nil)
             return event
         }
-        let event = AgeGateEvent(status: response.status.toStatus(),
+        let event = AgeGateEvent(status: response.status.toStatus,
                                  userIdentifier: response.extUserId,
                                  nickname: nickname,
                                  agId: response.agId ?? agId,

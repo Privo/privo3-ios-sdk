@@ -8,6 +8,9 @@ import Foundation
 
 
 public class PrivoConfiguration {
+    
+    //MARK: - Internal properties
+    
     let type: EnviromentType
     let authBaseUrl: URL
     let authStartUrl: URL
@@ -20,6 +23,9 @@ public class PrivoConfiguration {
     let ageVerificationPublicUrl: URL
     let tokenStorageKey: String
     let privoServiceKey: String
+    
+    //MARK: - Private initialisers
+    
     private init (type: EnviromentType) {
         self.type = type
         self.privoServiceKey = "com.privo.sdk"
@@ -81,20 +87,21 @@ public class PrivoConfiguration {
             self.tokenStorageKey = "privo-token"
         }
     }
-    public init (
-        type: EnviromentType,
-        authBaseUrl: URL? = nil,
-        authStartUrl: URL? = nil,
-        verificationUrl: URL? = nil,
-        helperUrl: URL? = nil,
-        lgsRegistrationUrl: URL? = nil,
-        ageGateBaseUrl: URL? = nil,
-        ageGatePublicUrl: URL? = nil,
-        ageVerificationBaseUrl: URL? = nil,
-        ageVerificationPublicUrl: URL? = nil,
-        tokenStorageKey: String? = nil,
-        privoServiceKey: String? = nil
-    ) {
+    
+    //MARK: - Public initialisers
+    
+    public init(type: EnviromentType,
+                authBaseUrl: URL? = nil,
+                authStartUrl: URL? = nil,
+                verificationUrl: URL? = nil,
+                helperUrl: URL? = nil,
+                lgsRegistrationUrl: URL? = nil,
+                ageGateBaseUrl: URL? = nil,
+                ageGatePublicUrl: URL? = nil,
+                ageVerificationBaseUrl: URL? = nil,
+                ageVerificationPublicUrl: URL? = nil,
+                tokenStorageKey: String? = nil,
+                privoServiceKey: String? = nil) {
         self.type = type
         let defaultValues = PrivoConfiguration(type: type)
 

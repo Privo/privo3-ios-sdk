@@ -1,17 +1,20 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 06.07.2021.
-//
 import Foundation
 import UIKit
 
 public class PrivoAgeGate {
     
+    //MARK: - Private properties
+    
     private let ageGate = PrivoAgeGateInternal()
+    
+    
+    //MARK: - Public initialisers
 
-    public init() { }
+    public init() {
+        
+    }
+    
+    //MARK: - Public functions
     
     public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
         Task.init {
