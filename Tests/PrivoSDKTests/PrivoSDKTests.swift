@@ -7,6 +7,6 @@
             // Use XCTAssert and related functions to verify your tests produce the correct
             // results.
             Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
-            XCTAssertEqual(PrivoInternal.configuration.type, .Dev)
+            XCTAssertEqual(PrivoService.configuration.type, .Dev)
         }
     }

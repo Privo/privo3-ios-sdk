@@ -1,0 +1,46 @@
+import Foundation
+
+class PrivoService {
+    
+    //MARK: - Static properties
+        
+    static let rest = Rest()
+    
+    static private var _configuration: PrivoConfiguration?
+    static private var _settings: PrivoSettings?
+
+    //MARK: - Private initialisers
+    
+    private init () {}
+    
+    //MARK: - Static functions
+    
+    static func initialize(settings: PrivoSettings) {
+        self._settings = settings
+        self._configuration = PrivoConfiguration(type: settings.envType)
+    }
+    
+    static func overrideConfiguration (configuration: PrivoConfiguration) {
+        _configuration = configuration
+    }
+    
+    static var configuration: PrivoConfiguration {
+        get {
+            guard let configuration = PrivoService._configuration else {
+                preconditionFailure("Privo SDK is not initialized, call Privo.initialize first")
+            }
+            return configuration
+        }
+    }
+    
+    static var settings: PrivoSettings {
+        get {
+            guard let settings = PrivoService._settings else {
+                preconditionFailure("Privo SDK is not initialized, call Privo.initialize first")
+            }
+            return settings
+        }
+    }
+    
+}
+

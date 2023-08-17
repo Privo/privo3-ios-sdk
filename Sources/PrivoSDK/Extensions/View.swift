@@ -2,7 +2,8 @@ import SwiftUI
 import Combine
 
 extension View {
-    func KeyboardAwarePadding() -> some View {
+    
+    func keyboardAwarePadding() -> some View {
         ModifiedContent(content: self, modifier: KeyboardAwareModifier())
     }
     

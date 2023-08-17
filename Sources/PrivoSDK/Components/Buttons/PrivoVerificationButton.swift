@@ -5,7 +5,7 @@ public struct PrivoVerificationButton<Label>:View where Label:View {
     //MARK: - Private properties
     
     @State private var state = PrivoVerificationState()
-    private let verification = InternalPrivoVerification()
+    private let verification = PrivoVerificationService()
 
     //MARK: - Internal properties
     
@@ -15,11 +15,11 @@ public struct PrivoVerificationButton<Label>:View where Label:View {
     
     let label: Label
     var closeIcon: Image?
-    let onFinish: ((Array<VerificationEvent>) -> Void)?
+    let onFinish: (([VerificationEvent]) -> Void)?
     
     //MARK: - Public initialisers
     
-    public init(@ViewBuilder label: () -> Label, profile: UserVerificationProfile? = nil, onFinish: ((Array<VerificationEvent>) -> Void)? = nil, closeIcon: (() -> Image)? = nil) {
+    public init(@ViewBuilder label: () -> Label, profile: UserVerificationProfile? = nil, onFinish: (([VerificationEvent]) -> Void)? = nil, closeIcon: (() -> Image)? = nil) {
         if let profile = profile {
             self.profile = profile
         }
@@ -42,10 +42,7 @@ public struct PrivoVerificationButton<Label>:View where Label:View {
         } label: {
             label
         }.sheet(isPresented: $state.isPresented) {
-            VerificationView(state: $state,
-                             profile: profile,
-                             closeIcon: closeIcon,
-                             onFinish: onFinish).clearModalBackground()
+            PrivoVerificationView(state: $state, profile: profile, closeIcon: closeIcon, onFinish: onFinish).clearModalBackground()
         }
     }
     
