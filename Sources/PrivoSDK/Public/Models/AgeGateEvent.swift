@@ -38,7 +38,7 @@ extension AgeGateEvent: Codable {
                   userIdentifier: data.extUserId,
                   nickname: nickName,
                   agId: data.agId,
-                  ageRange: data.ageRange,
+                  ageRange: data.ageRange?.convertTo,
                   countryCode: data.countryCode)
     }
     
@@ -47,7 +47,7 @@ extension AgeGateEvent: Codable {
                   userIdentifier: data.extUserId,
                   nickname: nickName,
                   agId: data.agId,
-                  ageRange: data.ageRange,
+                  ageRange: data.ageRange?.convertTo,
                   countryCode: data.countryCode)
     }
     

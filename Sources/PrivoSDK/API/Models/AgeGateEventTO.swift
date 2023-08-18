@@ -1,9 +1,9 @@
 import Foundation
 
-struct AgeGateStatusResponse: Codable, Hashable {
+struct AgeGateEventTO: Codable, Hashable {
     let status: AgeGateStatusTO
+    let userIdentifier: String?
     let agId: String?
     let ageRange: AgeRangeTO?
-    let extUserId: String?
     let countryCode: String?
 }

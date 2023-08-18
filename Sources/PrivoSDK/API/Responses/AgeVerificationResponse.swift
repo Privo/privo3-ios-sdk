@@ -2,7 +2,7 @@ import Foundation
 
 struct AgeVerificationResponse: Codable {
     let verificationIdentifier: String
-    let status: AgeVerificationStatusInternal
+    let status: AgeVerificationStatusTO
     let firstName: String
     let birthDate: String // "2022-05-24";
     let parentFirstName: String

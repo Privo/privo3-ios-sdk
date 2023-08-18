@@ -21,13 +21,13 @@ class PrivoAgeVerificationService {
     //MARK: - Internal functions
      
     func toInternalEvent(_ from: AgeVerificationResponse, userIdentifier: String?) -> AgeVerificationEventInternal {
-        let status = from.status;
+        let status = from.status.convertToInternal
         let profile = AgeVerificationProfile(userIdentifier: userIdentifier,
                                              firstName: from.firstName,
                                              email: from.email,
                                              birthDateYYYYMMDD: from.birthDate,
                                              phoneNumber: from.mobilePhone)
-        return .init(status: status,profile: profile, ageVerificationId: from.verificationIdentifier)
+        return .init(status: status, profile: profile, ageVerificationId: from.verificationIdentifier)
     }
     
     func saveVerificationIdentifier(userIdentifier: String?, verificationIdentifier: String?) {
@@ -37,17 +37,8 @@ class PrivoAgeVerificationService {
     }
     
     func getLastEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeVerificationEvent) -> Void ) {
-       let key = "\(AGE_VERIFICATION_EVENT_KEY)-\(userIdentifier ?? "")"
-        guard let verificationIdentifier = keychain.get(key) else {
-            completionHandler(.init(status: .Undefined, profile: nil))
-            return
-        }
-        api.getAgeVerification(verificationIdentifier: verificationIdentifier) { [weak self] verification in
-            guard let verification = verification,
-                  let event = self?.toInternalEvent(verification,userIdentifier: userIdentifier).toEvent else {
-                completionHandler(.init(status: .Undefined, profile: nil))
-                return
-            }
+        Task.init {
+            let event = await getLastEvent(userIdentifier)
             completionHandler(event)
         }
     }

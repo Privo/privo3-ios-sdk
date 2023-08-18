@@ -13,6 +13,7 @@ struct PrivoRegisterView: View {
     //MARK: - Private properties
     
     private let siteIdKey = "siteId"
+    private let api: Rest = .shared
     
     //MARK: - Public initialiasers
     
@@ -40,7 +41,7 @@ struct PrivoRegisterView: View {
     
     func showView() {
         let serviceIdentifier = PrivoService.settings.serviceIdentifier
-        PrivoService.rest.getServiceInfo(serviceIdentifier: serviceIdentifier) { serviceInfo in
+        api.getServiceInfo(serviceIdentifier: serviceIdentifier) { serviceInfo in
             inProgress = false
             if let siteId = serviceInfo?.p2siteId {
                 let url = PrivoService.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!

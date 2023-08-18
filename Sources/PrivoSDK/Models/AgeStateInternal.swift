@@ -1,6 +1,6 @@
 import Foundation
 
-struct AgeState {
+struct AgeStateInternal {
     let fpId: String
     let agId: String?
     let settings: AgeServiceSettingsResponse

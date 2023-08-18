@@ -12,6 +12,7 @@ struct PrivoVerificationView: View {
     //MARK: - Private properties
     
     private let verification = PrivoVerificationService()
+    private let api: Rest = .shared
     
     //MARK: - Body builder
     
@@ -59,10 +60,10 @@ struct PrivoVerificationView: View {
             if let items = URLComponents(string: url)?.queryItems,
                let eventId = items.first(where: {$0.name == "privo_events_id"})?.value {
                  state.inProgress = true
-                 PrivoService.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
+                 api.getObjectFromTMPStorage(key: eventId) { (events: Array<VerificationEvent>?) in
                     if let errorEvent = events?.first (where: { $0.event == VerificationEventType.verifyError  }) {
                         let customError = "Event error: code - \(String(describing: errorEvent.errorCode)) message - \(String(describing: errorEvent.errorMessage))"
-                        PrivoService.rest.trackCustomError(customError)
+                        api.trackCustomError(customError)
                     }
                      finishView(events)
                  }

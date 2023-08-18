@@ -16,6 +16,8 @@ struct PrivoAgeGateView : View {
     var finishCriteria: String = "age-gate-loading"
     let onFinish: ((Array<AgeGateEvent>) async -> Void)?
     
+    let api: Rest = .shared
+    
     //MARK: - Private properties
     
     @State
@@ -64,18 +66,18 @@ struct PrivoAgeGateView : View {
                      showCloseIcon: false,
                      finishCriteria: finishCriteria,
                      onFinish: { url in
-                 guard let items = URLComponents(string: url)?.queryItems,
-                       let eventId = items.first(where: {$0.name == "privo_age_gate_events_id"})?.value else {
+                guard let items = URLComponents(string: url)?.queryItems,
+                      let eventId = items.first(where: {$0.name == "privo_age_gate_events_id"})?.value else {
                      finishView(nil)
                      return
-                 }
-                 state.inProgress = true
-                 PrivoService.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<AgeGateEventInternal>?) in
+                }
+                state.inProgress = true
+                api.getObjectFromTMPStorage(key: eventId) { (events: Array<AgeGateEventInternal>?) in
                      let publicEvents = events?.map { $0.toEvent(nickname: ageGateData?.nickname) }.compactMap { $0 }
                      let nonCanceledEvents = publicEvents?.filter { $0.status != AgeGateStatus.Canceled };
                      let resultEvents = (nonCanceledEvents?.isEmpty ?? true) ? publicEvents : nonCanceledEvents
                      finishView(resultEvents)
-                 }
+                }
              },
              onClose: {
                  finishView(nil)

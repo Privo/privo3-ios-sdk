@@ -8,6 +8,8 @@ struct PrivoAgeVerificationView : View {
     let ageVerificationData: AgeVerificationStoreData?
     let onFinish: ((Array<AgeVerificationEventInternal>) -> Void)
     
+    private let api: Rest = .shared
+    
     //MARK: - Body builder
     
     public var body: some View {
@@ -51,16 +53,16 @@ struct PrivoAgeVerificationView : View {
                      showCloseIcon: false,
                      finishCriteria: "age-verification-loading",
                      onFinish: { url in
-            if let items = URLComponents(string: url)?.queryItems,
-               let eventId = items.first(where: {$0.name == "privo_age_verification_events_id"})?.value {
-                 state.inProgress = true
-                 PrivoService.rest.getObjectFromTMPStorage(key: eventId) { (events: Array<AgeVerificationEventInternal>?) in
-                     finishView(events)
-                 }
-            } else {
-                finishView(nil)
-            }
-                }, onClose: {
+                if let items = URLComponents(string: url)?.queryItems,
+                   let eventId = items.first(where: {$0.name == "privo_age_verification_events_id"})?.value {
+                     state.inProgress = true
+                     api.getObjectFromTMPStorage(key: eventId) { (events: Array<AgeVerificationEventInternal>?) in
+                         finishView(events)
+                     }
+                } else {
+                    finishView(nil)
+                }
+            }, onClose: {
             finishView(nil)
         })
     }

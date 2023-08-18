@@ -3,6 +3,7 @@ import Foundation
 struct AgeGateEventInternal: Codable, Hashable {
     let status: AgeGateStatusInternal
     let userIdentifier: String?
+    let nickname: String?
     let agId: String?
     let ageRange: AgeRange?
     let countryCode: String?

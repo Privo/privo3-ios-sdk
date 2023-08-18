@@ -1,6 +1,6 @@
 import Foundation
 
-enum AgeGateInternalAction {
+enum AgeGateActionInternal {
     case RecheckRequired
     case AgeEstimationRequired
     case AgeEstimationRecheckRequired

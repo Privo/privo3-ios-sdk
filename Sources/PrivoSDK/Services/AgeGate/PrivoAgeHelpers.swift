@@ -20,7 +20,7 @@ class PrivoAgeHelpers {
     
     //MARK: - Internal functions
     
-    func getStatusTargetPage(_ status: AgeGateStatus?, recheckRequired: AgeGateInternalAction?) -> String {
+    func getStatusTargetPage(_ status: AgeGateStatus?, recheckRequired: AgeGateActionInternal?) -> String {
         guard let recheckRequired = recheckRequired else {
             guard let status = status else { return "dob" }
             switch status {

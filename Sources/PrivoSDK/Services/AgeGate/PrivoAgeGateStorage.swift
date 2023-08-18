@@ -18,7 +18,9 @@ class PrivoAgeGateStorage {
     
     //MARK: - Internal initialisers
     
-    init(keyChain: PrivoKeychain = .init(), serviceSettings: PrivoAgeSettingsService = .init(), api: Rest = .shared) {
+    init(keyChain: PrivoKeychain = .init(),
+         serviceSettings: PrivoAgeSettingsService = .init(),
+         api: Rest = .shared) {
         self.keychain = keyChain
         self.api = api
         self.serviceSettings = serviceSettings

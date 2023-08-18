@@ -51,7 +51,7 @@ struct CheckAgeStoreData: Encodable {
     }
     
     init(serviceIdentifier: String,
-         state: AgeState,
+         state: AgeStateInternal,
          data: CheckAgeData,
          redirectUrl: String?) {
         self.init(serviceIdentifier: serviceIdentifier,

@@ -11,6 +11,8 @@ struct PrivoAuthView: View {
     //MARK: - Private properties
     
     private let accessIdKey = "access_id"
+    private let api: Rest = .shared
+    private let userDefaults: UserDefaults = .standard
     
     //MARK: - Public initialisers
     
@@ -37,11 +39,12 @@ struct PrivoAuthView: View {
                      closeIcon: closeIcon,
                      finishCriteria: accessIdKey,
                      onFinish: { url in
-            if let items = URLComponents(string: url)?.queryItems, let accessId = items.first(where: {$0.name == accessIdKey})?.value {
-                PrivoService.rest.getValueFromTMPStorage(key: accessId) { resp in
+            if let items = URLComponents(string: url)?.queryItems,
+                let accessId = items.first(where: {$0.name == accessIdKey})?.value {
+                api.getValueFromTMPStorage(key: accessId) { resp in
                     let token = resp?.data
                     if (token != nil) {
-                        UserDefaults.standard.set(token, forKey: PrivoService.configuration.tokenStorageKey)
+                        userDefaults.set(token, forKey: PrivoService.configuration.tokenStorageKey)
                     }
                     onFinish?(token)
                 }
