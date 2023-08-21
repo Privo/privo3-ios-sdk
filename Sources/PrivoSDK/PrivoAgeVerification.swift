@@ -11,11 +11,13 @@ public class PrivoAgeVerification {
     
     //MARK: - Private properties
     
-    private let ageVerification = PrivoAgeVerificationInternal()
+    private let ageVerification: PrivoAgeVerificationInternal
     
     //MARK: - Public initialisers
 
-    public init() { }
+    public init() {
+        ageVerification = .init()
+    }
     
     //MARK: - Public functions
     
@@ -34,7 +36,7 @@ public class PrivoAgeVerification {
             } else {
                 ageVerification.runAgeVerification(profile) { [weak self] event in
                     self?.ageVerification.saveVerificationIdentifier(userIdentifier: profile?.userIdentifier, verificationIdentifier: event?.ageVerificationId)
-                    let publicEvent = event?.toEvent()
+                    let publicEvent = event?.toEvent
                     completionHandler(publicEvent)
                 }
             }

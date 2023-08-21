@@ -9,6 +9,10 @@ import Foundation
 
 internal class AgeGateStorage {
     
+    //MARK: - Internal properties
+    
+    let serviceSettings: PrivoAgeSettingsInternal
+    
     //MARK: - Private properties
     
     private let FP_ID_KEY = "privoFpId";
@@ -18,10 +22,6 @@ internal class AgeGateStorage {
     
     private let keychain: PrivoKeychain
     private let api: Rest
-    
-    //MARK: - Internal properties
-    
-    let serviceSettings: PrivoAgeSettingsInternal
     
     //MARK: - Internal initialisers
     
@@ -33,14 +33,13 @@ internal class AgeGateStorage {
     
     //MARK: - Internal functions
     
-    func getStoredEntitiesKey () -> String {
+    func getStoredEntitiesKey() -> String {
         return "\(AGE_GATE_STORED_ENTITY_KEY)-\(PrivoInternal.settings.envType)"
     }
     
     func storeInfoFromEvent(event: AgeGateEvent?) {
-        if let agId = event?.agId {
-            storeAgId(userIdentifier: event?.userIdentifier, nickname: event?.nickname, agId: agId)
-        }
+        guard let agId = event?.agId else { return }
+        storeAgId(userIdentifier: event?.userIdentifier, nickname: event?.nickname, agId: agId)
     }
     
     func storeAgId(userIdentifier: String?, nickname: String?, agId: String) {

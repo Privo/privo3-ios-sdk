@@ -9,9 +9,11 @@ import UIKit
 
 public class PrivoAgeGate {
     
-    private let ageGate = PrivoAgeGateInternal()
+    private let ageGate: PrivoAgeGateInternal
 
-    public init() { }
+    public init() {
+        ageGate = PrivoAgeGateInternal()
+    }
     
     public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
         Task.init {
