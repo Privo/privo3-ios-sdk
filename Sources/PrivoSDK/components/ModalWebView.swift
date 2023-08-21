@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct ModalWebView: View {
-  @Binding var isPresented: Bool
-  @ObservedObject var model = WebViewModel()
-  let config: WebviewConfig
+    @Binding
+    var isPresented: Bool
+    @ObservedObject
+    var model = WebViewModel(permissionService: PrivoCameraPermissionService.shared)
+    let config: WebviewConfig
   
     var body: some View {
       return

@@ -87,18 +87,31 @@ class Rest {
             completionHandler(r.value)
         }
     }
-    func processBirthDate(data: FpStatusRecord, completionHandler: @escaping (AgeGateActionResponse?) -> Void) {
+    func processBirthDate(data: FpStatusRecord,
+                          completionHandler: @escaping (AgeGateActionResponse?) -> Void,
+                          ageEstimationHandler: @escaping (CustomServerErrorResponse) -> Void) {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateActionResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
+        AF.request(url,
+                   method: .post,
+                   parameters: data,
+                   encoder: JSONParameterEncoder.default)
+            .responseDecodable(of: AgeGateActionResponse.self,
+                               emptyResponseCodes: [200, 204, 205]) { [weak self] r in
+                guard let self = self else { return }
+                self.trackPossibleAFError(r.error, r.response?.statusCode)
+                guard let ageEstimationError = self.existedAgeEstimationError(r) else { completionHandler(r.value); return }
+                ageEstimationHandler(ageEstimationError)
         }
     }
-    func processRecheck(data: RecheckStatusRecord, completionHandler: @escaping (AgeGateActionResponse?) -> Void) {
+    func processRecheck(data: RecheckStatusRecord,
+                        completionHandler: @escaping (AgeGateActionResponse?) -> Void,
+                        ageEstimationHandler: @escaping (CustomServerErrorResponse) -> Void) {
         let url = String(format: "%@/recheck", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateActionResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
+        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateActionResponse.self, emptyResponseCodes: [200, 204, 205] ) { [weak self] r in
+            guard let self = self else { return }
             self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
+            guard let ageEstimationError = self.existedAgeEstimationError(r) else { completionHandler(r.value); return }
+            ageEstimationHandler(ageEstimationError)
         }
     }
     func processLinkUser(data: LinkUserStatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
@@ -165,6 +178,14 @@ class Rest {
         if (rManager?.isReachable == false) {
             throw PrivoError.noInternetConnection
         }
+    }
+    
+    private func existedAgeEstimationError<T:Decodable>(_ response: DataResponse<T,AFError>) -> CustomServerErrorResponse? {
+        guard response.response?.statusCode == 500,
+              let data = response.data,
+              let customServiceError = try? JSONDecoder().decode(CustomServerErrorResponse.self, from: data),
+              customServiceError.code == CustomServerErrorResponse.AGE_ESTIMATION_ERROR else { return nil }
+        return customServiceError
     }
 
 }

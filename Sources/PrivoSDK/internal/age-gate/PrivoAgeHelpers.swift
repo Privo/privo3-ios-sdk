@@ -19,30 +19,34 @@ internal class PrivoAgeHelpers {
         self.serviceSettings = serviceSettings
     }
     
-    internal func getStatusTargetPage(_ status: AgeGateStatus?, recheckRequired: Bool) -> String {
-        guard let status = status else {
-            return "dob"
+    internal func getStatusTargetPage(_ status: AgeGateStatus?, recheckRequired: AgeGateInternalAction?) -> String {
+        guard let recheckRequired = recheckRequired else {
+            guard let status = status else { return "dob" }
+            switch status {
+                case AgeGateStatus.Pending:
+                    return "verification-pending"
+                case AgeGateStatus.Blocked:
+                    return "access-restricted"
+                case AgeGateStatus.MultiUserBlocked:
+                    return "access-restricted"
+                case AgeGateStatus.ConsentRequired:
+                    return "request-consent"
+                case AgeGateStatus.AgeVerificationRequired:
+                    return "request-age-verification"
+                case AgeGateStatus.IdentityVerificationRequired:
+                    return "request-verification"
+                case .AgeEstimationBlocked:
+                    return "age-detection-description"
+                default:
+                    return "dob"
+            }
         }
-        if (recheckRequired == true) {
-            return "recheck"
+        switch(recheckRequired) {
+        case .RecheckRequired: return "recheck"
+        case .AgeEstimationRequired: return "request-age-estimation"
+        case .AgeEstimationRecheckRequired: return "request-age-estimation-recheck"
         }
-        switch status {
-            case AgeGateStatus.Pending:
-                return "verification-pending"
-            case AgeGateStatus.Blocked:
-                return "access-restricted";
-            case AgeGateStatus.MultiUserBlocked:
-                return "access-restricted";
-            case AgeGateStatus.ConsentRequired:
-                return "request-consent";
-            case AgeGateStatus.AgeVerificationRequired:
-                return "request-age-verification";
-            case AgeGateStatus.IdentityVerificationRequired:
-                return "request-verification";
-            default:
-                return "dob";
-        }
-    };
+    }
     
     internal func toStatus(_ action: AgeGateAction?) -> AgeGateStatus? {
         switch action {
@@ -58,6 +62,8 @@ internal class PrivoAgeHelpers {
                 return AgeGateStatus.AgeVerificationRequired
             case .MultiUserBlock:
                 return AgeGateStatus.MultiUserBlocked
+            case .AgeEstimationBlocked:
+                return .AgeEstimationBlocked
             default:
                 return AgeGateStatus.Undefined
         }

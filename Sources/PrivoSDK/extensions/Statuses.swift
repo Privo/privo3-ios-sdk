@@ -35,6 +35,8 @@ extension AgeGateStatusTO {
                 return AgeGateStatus.AgeBlocked
             case .MultiUserBlocked:
                 return AgeGateStatus.MultiUserBlocked
+            case .AgeEstimationBlocked:
+                return AgeGateStatus.AgeEstimationBlocked
             default:
                 return AgeGateStatus.Undefined;
         }
