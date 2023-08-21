@@ -10,7 +10,12 @@ import Foundation
 import os.log
 
 struct PrivoKeychain {
+    
+    //MARK: - Private properties
+    
     private let privoPrefix = "com.privo.ios.sdk"
+    
+    //MARK: - Internal functions
     
     func set (key: String, value: String) {
         delete(key);
@@ -32,7 +37,6 @@ struct PrivoKeychain {
     }
     
     func get(_ key: String) -> String? {
-        
         let query: [String: Any] = [
             kSecClass as String       : kSecClassGenericPassword,
             kSecAttrService as String : privoPrefix,
@@ -40,33 +44,27 @@ struct PrivoKeychain {
             kSecMatchLimit as String  : kSecMatchLimitOne,
             kSecReturnData as String: kCFBooleanTrue!
         ]
-        
         var result: AnyObject?
-        
         let resultCode = withUnsafeMutablePointer(to: &result) {
           SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0))
         }
-        
         if resultCode == noErr {
-            if let data =  result as? Data {
+            if let data = result as? Data {
                 if let currentString = String(data: data, encoding: .utf8) {
                     return currentString
                 }
             }
         }
-        return nil;
+        return nil
     }
     
     func delete(_ key: String) {
-      
       let query: [String: Any] = [
         kSecClass as String       : kSecClassGenericPassword,
         kSecAttrService as String : privoPrefix,
         kSecAttrAccount as String : key,
       ]
-      
       let response = SecItemDelete(query as CFDictionary)
-      
       if (response != noErr) {
         os_log("Failed to delete value for key %@ in keychain", log: .default, type: .error, key)
       }

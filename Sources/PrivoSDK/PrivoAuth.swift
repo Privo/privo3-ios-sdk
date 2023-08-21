@@ -23,7 +23,9 @@ public struct PrivoAuthButton<Label> : View where Label : View {
     
     //MARK: - Public initialisers
     
-    public init(@ViewBuilder label: () -> Label, onFinish: ((String?) -> Void)? = nil, closeIcon: (() -> Image)? = nil) {
+    public init(@ViewBuilder label: () -> Label,
+                onFinish: ((String?) -> Void)? = nil,
+                closeIcon: (() -> Image)? = nil) {
         self.label = label()
         self.closeIcon = closeIcon?()
         self.onFinish = onFinish
@@ -47,7 +49,6 @@ public struct PrivoAuthButton<Label> : View where Label : View {
 
 public struct PrivoRegisterButton<Label> : View where Label : View {
     
-    
     //MARK: - Internal properties
     
     @Binding var isPresented: Bool
@@ -57,7 +58,10 @@ public struct PrivoRegisterButton<Label> : View where Label : View {
     
     //MARK: - Public initialisers
     
-    public init(isPresented: Binding<Bool>, @ViewBuilder label: () -> Label, onFinish: (() -> Void)? = nil, closeIcon: (() -> Image)? = nil ) {
+    public init(isPresented: Binding<Bool>,
+                @ViewBuilder label: () -> Label,
+                onFinish: (() -> Void)? = nil,
+                closeIcon: (() -> Image)? = nil ) {
         self.label = label()
         self.closeIcon = closeIcon?()
         self._isPresented = isPresented
@@ -79,12 +83,23 @@ public struct PrivoRegisterButton<Label> : View where Label : View {
 
 public class PrivoAuth {
     
-    //MARK: - Public initialisers
-    
-    public init() {}
     public struct AuthDialog {
         fileprivate init() {}
         public func hide() { UIApplication.shared.dismissTopView() }
+    }
+    
+    //MARK: - Private properties
+    
+    private let app: UIApplication
+    private let userDefaults: UserDefaults
+    private let api: Rest
+    
+    //MARK: - Public initialisers
+    
+    public init(app: UIApplication = .shared, userDefaults: UserDefaults = .standard) {
+        self.app = app
+        self.userDefaults = userDefaults
+        self.api = .shared
     }
     
     //MARK: - Public functions
@@ -92,7 +107,7 @@ public class PrivoAuth {
     public func showRegister(_ completion: ((AuthDialog) -> Void)?) {
         Task.init(priority: .userInitiated) { @MainActor in
             let authDialog = AuthDialog()
-            await UIApplication.shared.showView(false) {
+            app.showView(false) {
                 PrivoRegisterStateView(onClose: {
                     authDialog.hide()
                 }) {
@@ -105,7 +120,7 @@ public class PrivoAuth {
     public func showAuth(_ completion: ((String?) -> Void)?) {
         Task.init(priority: .userInitiated) { @MainActor in
             let authDialog = AuthDialog()
-            await UIApplication.shared.showView(false) {
+            app.showView(false) {
                 PrivoAuthStateView(onClose: {
                     authDialog.hide()
                 }, onFinish: { r in
@@ -117,7 +132,7 @@ public class PrivoAuth {
     }
     
     public func getToken() -> String? {
-        if let token = UserDefaults.standard.string(forKey: PrivoInternal.configuration.tokenStorageKey) {
+        if let token = userDefaults.string(forKey: PrivoInternal.configuration.tokenStorageKey) {
             if let jwt = try? decode(jwt: token) {
                 if let exp = jwt.expiresAt {
                     if exp > Date() {
@@ -138,21 +153,21 @@ public class PrivoAuth {
                 completionHandler(nil)
                 return
             }
-            guard let sessionId = await PrivoInternal.rest.getAuthSessionId() else {
+            guard let sessionId = await api.getAuthSessionId() else {
                 completionHandler(nil)
                 return
             }
-            guard let newToken = await PrivoInternal.rest.renewToken(oldToken: oldToken, sessionId: sessionId) else {
+            guard let newToken = await api.renewToken(oldToken: oldToken, sessionId: sessionId) else {
                 completionHandler(.init(token: oldToken, isRenewed: false))
                 return
             }
-            UserDefaults.standard.set(newToken, forKey: PrivoInternal.configuration.tokenStorageKey)
+            userDefaults.set(newToken, forKey: PrivoInternal.configuration.tokenStorageKey)
             completionHandler(.init(token: newToken, isRenewed: true))
         }
     }
     
     public func logout() -> Void {
-        UserDefaults.standard.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
+        userDefaults.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
     
 }

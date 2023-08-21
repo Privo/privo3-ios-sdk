@@ -31,17 +31,17 @@ internal class PrivoAgeHelpers {
         guard let recheckRequired = recheckRequired else {
             guard let status = status else { return "dob" }
             switch status {
-                case AgeGateStatus.Pending:
+                case .Pending:
                     return "verification-pending"
-                case AgeGateStatus.Blocked:
+                case .Blocked:
                     return "access-restricted"
-                case AgeGateStatus.MultiUserBlocked:
+                case .MultiUserBlocked:
                     return "access-restricted"
-                case AgeGateStatus.ConsentRequired:
+                case .ConsentRequired:
                     return "request-consent"
-                case AgeGateStatus.AgeVerificationRequired:
+                case .AgeVerificationRequired:
                     return "request-age-verification"
-                case AgeGateStatus.IdentityVerificationRequired:
+                case .IdentityVerificationRequired:
                     return "request-verification"
                 case .AgeEstimationBlocked:
                     return "age-detection-description"
@@ -59,21 +59,21 @@ internal class PrivoAgeHelpers {
     func toStatus(_ action: AgeGateAction?) -> AgeGateStatus? {
         switch action {
             case .Allow:
-                return AgeGateStatus.Allowed
+                return .Allowed
             case .Block:
-                return AgeGateStatus.Blocked
+                return .Blocked
             case .Consent:
-                return AgeGateStatus.ConsentRequired
+                return .ConsentRequired
             case .IdentityVerify:
-                return AgeGateStatus.IdentityVerificationRequired
+                return .IdentityVerificationRequired
             case .AgeVerify:
-                return AgeGateStatus.AgeVerificationRequired
+                return .AgeVerificationRequired
             case .MultiUserBlock:
-                return AgeGateStatus.MultiUserBlocked
+                return .MultiUserBlocked
             case .AgeEstimationBlocked:
                 return .AgeEstimationBlocked
             default:
-                return AgeGateStatus.Undefined
+                return .Undefined
         }
     }
     

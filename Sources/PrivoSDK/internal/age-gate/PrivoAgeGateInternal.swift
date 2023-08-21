@@ -12,13 +12,17 @@ internal class PrivoAgeGateInternal {
     
     let storage: AgeGateStorage
     let helpers: PrivoAgeHelpers
+    
     private let permissionService: PrivoPermissionServiceType
     private let api: Rest
+    private let app: UIApplication
     
     init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared,
-         api: Rest = .shared) {
+         api: Rest = .shared,
+         app: UIApplication = .shared) {
         self.api = api
         self.permissionService = permissionService
+        self.app = app
         self.storage = AgeGateStorage()
         self.helpers = PrivoAgeHelpers(self.storage.serviceSettings)
     }
@@ -185,13 +189,13 @@ internal class PrivoAgeGateInternal {
                                                 redirectUrl: redirectUrl)
         let targetPage = helpers.getStatusTargetPage(prevEvent?.status, recheckRequired: recheckRequired)
         let result: AgeGateEvent? = await withCheckedContinuation { @MainActor promise in
-           UIApplication.shared.showView(false, content: {
+           app.showView(false, content: {
                AgeGateView(ageGateData: ageGateData,
                            targetPage: targetPage,
                            onFinish: { [weak self] events in
                    guard let self = self, !events.isEmpty else { promise.resume(returning: nil); return }
                    for e in events {
-                       if (e.status == AgeGateStatus.IdentityVerified || e.status == AgeGateStatus.AgeVerified) {
+                       if (e.status == .IdentityVerified || e.status == .AgeVerified) {
                                let result = await self.processStatus(userIdentifier: e.userIdentifier,
                                                                      nickname: data.nickname,
                                                                      agId: e.agId,
@@ -225,7 +229,7 @@ internal class PrivoAgeGateInternal {
                                                 agId: agId,
                                                 fpId: fpId,
                                                 age: nil)
-            await UIApplication.shared.showView(false) {
+            await app.showView(false) {
                 AgeGateView(ageGateData : ageGateData,
                             targetPage: "age-gate-identifier",
                             finishCriteria: "identifier-closed",
@@ -240,6 +244,6 @@ internal class PrivoAgeGateInternal {
     
     @MainActor
     func hide() async {
-        UIApplication.shared.dismissTopView()
+        app.dismissTopView()
     }
 }
