@@ -24,24 +24,16 @@ class Rest {
     //MARK: - Internal functions
     
     func getValueFromTMPStorage(key: String, completionHandler: @escaping (TmpStorageString?) -> Void) {
-        var tmpStorageURL = PrivoInternal.configuration.helperUrl
-        tmpStorageURL.appendPathComponent("storage")
-        tmpStorageURL.appendPathComponent(key)
-        AF.request(tmpStorageURL).responseDecodable(of: TmpStorageString.self) { response in
-            self.trackPossibleAFError(response.error, response.response?.statusCode)
-            completionHandler(response.value)
+        Task.init {
+            let result = await getValueFromTMPStorage(key: key)
+            completionHandler(result)
         }
     }
     
     func addValueToTMPStorage(value: String, ttl: Int? = nil, completionHandler: ((String?) -> Void)? = nil) {
-        var tmpStorageURL = PrivoInternal.configuration.helperUrl
-        tmpStorageURL.appendPathComponent("storage")
-        tmpStorageURL.appendPathComponent("put")
-        let data = TmpStorageString(data: value, ttl: ttl)
-        AF.request(tmpStorageURL, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: TmpStorageResponse.self) { response in
-            self.trackPossibleAFError(response.error, response.response?.statusCode)
-            let id = response.value?.id
-            completionHandler?(id)
+        Task.init {
+            let result = await addValueToTMPStorage(value: value, ttl: ttl)
+            completionHandler?(result)
         }
     }
     
@@ -67,36 +59,23 @@ class Rest {
     }
     
     func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void) {
-        let url = String(format: "%@/info/svc?service_identifier=%@", PrivoInternal.configuration.authBaseUrl.absoluteString, serviceIdentifier)
-        AF.request(url).responseDecodable(of: ServiceInfo.self) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
+        Task.init {
+            let result = await getServiceInfo(serviceIdentifier: serviceIdentifier)
+            completionHandler(result)
         }
     }
+    
     func getAuthSessionId(completionHandler: @escaping (String?) -> Void) {
-        let authStartUrl = PrivoInternal.configuration.authStartUrl
-        let sessionIdKey = "session_id"
-        AF.request(authStartUrl).response() { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            if let redirectUrl = r.response?.url {
-                let components = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: true)
-                if let sessionId = components?.queryItems?.first(where: { $0.name == sessionIdKey })?.value {
-                    completionHandler(sessionId)
-                } else {
-                    completionHandler(nil)
-                }
-            } else {
-                completionHandler(nil)
-            }
+        Task.init {
+            let result = await getAuthSessionId()
+            completionHandler(result)
         }
     }
     
     func renewToken(oldToken: String, sessionId: String, completionHandler: @escaping (String?) -> Void) {
-        let loginUrl = String(format: "%@/privo/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
-        AF.request(loginUrl, method: .post, parameters: nil, encoding: BodyStringEncoding(body: oldToken)).responseDecodable(of: LoginResponse.self) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            let token = r.value?.token
-            completionHandler(token)
+        Task.init {
+            let result = await renewToken(oldToken: oldToken, sessionId: sessionId)
+            completionHandler(result)
         }
     }
     
@@ -162,10 +141,9 @@ class Rest {
     }
     
     func generateFingerprint(fingerprint: DeviceFingerprint, completionHandler: @escaping (DeviceFingerprintResponse?) -> Void) {
-        let url = String(format: "%@/fp", PrivoInternal.configuration.authBaseUrl.absoluteString)
-        AF.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default).responseDecodable(of: DeviceFingerprintResponse.self ) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
+        Task.init {
+            let result = await generateFingerprint(fingerprint: fingerprint)
+            completionHandler(result)
         }
     }
     
@@ -194,9 +172,12 @@ class Rest {
     }
     
     func sendAnalyticEvent(_ event: AnalyticEvent) {
-        var metricsURL = PrivoInternal.configuration.helperUrl
-        metricsURL.appendPathComponent("metrics")
-        AF.request(metricsURL, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response {r in
+        var url = PrivoInternal.configuration.commonUrl
+        url.appendPathComponent("metrics")
+        AF.request(url,
+                   method: .post,
+                   parameters: event,
+                   encoder: JSONParameterEncoder.default).response { r in
             print("Analytic Event Sent")
             print(r)
         }
@@ -210,18 +191,16 @@ class Rest {
     }
     
     func getValueFromTMPStorage(key: String) async -> TmpStorageString? {
-        var tmpStorageURL = PrivoInternal.configuration.helperUrl
-        tmpStorageURL.appendPathComponent(Rest.storageComponent)
-        tmpStorageURL.appendPathComponent(key)
+        var tmpStorageURL = PrivoInternal.configuration.commonUrl
+        tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, key])
         let response: DataResponse<TmpStorageString,AFError> = await AF.request(tmpStorageURL)
         trackPossibleAFError(response.error, response.response?.statusCode)
         return response.value
     }
     
     func addValueToTMPStorage(value: String, ttl: Int? = nil) async -> String? {
-        var tmpStorageURL = PrivoInternal.configuration.helperUrl
-        tmpStorageURL.appendPathComponent(Rest.storageComponent)
-        tmpStorageURL.appendPathComponent(Rest.putComponent)
+        var tmpStorageURL = PrivoInternal.configuration.commonUrl
+        tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, Rest.putComponent])
         let data = TmpStorageString(data: value, ttl: ttl)
         typealias R = DataResponse<TmpStorageResponse,AFError>
         let result: R = await AF.request(tmpStorageURL, method: .post, parameter: data)
@@ -246,29 +225,43 @@ class Rest {
     }
     
     func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo? {
-        let url = String(format: "%@/info/svc?service_identifier=%@", PrivoInternal.configuration.authBaseUrl.absoluteString, serviceIdentifier)
+        var url = PrivoInternal.configuration.authBaseUrl
+        url = url.append(["api", "v1.0", "info", "svc"])
+        var urlComponent = url.urlComponent()
+        urlComponent.queryItems = [.init(name: "service_identifier", value: serviceIdentifier)]
+        url = urlComponent.url ?? url
         let result: DataResponse<ServiceInfo,AFError> = await AF.request(url)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
     
     func getAuthSessionId() async -> String? {
-        let authStartUrl = PrivoInternal.configuration.authStartUrl
-        let sessionIdKey = Rest.sessionID
-        let result = await AF.request(authStartUrl)
+        var url = PrivoInternal.configuration.authBaseUrl
+        url = url.append(["authorize"])
+        var urlComponent = url.urlComponent()
+        urlComponent.queryItems = [
+            .init(name: "client_id", value: "mobile"),
+            .init(name: "redirect_uri", value: "")
+        ]
+        url = urlComponent.url ?? url
+        let result = await AF.request(url)
         trackPossibleAFError(result.error, result.response?.statusCode)
         guard let redirectUrl = result.response?.url,
               let components = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: true),
-              let sessionId = components.queryItems?.first(where: { $0.name == sessionIdKey })?.value else {
+              let sessionId = components.queryItems?.first(where: { $0.name == Rest.sessionID })?.value else {
             return nil
         }
         return sessionId
     }
     
     func renewToken(oldToken: String, sessionId: String) async -> String? {
-        let loginUrl = String(format: "%@/privo/login/token?session_id=%@", PrivoInternal.configuration.authBaseUrl.absoluteString,sessionId)
+        var url = PrivoInternal.configuration.authBaseUrl
+        url = url.append(["api", "v1.0", "privo", "login", "token"])
+        var urlComponent = url.urlComponent()
+        urlComponent.queryItems = [.init(name: "session_id", value: sessionId)]
+        url = urlComponent.url ?? url
         typealias R = DataResponse<LoginResponse,AFError>
-        let result: R = await AF.request(loginUrl, method: .post, encoding: BodyStringEncoding(body: oldToken))
+        let result: R = await AF.request(url, method: .post, encoding: BodyStringEncoding(body: oldToken))
         trackPossibleAFError(result.error, result.response?.statusCode)
         let token = result.value?.token
         return token
@@ -329,7 +322,8 @@ class Rest {
     }
     
     func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
-        let url = String(format: "%@/fp", PrivoInternal.configuration.authBaseUrl.absoluteString)
+        var url = PrivoInternal.configuration.authBaseUrl
+        url = url.append(["api","v1.0","fp"])
         typealias R = DataResponse<DeviceFingerprintResponse,AFError>
         let result: R = await AF.request(url, method: .post, parameters: fingerprint)
         trackPossibleAFError(result.error, result.response?.statusCode)
