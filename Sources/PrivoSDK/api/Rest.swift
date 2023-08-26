@@ -38,23 +38,16 @@ class Rest {
     }
     
     func getObjectFromTMPStorage<T: Decodable>(key: String, completionHandler: @escaping (T?) -> Void) {
-        getValueFromTMPStorage(key: key) { response in
-            if let jsonString = response?.data,
-               let jsonData = jsonString.data(using: .utf8),
-               let value = try? JSONDecoder().decode(T.self, from: jsonData) {
-                completionHandler(value)
-            } else {
-                completionHandler(nil)
-            }
+        Task.init {
+            let result:T? = await getObjectFromTMPStorage(key: key)
+            completionHandler(result)
         }
     }
     
     func addObjectToTMPStorage<T: Encodable>(value: T, completionHandler: ((String?) -> Void)? = nil) {
-        if let jsonData = try? JSONEncoder().encode(value) {
-            let jsonString = String(decoding: jsonData, as: UTF8.self)
-            addValueToTMPStorage(value: jsonString, completionHandler: completionHandler)
-        } else {
-            completionHandler?(nil)
+        Task.init {
+            let result = await addObjectToTMPStorage(value: value)
+            completionHandler?(result)
         }
     }
     
@@ -80,63 +73,60 @@ class Rest {
     }
     
     func processStatus(data: StatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
-        let url = String(format: "%@/status", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatusResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
+        Task.init {
+            let result = await processStatus(data: data)
+            completionHandler(result)
         }
     }
     
     func processBirthDate(data: FpStatusRecord,
                           completionHandler: @escaping (AgeGateActionResponse?) -> Void,
                           ageEstimationHandler: @escaping (CustomServerErrorResponse) -> Void) {
-        let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        AF.request(url,
-                   method: .post,
-                   parameters: data,
-                   encoder: JSONParameterEncoder.default)
-            .responseDecodable(of: AgeGateActionResponse.self,
-                               emptyResponseCodes: [200, 204, 205]) { [weak self] r in
-                guard let self = self else { return }
-                self.trackPossibleAFError(r.error, r.response?.statusCode)
-                guard let ageEstimationError = self.existedAgeEstimationError(r) else { completionHandler(r.value); return }
-                ageEstimationHandler(ageEstimationError)
+        Task.init {
+            do {
+                let result = try await processBirthDate(data: data)
+                completionHandler(result)
+            } catch let error {
+                if let error = error as? CustomServerErrorResponse {
+                    ageEstimationHandler(error)
+                }
+            }
         }
     }
     
     func processRecheck(data: RecheckStatusRecord,
                         completionHandler: @escaping (AgeGateActionResponse?) -> Void,
                         ageEstimationHandler: @escaping (CustomServerErrorResponse) -> Void) {
-        let url = String(format: "%@/recheck", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        AF.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateActionResponse.self, emptyResponseCodes: [200, 204, 205] ) { [weak self] r in
-            guard let self = self else { return }
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            guard let ageEstimationError = self.existedAgeEstimationError(r) else { completionHandler(r.value); return }
-            ageEstimationHandler(ageEstimationError)
+        Task.init {
+            do {
+                let result = try await processRecheck(data: data)
+                completionHandler(result)
+            } catch let error {
+                if let error = error as? CustomServerErrorResponse {
+                    ageEstimationHandler(error)
+                }
+            }
         }
     }
     
     func processLinkUser(data: LinkUserStatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
-        let url = String(format: "%@/link-user", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        AF.request(url, method: .post, parameters: data, encoder: JSONParameterEncoder.default).responseDecodable(of: AgeGateStatusResponse.self, emptyResponseCodes: [200, 204, 205] ) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
+        Task.init {
+            let result = await processLinkUser(data: data)
+            completionHandler(result)
         }
     }
     
     func getAgeServiceSettings(serviceIdentifier: String, completionHandler: @escaping (AgeServiceSettings?) -> Void) {
-        let url = String(format: "%@/settings?service_identifier=%@", PrivoInternal.configuration.ageGateBaseUrl.absoluteString, serviceIdentifier)
-        AF.request(url).responseDecodable(of: AgeServiceSettings.self) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
+        Task.init {
+            let result = try? await getAgeServiceSettings(serviceIdentifier: serviceIdentifier)
+            completionHandler(result)
         }
     }
     
     func getAgeVerification(verificationIdentifier: String, completionHandler: @escaping (AgeVerificationTO?) -> Void) {
-        let url = String(format: "%@/age-verification?verification_identifier=%@", PrivoInternal.configuration.ageVerificationBaseUrl.absoluteString, verificationIdentifier)
-        AF.request(url).responseDecodable(of: AgeVerificationTO.self) { r in
-            self.trackPossibleAFError(r.error, r.response?.statusCode)
-            completionHandler(r.value)
+        Task.init {
+            let result = await getAgeVerification(verificationIdentifier: verificationIdentifier)
+            completionHandler(result)
         }
     }
     
@@ -150,7 +140,6 @@ class Rest {
     func trackCustomError(_ errorDescr: String) {
         let settings = PrivoInternal.settings;
         let data = AnalyticEventErrorData(errorMessage: errorDescr, errorCode: nil, privoSettings: settings)
-        
         if let jsonData = try? JSONEncoder().encode(data) {
             let jsonString = String(decoding: jsonData, as: UTF8.self)
             let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
@@ -174,10 +163,7 @@ class Rest {
     func sendAnalyticEvent(_ event: AnalyticEvent) {
         var url = PrivoInternal.configuration.commonUrl
         url.appendPathComponent("metrics")
-        AF.request(url,
-                   method: .post,
-                   parameters: event,
-                   encoder: JSONParameterEncoder.default).response { r in
+        AF.request(url, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response { r in
             print("Analytic Event Sent")
             print(r)
         }
@@ -203,7 +189,7 @@ class Rest {
         tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, Rest.putComponent])
         let data = TmpStorageString(data: value, ttl: ttl)
         typealias R = DataResponse<TmpStorageResponse,AFError>
-        let result: R = await AF.request(tmpStorageURL, method: .post, parameter: data)
+        let result: R = await AF.request(tmpStorageURL, method: .post, parameter: data, encoder: .json)
         trackPossibleAFError(result.error, result.response?.statusCode)
         let id = result.value?.id
         return id
@@ -333,7 +319,7 @@ class Rest {
     //MARK: - Private functions
     
     private func existedAgeEstimationError<T:Decodable>(_ response: DataResponse<T,AFError>) -> CustomServerErrorResponse? {
-        guard response.response?.statusCode == 500,
+        guard response.response?.statusCode == CustomServerErrorResponse.AGE_ESTIMATION_ERROR,
               let data = response.data,
               let customServiceError = try? JSONDecoder().decode(CustomServerErrorResponse.self, from: data),
               customServiceError.code == CustomServerErrorResponse.AGE_ESTIMATION_ERROR else { return nil }
