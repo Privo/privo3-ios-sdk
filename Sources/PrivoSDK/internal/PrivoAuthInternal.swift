@@ -45,26 +45,27 @@ struct PrivoAuthView: View {
     //MARK: - Internal functions
     
     func getConfig() -> WebviewConfig {
-        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier;
-        var urlComponents = URLComponents(url: PrivoInternal.configuration.authStartUrl, resolvingAgainstBaseURL: false)
-        urlComponents?.queryItems?.append(URLQueryItem(name: "service_identifier", value: serviceIdentifier))
-        let url = urlComponents?.url ?? PrivoInternal.configuration.authStartUrl
-        return .init(url: url,
-                     closeIcon: closeIcon,
-                     finishCriteria: accessIdKey,
-                     onFinish: { url in
-                guard let items = URLComponents(string: url)?.queryItems,
-                      let accessId = items.first(where: {$0.name == accessIdKey})?.value else {
-                    onFinish?(nil)
-                    return
+        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
+        var url = PrivoInternal.configuration.authBaseUrl
+        url.appendPathComponent("authorize")
+        var urlComponents = url.urlComponent()
+        urlComponents.queryItems = [.init(name: "client_id", value: "mobile"),
+                                     .init(name: "service_identifier", value: serviceIdentifier),
+                                     .init(name: "redirect_uri", value: "")]
+        let resultUrl = urlComponents.url ?? url
+        return .init(url: resultUrl, closeIcon: closeIcon, finishCriteria: accessIdKey, onFinish: { url in
+            guard let items = URLComponents(string: url)?.queryItems,
+                  let accessId = items.first(where: {$0.name == accessIdKey})?.value else {
+                onFinish?(nil)
+                return
+            }
+            api.getValueFromTMPStorage(key: accessId) { resp in
+                let token = resp?.data
+                if token != nil {
+                    userDefaults.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
                 }
-                api.getValueFromTMPStorage(key: accessId) { resp in
-                    let token = resp?.data
-                    if token != nil {
-                        userDefaults.set(token, forKey: PrivoInternal.configuration.tokenStorageKey)
-                    }
-                    onFinish?(token)
-                }
+                onFinish?(token)
+            }
         })
     }
     

@@ -30,8 +30,19 @@ extension URL {
         }
 
     }
+    
     func withPath(_ value: String) -> URL?  {
         let nextString = absoluteString + value
         return URL(string: nextString)
     }
+    
+    mutating func append(_ pathComponents: [String]) -> URL {
+        pathComponents.forEach { self = appendingPathComponent($0) }
+        return self
+    }
+    
+    func urlComponent(resolvingAgainstBaseURL: Bool = true) -> URLComponents {
+        return URLComponents(url: self, resolvingAgainstBaseURL: resolvingAgainstBaseURL)!
+    }
+    
 }
