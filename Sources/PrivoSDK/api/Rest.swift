@@ -163,7 +163,7 @@ class Rest {
     func sendAnalyticEvent(_ event: AnalyticEvent) {
         var url = PrivoInternal.configuration.commonUrl
         url.appendPathComponent("metrics")
-        AF.request(url, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response { r in
+        AF.request(url, method: .post, parameters: event, encoder: .json).response { r in
             print("Analytic Event Sent")
             print(r)
         }
@@ -256,7 +256,11 @@ class Rest {
     func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
         let url = String(format: "%@/status", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateStatusResponse,AFError>
-        let result: R = await AF.request(url, method: .put, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        let result: R = await AF.request(url,
+                                         method: .put,
+                                         parameters: data,
+                                         encoder: .json,
+                                         emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
@@ -267,7 +271,7 @@ class Rest {
         let result: R = await AF.request(url,
                                          method: .post,
                                          parameter: data,
-                                         encoder: JSONParameterEncoder.default,
+                                         encoder: .json,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.response?.statusCode)
         if let ageEstimationError = existedAgeEstimationError(result) { throw ageEstimationError }
@@ -277,7 +281,11 @@ class Rest {
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse? {
         let url = String(format: "%@/recheck", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateActionResponse,AFError>
-        let result: R = await AF.request(url, method: .put, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        let result: R = await AF.request(url,
+                                         method: .put,
+                                         parameters: data,
+                                         encoder: .json,
+                                         emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.response?.statusCode)
         if let ageEstimationError = existedAgeEstimationError(result) {
             throw ageEstimationError
@@ -288,7 +296,11 @@ class Rest {
     func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
         let url = String(format: "%@/link-user", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateStatusResponse,AFError>
-        let result: R = await AF.request(url, method: .post, parameters: data, emptyResponseCodes: Rest.emptyResponsesCodes)
+        let result: R = await AF.request(url,
+                                         method: .post,
+                                         parameters: data,
+                                         encoder: .json,
+                                         emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
@@ -311,7 +323,7 @@ class Rest {
         var url = PrivoInternal.configuration.authBaseUrl
         url = url.append(["api","v1.0","fp"])
         typealias R = DataResponse<DeviceFingerprintResponse,AFError>
-        let result: R = await AF.request(url, method: .post, parameters: fingerprint)
+        let result: R = await AF.request(url, method: .post, parameters: fingerprint, encoder: .json)
         trackPossibleAFError(result.error, result.response?.statusCode)
         return result.value
     }
