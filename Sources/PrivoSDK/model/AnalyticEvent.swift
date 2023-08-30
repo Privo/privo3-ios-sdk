@@ -9,6 +9,7 @@ import Foundation
 
 struct AnalyticEventErrorData : Encodable {
     let errorMessage: String?
+    let response: String?
     let errorCode: Int?
     let privoSettings: PrivoSettings?;
 }
