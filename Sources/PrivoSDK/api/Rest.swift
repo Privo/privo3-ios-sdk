@@ -139,7 +139,7 @@ class Rest {
     
     func trackCustomError(_ errorDescr: String) {
         let settings = PrivoInternal.settings;
-        let data = AnalyticEventErrorData(errorMessage: errorDescr, errorCode: nil, privoSettings: settings)
+        let data = AnalyticEventErrorData(errorMessage: errorDescr, response: nil, errorCode: nil, privoSettings: settings)
         if let jsonData = try? JSONEncoder().encode(data) {
             let jsonString = String(decoding: jsonData, as: UTF8.self)
             let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
@@ -147,10 +147,10 @@ class Rest {
         }
     }
     
-    func trackPossibleAFError(_ error: AFError?, _ code: Int?) {
+    func trackPossibleAFError(_ error: AFError?, _ response: String?, _ code: Int?) {
         if (code != 200 && code != 204 && code != 205) {
             if let error = error {
-                let data = AnalyticEventErrorData(errorMessage: error.errorDescription, errorCode: error.responseCode, privoSettings: nil)
+                let data = AnalyticEventErrorData(errorMessage: error.errorDescription, response: response, errorCode: error.responseCode, privoSettings: nil)
                 if let jsonData = try? JSONEncoder().encode(data) {
                     let jsonString = String(decoding: jsonData, as: UTF8.self)
                     let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
@@ -163,7 +163,7 @@ class Rest {
     func sendAnalyticEvent(_ event: AnalyticEvent) {
         var url = PrivoInternal.configuration.commonUrl
         url.appendPathComponent("metrics")
-        AF.request(url, method: .post, parameters: event, encoder: .json).response { r in
+        AF.request(url, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response { r in
             print("Analytic Event Sent")
             print(r)
         }
@@ -180,7 +180,7 @@ class Rest {
         var tmpStorageURL = PrivoInternal.configuration.commonUrl
         tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, key])
         let response: DataResponse<TmpStorageString,AFError> = await AF.request(tmpStorageURL)
-        trackPossibleAFError(response.error, response.response?.statusCode)
+        trackPossibleAFError(response.error, response.debugDescription, response.response?.statusCode)
         return response.value
     }
     
@@ -189,8 +189,8 @@ class Rest {
         tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, Rest.putComponent])
         let data = TmpStorageString(data: value, ttl: ttl)
         typealias R = DataResponse<TmpStorageResponse,AFError>
-        let result: R = await AF.request(tmpStorageURL, method: .post, parameter: data, encoder: .json)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        let result: R = await AF.request(tmpStorageURL, method: .post, parameter: data, encoder: JSONParameterEncoder.default)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         let id = result.value?.id
         return id
     }
@@ -217,7 +217,7 @@ class Rest {
         urlComponent.queryItems = [.init(name: "service_identifier", value: serviceIdentifier)]
         url = urlComponent.url ?? url
         let result: DataResponse<ServiceInfo,AFError> = await AF.request(url)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
     }
     
@@ -231,7 +231,7 @@ class Rest {
         ]
         url = urlComponent.url ?? url
         let result = await AF.request(url)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         guard let redirectUrl = result.response?.url,
               let components = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: true),
               let sessionId = components.queryItems?.first(where: { $0.name == Rest.sessionID })?.value else {
@@ -248,7 +248,7 @@ class Rest {
         url = urlComponent.url ?? url
         typealias R = DataResponse<LoginResponse,AFError>
         let result: R = await AF.request(url, method: .post, encoding: BodyStringEncoding(body: oldToken))
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         let token = result.value?.token
         return token
     }
@@ -259,9 +259,9 @@ class Rest {
         let result: R = await AF.request(url,
                                          method: .put,
                                          parameters: data,
-                                         encoder: .json,
+                                         encoder: JSONParameterEncoder.default,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
     }
     
@@ -271,9 +271,9 @@ class Rest {
         let result: R = await AF.request(url,
                                          method: .post,
                                          parameter: data,
-                                         encoder: .json,
+                                         encoder: JSONParameterEncoder.default,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         if let ageEstimationError = existedAgeEstimationError(result) { throw ageEstimationError }
         return result.value
     }
@@ -284,9 +284,9 @@ class Rest {
         let result: R = await AF.request(url,
                                          method: .put,
                                          parameters: data,
-                                         encoder: .json,
+                                         encoder: JSONParameterEncoder.default,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         if let ageEstimationError = existedAgeEstimationError(result) {
             throw ageEstimationError
         }
@@ -299,23 +299,23 @@ class Rest {
         let result: R = await AF.request(url,
                                          method: .post,
                                          parameters: data,
-                                         encoder: .json,
+                                         encoder: JSONParameterEncoder.default,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
     }
     
     func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings? {
         let url = String(format: "%@/settings?service_identifier=%@", PrivoInternal.configuration.ageGateBaseUrl.absoluteString, serviceIdentifier)
         let result: DataResponse<AgeServiceSettings,AFError> = await AF.request(url)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
     }
     
     func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO? {
         let url = String(format: "%@/age-verification?verification_identifier=%@", PrivoInternal.configuration.ageVerificationBaseUrl.absoluteString, verificationIdentifier)
         let result: DataResponse<AgeVerificationTO,AFError> = await AF.request(url)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
     }
     
@@ -323,8 +323,8 @@ class Rest {
         var url = PrivoInternal.configuration.authBaseUrl
         url = url.append(["api","v1.0","fp"])
         typealias R = DataResponse<DeviceFingerprintResponse,AFError>
-        let result: R = await AF.request(url, method: .post, parameters: fingerprint, encoder: .json)
-        trackPossibleAFError(result.error, result.response?.statusCode)
+        let result: R = await AF.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default)
+        trackPossibleAFError(result.error,  result.debugDescription, result.response?.statusCode)
         return result.value
     }
     
