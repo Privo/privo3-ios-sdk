@@ -88,12 +88,21 @@ internal class PrivoAgeGateInternal {
     func getStatusEvent(_ userIdentifier: String?, nickname: String?) async -> AgeGateEvent {
         let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname)
         let fpId = await storage.getFpId()
-        guard let agId = agId else {
-            let event = await processStatus(userIdentifier: nil, nickname: nickname, agId: nil, fpId: fpId)
-            return event
+        if (agId == nil && nickname != nil) {
+            return await processStatus(
+                userIdentifier: nil,
+                nickname: nickname,
+                agId: nil,
+                fpId: fpId
+            )
+        } else {
+            return await processStatus(
+                userIdentifier: userIdentifier,
+                nickname: nickname,
+                agId: agId,
+                fpId: fpId
+            )
         }
-        let event = await processStatus(userIdentifier: userIdentifier, nickname: nickname, agId: agId, fpId: fpId)
-        return event
     }
     
     func getAgeGateState(userIdentifier: String?, niсkname: String?) async -> AgeState? {
