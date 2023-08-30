@@ -89,12 +89,16 @@ public class PrivoVerification {
                 VerificationStateView( profile: profile,
                                        onClose: { [weak self] in
                     guard let self = self else { return }
-                    self.app.dismissTopView()
+                    Task.init(priority: .userInitiated) { @MainActor in
+                        self.app.dismissTopView()
+                    }
                 })
                 { [weak self] e in
                     guard let self = self else { return }
-                    self.app.dismissTopView()
-                    completion?(e)
+                    Task.init(priority: .userInitiated) { @MainActor in
+                        self.app.dismissTopView()
+                        completion?(e)
+                    }
                 }
             }
         }

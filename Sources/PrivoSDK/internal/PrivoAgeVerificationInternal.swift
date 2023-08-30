@@ -72,6 +72,8 @@ internal class PrivoAgeVerificationInternal {
         app.showView(false) {
             AgeVerificationView(ageVerificationData : ageVerificationData,
                 onFinish: { [weak self] events in
+                guard let self = self else { return }
+                Task.init(priority: .userInitiated) { @MainActor in
                     let nonCanceledEvents = events.filter { $0.status != .Canceled && $0.status != .Closed }
                     let publicEvents = nonCanceledEvents.isEmpty ? events : nonCanceledEvents
                     publicEvents.forEach { event in
@@ -80,7 +82,8 @@ internal class PrivoAgeVerificationInternal {
                     if publicEvents.isEmpty {
                         completionHandler(nil)
                     }
-                    self?.app.dismissTopView()
+                    self.app.dismissTopView()
+                }
             })
         }
     }
