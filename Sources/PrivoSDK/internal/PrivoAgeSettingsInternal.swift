@@ -54,7 +54,7 @@ class PrivoAgeSettingsInternal {
         let settings = try await api.getAgeServiceSettings(serviceIdentifier: serviceIdentifier)
         guard let settings = settings else {
             os_log("Failed to get privo service settings", log: .default, type: .error)
-            fatalError("THERE IS NO OBJECT RELATED TO THE SETTINGS")
+            return nil
         }
         lastSettings = (serviceIdentifier, envType, settings)
         return settings

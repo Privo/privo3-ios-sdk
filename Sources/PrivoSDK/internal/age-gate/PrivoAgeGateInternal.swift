@@ -58,7 +58,8 @@ internal class PrivoAgeGateInternal {
             // send flag to metrics and continue (not stop)
             let warning = AgeGateLinkWarning(description: "Age Gate Id wasn't found in the store during Age Gate 'link user' call",
                                              agIdEntities: entities)
-            if let stringData = warning.convertToString() {
+            if let data = try? JSONEncoder().encode(warning) {
+                let stringData =  String(decoding: data, as: UTF8.self)
                 let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: stringData)
                 api.sendAnalyticEvent(event)
             }
@@ -242,8 +243,9 @@ internal class PrivoAgeGateInternal {
                 AgeGateView(ageGateData : ageGateData,
                             targetPage: "age-gate-identifier",
                             finishCriteria: "identifier-closed",
-                            onFinish: { [weak self]  _ in
-                    await self?.hide()
+                            onFinish: { [weak self] _ in
+                    guard let self = self else { return }
+                    Task.init { @MainActor in await self.hide() }
                 })
             }
         } catch _ {
