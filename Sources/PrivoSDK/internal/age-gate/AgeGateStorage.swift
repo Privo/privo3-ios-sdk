@@ -47,7 +47,8 @@ internal class AgeGateStorage {
         let entities = getAgeGateStoredEntities()
         var newEntities = entities
         newEntities.insert(newEntity)
-        guard let stringData = newEntities.convertToString() else { return }
+        guard let data = try? JSONEncoder().encode(newEntities) else { return }
+        let stringData = String(decoding: data, as: UTF8.self)
         let key = getStoredEntitiesKey()
         keychain.set(key: key, value: stringData)
     }

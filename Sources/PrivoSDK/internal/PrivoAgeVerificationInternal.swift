@@ -89,8 +89,11 @@ internal class PrivoAgeVerificationInternal {
     }
     
     func hide() {
-        app.dismissTopView()
+        Task.init(priority: .userInitiated) { @MainActor in
+            app.dismissTopView()
+        }
     }
+    
 }
 
 struct PrivoAgeVerificationState {
