@@ -1,18 +1,29 @@
 
 public class Privo {
-    private init () {}
-    public static func initialize (settings: PrivoSettings) {
+    
+    //MARK: - Public properties
+    
+    public static let auth = PrivoAuth()
+    public static let ageGate = PrivoAgeGate.init()
+    public static let ageVerification = PrivoAgeVerification()
+    public static let verification = PrivoVerification()
+    
+    public static var getSettings: PrivoSettings {
+        return PrivoInternal.settings
+    }
+    
+    //MARK: - Public functions
+    public static func initialize(settings: PrivoSettings) {
         PrivoInternal.initialize(settings: settings)
     }
     public static func overrideConfiguration (configuration: PrivoConfiguration) {
         PrivoInternal.overrideConfiguration(configuration: configuration)
     }
-    public static func getSettings () -> PrivoSettings {
-        return PrivoInternal.settings
-    }
-    public static let auth = PrivoAuth();
-    public static let ageGate = PrivoAgeGate();
-    public static let ageVerification = PrivoAgeVerification();
-    public static let verification = PrivoVerification();
+    
+    
+    //MARK: - Private initialisers
+    
+    private init () {}
+    
 
 }

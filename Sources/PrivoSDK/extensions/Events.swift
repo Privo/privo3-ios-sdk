@@ -9,51 +9,37 @@ import Foundation
 
 extension AgeGateEventInternal {
     
-    private func toStatus() -> AgeGateStatus? {
-        if (status == AgeGateStatusInternal.Closed) {
-            // Skip internal statuses
-            return nil
-        } else {
-            return AgeGateStatus.init(rawValue: status.rawValue)
-        }
-        
+    func toEvent(nickname: String?) -> AgeGateEvent? {
+        guard let status = toStatus else  { return nil }
+        return .init(status: status,
+                     userIdentifier: userIdentifier,
+                     nickname: nickname,
+                     agId: agId,
+                     ageRange: ageRange,
+                     countryCode: countryCode)
     }
     
-    func toEvent(nickname: String?) -> AgeGateEvent? {
-        if let status = toStatus() {
-            return AgeGateEvent(
-                status: status,
-                userIdentifier: userIdentifier,
-                nickname: nickname,
-                agId: agId,
-                ageRange: ageRange,
-                countryCode: countryCode
-            )
+    private var toStatus: AgeGateStatus? {
+        if status == .Closed {
+            return nil
+        } else {
+            return .init(rawValue: status.rawValue)
         }
-        return nil
     }
+    
 }
 
 
 extension AgeVerificationEventInternal {
     
-    private func toStatus() -> AgeVerificationStatus? {
-        if (status == AgeVerificationStatusInternal.Closed) {
-            // Skip internal statuses
-            return nil
-        } else {
-            return AgeVerificationStatus.init(rawValue: status.rawValue)
-        }
-        
+    var toEvent: AgeVerificationEvent? {
+        guard let status = toStatus else { return nil }
+        return .init(status: status, profile: profile)
     }
     
-    func toEvent() -> AgeVerificationEvent? {
-        if let status = toStatus() {
-            return AgeVerificationEvent(
-                status: status,
-                profile: profile
-            )
-        }
-        return nil
+    private var toStatus: AgeVerificationStatus? {
+        guard status != .Closed else { return nil }
+        return .init(rawValue: status.rawValue)
     }
+    
 }

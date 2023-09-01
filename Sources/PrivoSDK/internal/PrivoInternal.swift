@@ -7,16 +7,29 @@
 
 
 internal class PrivoInternal {
+    
+    //MARK: - Static properties
+        
+    static let rest = Rest()
+    
     static private var _configuration: PrivoConfiguration?
     static private var _settings: PrivoSettings?
+
+    //MARK: - Private initialisers
+    
     private init () {}
-    static func initialize (settings: PrivoSettings) {
+    
+    //MARK: - Static functions
+    
+    static func initialize(settings: PrivoSettings) {
         self._settings = settings
         self._configuration = PrivoConfiguration(type: settings.envType)
     }
+    
     static func overrideConfiguration (configuration: PrivoConfiguration) {
-        self._configuration = configuration
+        _configuration = configuration
     }
+    
     static var configuration: PrivoConfiguration {
         get {
             guard let configuration = PrivoInternal._configuration else {
@@ -25,6 +38,7 @@ internal class PrivoInternal {
             return configuration
         }
     }
+    
     static var settings: PrivoSettings {
         get {
             guard let settings = PrivoInternal._settings else {
@@ -33,6 +47,6 @@ internal class PrivoInternal {
             return settings
         }
     }
-    static let rest = Rest();
+    
 }
 

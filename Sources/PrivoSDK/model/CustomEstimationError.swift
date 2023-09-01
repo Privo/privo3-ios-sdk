@@ -1,6 +1,6 @@
 import Foundation
 
-struct CustomServerErrorResponse: Decodable, Hashable {
+struct CustomServerErrorResponse: Decodable, Hashable, Error {
     
     static var AGE_ESTIMATION_ERROR: Int = 2016
     

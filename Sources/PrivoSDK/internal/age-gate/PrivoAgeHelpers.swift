@@ -9,31 +9,39 @@ import Foundation
 
 internal class PrivoAgeHelpers {
     
-    private let AGE_FORMAT_YYYYMMDD = "yyyy-MM-dd";
-    private let AGE_FORMAT_YYYYMM = "yyyy-MM";
-    private let AGE_FORMAT_YYYY = "yyyy";
+    //MARK: - Private properties
+    
+    private let AGE_FORMAT_YYYYMMDD = "yyyy-MM-dd"
+    private let AGE_FORMAT_YYYYMM = "yyyy-MM"
+    private let AGE_FORMAT_YYYY = "yyyy"
+    
+    //MARK: - Internal properties
     
     let serviceSettings: PrivoAgeSettingsInternal
+    
+    //MARK: - Internal initialisers
     
     init(_ serviceSettings: PrivoAgeSettingsInternal) {
         self.serviceSettings = serviceSettings
     }
     
-    internal func getStatusTargetPage(_ status: AgeGateStatus?, recheckRequired: AgeGateInternalAction?) -> String {
+    //MARK: - Internal functions
+    
+    func getStatusTargetPage(_ status: AgeGateStatus?, recheckRequired: AgeGateInternalAction?) -> String {
         guard let recheckRequired = recheckRequired else {
             guard let status = status else { return "dob" }
             switch status {
-                case AgeGateStatus.Pending:
+                case .Pending:
                     return "verification-pending"
-                case AgeGateStatus.Blocked:
+                case .Blocked:
                     return "access-restricted"
-                case AgeGateStatus.MultiUserBlocked:
+                case .MultiUserBlocked:
                     return "access-restricted"
-                case AgeGateStatus.ConsentRequired:
+                case .ConsentRequired:
                     return "request-consent"
-                case AgeGateStatus.AgeVerificationRequired:
+                case .AgeVerificationRequired:
                     return "request-age-verification"
-                case AgeGateStatus.IdentityVerificationRequired:
+                case .IdentityVerificationRequired:
                     return "request-verification"
                 case .AgeEstimationBlocked:
                     return "age-detection-description"
@@ -48,43 +56,43 @@ internal class PrivoAgeHelpers {
         }
     }
     
-    internal func toStatus(_ action: AgeGateAction?) -> AgeGateStatus? {
+    func toStatus(_ action: AgeGateAction?) -> AgeGateStatus? {
         switch action {
             case .Allow:
-                return AgeGateStatus.Allowed
+                return .Allowed
             case .Block:
-                return AgeGateStatus.Blocked
+                return .Blocked
             case .Consent:
-                return AgeGateStatus.ConsentRequired
+                return .ConsentRequired
             case .IdentityVerify:
-                return AgeGateStatus.IdentityVerificationRequired
+                return .IdentityVerificationRequired
             case .AgeVerify:
-                return AgeGateStatus.AgeVerificationRequired
+                return .AgeVerificationRequired
             case .MultiUserBlock:
-                return AgeGateStatus.MultiUserBlocked
+                return .MultiUserBlocked
             case .AgeEstimationBlocked:
                 return .AgeEstimationBlocked
             default:
-                return AgeGateStatus.Undefined
+                return .Undefined
         }
     }
     
-    internal func getDateAndFormat(_ data: CheckAgeData) -> (String,String)? {
+    func getDateAndFormat(_ data: CheckAgeData) -> (String,String)? {
         if let birthDateYYYYMMDD = data.birthDateYYYYMMDD {
-            return ( birthDateYYYYMMDD, AGE_FORMAT_YYYYMMDD );
+            return ( birthDateYYYYMMDD, AGE_FORMAT_YYYYMMDD )
         } else if let birthDateYYYYMM = data.birthDateYYYYMM {
-            return (birthDateYYYYMM, AGE_FORMAT_YYYYMM);
+            return (birthDateYYYYMM, AGE_FORMAT_YYYYMM)
         } else if let birthDateYYYYMMDD = data.birthDateYYYY {
-            return (birthDateYYYYMMDD, AGE_FORMAT_YYYY );
+            return (birthDateYYYYMMDD, AGE_FORMAT_YYYY )
         }
         return nil
     }
     
-    internal func isAgeIntCorrect(_ age: Int) -> Bool {
-        return age > 0 && age <= 120;
+    func isAgeIntCorrect(_ age: Int) -> Bool {
+        age > 0 && age <= 120
     }
     
-    internal func isAgeCorrect(rawDate: String, format: String) -> Bool {
+    func isAgeCorrect(rawDate: String, format: String) -> Bool {
         let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
@@ -95,56 +103,47 @@ internal class PrivoAgeHelpers {
             let currentYear = calendar.dateComponents([.year], from: Date()).year
             if let birthYear = birthYear,
                let currentYear = currentYear {
-                let age = currentYear - birthYear;
-                return isAgeIntCorrect(age);
+                let age = currentYear - birthYear
+                return isAgeIntCorrect(age)
             }
         }
         return false
     }
     
-    internal func checkNetwork() throws {
+    func checkNetwork() throws {
         try PrivoInternal.rest.checkNetwork()
     }
     
-    internal func checkUserData(userIdentifier: String?, nickname: String?, agId: String? = nil) throws {
-        if let userIdentifier = userIdentifier {
-            if (userIdentifier.isEmpty) {
+    func checkUserData(userIdentifier: String?, nickname: String?, agId: String? = nil) throws {
+        Task.init(priority: .userInitiated) {
+            if let userIdentifier = userIdentifier, userIdentifier.isEmpty {
                 throw AgeGateError.notAllowedEmptyStringUserIdentifier
             }
-        }
-        if let nickname = nickname {
-            
-            if (nickname.isEmpty) {
-                throw AgeGateError.notAllowedEmptyStringNickname
-            }
-            serviceSettings.getSettingsT { settings in
-                if (!settings.isMultiUserOn) {
+            if let nickname = nickname {
+                if nickname.isEmpty { throw AgeGateError.notAllowedEmptyStringNickname }
+                let settings = await serviceSettings.getSettingsT()
+                if !settings.isMultiUserOn {
                     // we have a Nickname but isMultiUserOn not allowed in partner configuration
                     throw AgeGateError.notAllowedMultiUserUsage
                 }
             }
-        }
-        if let agId = agId {
-            if (agId.isEmpty) {
+            if let agId = agId, agId.isEmpty {
                 throw AgeGateError.notAllowedEmptyStringAgId
             }
         }
     }
     
-    internal func checkRequest(_ data: CheckAgeData) throws {
-
+    func checkRequest(_ data: CheckAgeData) throws {
         try checkNetwork()
         try checkUserData(userIdentifier: data.userIdentifier, nickname: data.nickname)
         if let (date, format) = getDateAndFormat(data) {
-            if (isAgeCorrect(rawDate: date, format: format) == false) {
+            if !isAgeCorrect(rawDate: date, format: format) {
                 throw AgeGateError.incorrectDateOfBirht
             }
         }
-        if let age = data.age {
-            if (isAgeIntCorrect(age) == false) {
-                throw AgeGateError.incorrectAge
-            }
+        if let age = data.age, !isAgeIntCorrect(age) {
+            throw AgeGateError.incorrectAge
         }
     }
+    
 }
-
