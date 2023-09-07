@@ -49,9 +49,10 @@ struct PrivoAuthView: View {
         var url = PrivoInternal.configuration.authBaseUrl
         url.appendPathComponent("authorize")
         var urlComponents = url.urlComponent()
+        let redirectUri = "https://account\(PrivoInternal.configuration.urlPrefix).privo.com/mobile-auth"
         urlComponents.queryItems = [.init(name: "client_id", value: "mobile"),
                                      .init(name: "service_identifier", value: serviceIdentifier),
-                                     .init(name: "redirect_uri", value: "")]
+                                     .init(name: "redirect_uri", value: redirectUri)]
         let resultUrl = urlComponents.url ?? url
         return .init(url: resultUrl, closeIcon: closeIcon, finishCriteria: accessIdKey, onFinish: { url in
             guard let items = URLComponents(string: url)?.queryItems,
