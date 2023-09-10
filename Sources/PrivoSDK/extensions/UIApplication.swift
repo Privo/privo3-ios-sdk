@@ -51,6 +51,9 @@ extension UIApplication {
     }
     
     public func dismissTopView() {
-        topMostViewController()?.dismiss(animated: true, completion: nil)
+        Task.init(priority: .userInitiated) { @MainActor in
+            topMostViewController()?.dismiss(animated: true, completion: nil)
+        }
     }
+    
 }

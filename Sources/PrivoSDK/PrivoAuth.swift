@@ -85,7 +85,11 @@ public class PrivoAuth {
     
     public struct AuthDialog {
         fileprivate init() {}
-        public func hide() { UIApplication.shared.dismissTopView() }
+        
+        @MainActor
+        public func hide() {
+            UIApplication.shared.dismissTopView()
+        }
     }
     
     //MARK: - Private properties
