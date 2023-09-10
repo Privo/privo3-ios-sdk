@@ -198,26 +198,32 @@ internal class PrivoAgeGateInternal {
                                                 data: data,
                                                 redirectUrl: redirectUrl)
         let targetPage = helpers.getStatusTargetPage(prevEvent?.status, recheckRequired: recheckRequired)
-        let result: AgeGateEvent? = await withCheckedContinuation { @MainActor promise in
-           app.showView(false, content: {
-               AgeGateView(ageGateData: ageGateData,
-                           targetPage: targetPage,
-                           onFinish: { [weak self] events in
-                   guard let self = self, !events.isEmpty else { promise.resume(returning: nil); return }
-                   for e in events {
-                       if (e.status == .IdentityVerified || e.status == .AgeVerified) {
-                               let result = await self.processStatus(userIdentifier: e.userIdentifier,
-                                                                     nickname: data.nickname,
-                                                                     agId: e.agId,
-                                                                     fpId: state.fpId)
-                               promise.resume(returning: result)
-                       } else {
-                           promise.resume(returning: e)
-                       }
-                   }
-                   await self.hide()
+        let result: AgeGateEvent? = await withCheckedContinuation { promise in
+            Task.init { @MainActor [weak self] in
+                guard let self = self else { return }
+                self.app.showView(false, content: {
+                    AgeGateView(ageGateData: ageGateData,
+                                targetPage: targetPage,
+                                onFinish: { [weak self] events in
+                        guard let self = self else { promise.resume(returning: nil); return }
+                        for e in events {
+                            if (e.status == .IdentityVerified || e.status == .AgeVerified) {
+                                 let result = await self.processStatus(userIdentifier: e.userIdentifier,
+                                                                       nickname: data.nickname,
+                                                                       agId: e.agId,
+                                                                       fpId: state.fpId)
+                                 promise.resume(returning: result)
+                            } else {
+                                promise.resume(returning: e)
+                            }
+                        }
+                        if events.isEmpty {
+                            promise.resume(returning: nil)
+                        }
+                        await self.hide()
+                     })
                 })
-           })
+            }
         }
         return result
     }
