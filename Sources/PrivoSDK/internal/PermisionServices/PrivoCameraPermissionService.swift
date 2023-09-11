@@ -56,7 +56,7 @@ class PrivoCameraPermissionService: PrivoCameraPermissionServiceType {
         checkCameraPermission { [weak self] result in
             guard let self = self else { return }
             let decision: WKPermissionDecision = result ? .grant : .deny
-            queue.async { completion(decision) }
+            self.queue.async { completion(decision) }
         }
     }
     
