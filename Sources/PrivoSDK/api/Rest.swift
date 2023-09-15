@@ -331,8 +331,7 @@ class Rest {
     //MARK: - Private functions
     
     private func existedAgeEstimationError<T:Decodable>(_ response: DataResponse<T,AFError>) -> CustomServerErrorResponse? {
-        guard response.response?.statusCode == CustomServerErrorResponse.AGE_ESTIMATION_ERROR,
-              let data = response.data,
+        guard let data = response.data,
               let customServiceError = try? JSONDecoder().decode(CustomServerErrorResponse.self, from: data),
               customServiceError.code == CustomServerErrorResponse.AGE_ESTIMATION_ERROR else { return nil }
         return customServiceError
