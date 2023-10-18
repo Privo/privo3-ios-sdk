@@ -53,7 +53,7 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
             VerificationView(state: $state,
                              profile: profile,
                              closeIcon: closeIcon,
-                             onFinish: onFinish).clearModalBackground()
+                             onFinish: onFinish)
         }
     }
     
@@ -85,7 +85,7 @@ public class PrivoVerification {
     public func showVerification(_ profile: UserVerificationProfile?,
                                  completion: (([VerificationEvent]) -> Void)?) {
         Task.init(priority: .userInitiated) { @MainActor in
-            app.showView(true) {
+            app.showView(false) {
                 VerificationStateView( profile: profile,
                                        onClose: { [weak self] in
                     guard let self = self else { return }
