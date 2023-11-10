@@ -17,8 +17,6 @@ internal class AgeGateStorage {
     
     private let FP_ID_KEY = "privoFpId";
     private let AGE_GATE_STORED_ENTITY_KEY = "AgeGateStoredEntity"
-    private let AGE_EVENT_KEY_PREFIX = "AgeGateEvent"
-    private let AGE_GATE_ID_KEY_PREFIX = "AgeGateID"
     
     private let keychain: PrivoKeychain
     private let api: Rest
@@ -35,6 +33,9 @@ internal class AgeGateStorage {
     
     func getStoredEntitiesKey() -> String {
         return "\(AGE_GATE_STORED_ENTITY_KEY)-\(PrivoInternal.settings.envType)"
+    }
+    func getFpIdKey() -> String {
+        return "\(FP_ID_KEY)-\(PrivoInternal.settings.envType)"
     }
     
     func storeInfoFromEvent(event: AgeGateEvent?) {
@@ -72,31 +73,16 @@ internal class AgeGateStorage {
             }
         })
         if let ageGateData = ageGateData { return ageGateData.agId }
-        // fallback 1 TODO: remove it later (after all users will use a new storage)
-        let oldKey = "\(AGE_GATE_ID_KEY_PREFIX)-\(userIdentifier ?? "")"
-        if let agIdFromKeychain = keychain.get(oldKey) {
-            storeAgId(userIdentifier: userIdentifier, nickname: nickname, agId: agIdFromKeychain)
-            return agIdFromKeychain
-        }
-        // fallback 2. TODO: remove it later (after all users will use a new storage)
-        let oldKey2 = "\(AGE_EVENT_KEY_PREFIX)-\(userIdentifier ?? "")"
-        guard let jsonString = keychain.get(oldKey2),
-           let jsonData = jsonString.data(using: .utf8),
-           let value = try? JSONDecoder().decode(AgeGateExpireEvent.self, from: jsonData),
-           let agId = value.event.agId else {
-             return nil
-         }
-        storeAgId(userIdentifier: userIdentifier, nickname: nickname, agId: agId) // store agId in the new place
-        return agId
+        return nil
     }
     
     func getFpId() async -> String {
-        if let fpId = keychain.get(FP_ID_KEY) { return fpId }
+        if let fpId = keychain.get(getFpIdKey()) { return fpId }
         let fingerprint = DeviceFingerprint()
         let response = await api.generateFingerprint(fingerprint: fingerprint)
         //TO DO: need to implement for managing way when there is no id
         guard let id = response?.id else { return "" }
-        keychain.set(key: FP_ID_KEY, value: id)
+        keychain.set(key: getFpIdKey(), value: id)
         return id
     }
     
