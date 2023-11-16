@@ -148,15 +148,30 @@ class Rest {
     }
     
     func trackPossibleAFError(_ error: AFError?, _ response: String?, _ code: Int?) {
+        let encoder = JSONEncoder()
+        var analyticErrorEvent: AnalyticEventErrorData? = nil
+        
         if (code != 200 && code != 204 && code != 205) {
-            if let error = error {
-                let data = AnalyticEventErrorData(errorMessage: error.errorDescription, response: response, errorCode: error.responseCode, privoSettings: nil)
-                if let jsonData = try? JSONEncoder().encode(data) {
-                    let jsonString = String(decoding: jsonData, as: UTF8.self)
-                    let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
-                    sendAnalyticEvent(event)
-                }
-            }
+            // This branch for HTTP errors.
+            analyticErrorEvent = AnalyticEventErrorData(errorMessage: nil,
+                                                        response: response,
+                                                        errorCode: code,
+                                                        privoSettings: nil)
+        } else if let error = error {
+            // This branch for:
+            // - underlying errors like network request timeout,
+            // - (overlying) decoding parsing error.
+            analyticErrorEvent = AnalyticEventErrorData(errorMessage: error.errorDescription,
+                                                        response: response,
+                                                        errorCode: error.responseCode,
+                                                        privoSettings: nil)
+        }
+        
+        if let analyticErrorEvent,
+           let jsonData = try? encoder.encode(analyticErrorEvent) {
+            let jsonString = String(decoding: jsonData, as: UTF8.self)
+            let analyticEvent = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
+            sendAnalyticEvent(analyticEvent)
         }
     }
     
