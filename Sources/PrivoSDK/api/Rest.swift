@@ -8,6 +8,22 @@
 import Alamofire
 import Foundation
 
+
+extension URL {
+    var status: URL {
+        return self.appendingPathComponent("status")
+    }
+    
+    var analytic: URL {
+        return self.appendingPathComponent("metrics")
+    }
+    
+    var isAnalytic: Bool {
+        return self.absoluteString.hasSuffix("metrics")
+    }
+}
+
+
 class Rest {
     
     //MARK: - Static Shared object
@@ -184,8 +200,7 @@ class Rest {
     }
     
     func sendAnalyticEvent(_ event: AnalyticEvent) {
-        var url = PrivoInternal.configuration.commonUrl
-        url.appendPathComponent("metrics")
+        var url = PrivoInternal.configuration.commonUrl.analytic
         session.request(url, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response { r in
             print("Analytic Event Sent")
             print(r)
@@ -277,9 +292,9 @@ class Rest {
     }
     
     func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
-        let url = String(format: "%@/status", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
+        let url = PrivoInternal.configuration.ageGateBaseUrl.status
         typealias R = DataResponse<AgeGateStatusResponse,AFError>
-        let result: R = await session.request(url,
+        let result: R = await session.request(url.absoluteString,
                                          method: .put,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
