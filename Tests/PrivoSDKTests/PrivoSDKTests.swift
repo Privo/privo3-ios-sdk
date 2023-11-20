@@ -1,14 +1,43 @@
-    import XCTest
-    @testable import PrivoSDK
+import XCTest
+@testable import PrivoSDK
 
-    final class PrivoSDKTests: XCTestCase {
-        func testExample() {
-            // This is an example of a functional test case.
-            // Use XCTAssert and related functions to verify your tests produce the correct
-            // results.
-            Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
-            XCTAssertEqual(PrivoInternal.configuration.type, .Dev)
-        }
+
+final class PrivoSDKTests: XCTestCase {
+    
+    // MARK: - analytics event logs
+    
+    func test_analytics_event() async {
+        // GIVEN
+        // configured one bad response:
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        
+        let statusURL = PrivoInternal.configuration.ageGateBaseUrl.status
+        let headers = [
+            "Content-Length": "42",
+        ]
+        
+        let response = HTTPURLResponse(url: statusURL, statusCode: 404, httpVersion: nil, headerFields: headers)
+        
+        URLMock.urls = [statusURL: (error: nil,
+                                      data: "The requested resource could not be found.".data(using: .utf8),
+                                      response: response)]
+        
+        let urlConfig: URLSessionConfiguration = .default
+        urlConfig.protocolClasses = [ URLMock.self ]
+        
+        let ageGate = PrivoAgeGate(urlConfig: urlConfig)
+        
+        // WHEN
+        _ = try! await ageGate.getStatus(userIdentifier: UUID().uuidString, nickname: nil)
+        _ = XCTWaiter.wait(for: [expectation(description: "Wait for 0.5 seconds all requests.")], timeout: 0.5)
+        
+        // THEN
+        // will send one analytic request for bad response:
+        let allAnalyticRequests = URLMock.invokedRequests.filter({ $0.url?.isAnalytic ?? false })
+        XCTAssertTrue( allAnalyticRequests.count == 1 )
+    }
+}
+
 
 class URLMock: URLProtocol {
     typealias URLResult = (error: Error?, data: Data?, response: HTTPURLResponse?)
@@ -63,5 +92,20 @@ class URLMock: URLProtocol {
     
     override func stopLoading() {
         // Required to be implemented. Do nothing here.
+    }
+}
+
+
+extension PrivoAgeGate {
+    func getStatus(userIdentifier: String?, nickname: String? = nil) async throws -> AgeGateEvent {
+        return try await withCheckedThrowingContinuation { continuation in
+            do {
+                try self.getStatus(userIdentifier: userIdentifier, nickname: nickname) { ageGateEvent in
+                    continuation.resume(returning: ageGateEvent)
+                }
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
     }
 }
