@@ -15,6 +15,10 @@ public class PrivoAgeGate {
         ageGate = PrivoAgeGateInternal()
     }
     
+    init(urlConfig: URLSessionConfiguration) {
+        ageGate = PrivoAgeGateInternal(api: Rest(urlConfig: urlConfig))
+    }
+    
     public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
         Task.init {
             try ageGate.helpers.checkNetwork()

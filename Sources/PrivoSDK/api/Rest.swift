@@ -14,13 +14,20 @@ class Rest {
     
     static var shared: Rest = .init()
     
+    init(urlConfig: URLSessionConfiguration = URLSessionConfiguration.af.default) {
+        self.urlConfig = urlConfig
+        self.session = Session(configuration: urlConfig)
+    }
+    
     //MARK: - Private properties
     
     private static let storageComponent = "storage"
     private static let putComponent = "put"
     private static let sessionID = "session_id"
     private static let emptyResponsesCodes: Set<Int> = .init([200,204,205])
-    private let session = Session.default
+    
+    private let urlConfig: URLSessionConfiguration
+    private let session: Session
     
     //MARK: - Internal functions
     
