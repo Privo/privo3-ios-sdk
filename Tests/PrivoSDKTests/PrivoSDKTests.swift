@@ -43,14 +43,35 @@ class URLMock: URLProtocol {
     typealias URLResult = (error: Error?, data: Data?, response: HTTPURLResponse?)
    
     // MARK: class methods
+    static var invokedRequests: [URLRequest] {
+        get {
+            return queue.sync(execute: { Self._invokedRequests })
+        }
+        set {
+            queue.async {
+                Self._invokedRequests = newValue
+            }
+        }
+    }
     
-    // TODO: concurrencty
-    static var urls: [URL: URLResult] = [:]
-    static var invokedRequests: [URLRequest] = []
-    
+    static var urls: [URL: URLResult] {
+        get {
+            return queue.sync(execute: { Self._urls })
+        }
+        set {
+            queue.async {
+                Self._urls = newValue
+            }
+        }
+    }
+    private static var _invokedRequests: [URLRequest] = []
+    private static var _urls: [URL: URLResult] = [:]
+    private static let queue = DispatchQueue(label: "\(type(of: URLMock.self))")
+
     override class func canInit(with request: URLRequest) -> Bool {
-        invokedRequests.append(request)
-                
+        queue.async {
+            Self._invokedRequests.append(request)
+        }
         if let requestURL: URL = request.url {
             return Self.urls[requestURL] != nil
         } else {
