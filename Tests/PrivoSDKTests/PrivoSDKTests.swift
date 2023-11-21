@@ -7,24 +7,23 @@ final class PrivoSDKTests: XCTestCase {
     // MARK: - analytics event logs
     
     func test_analytics_event() async {
-        // GIVEN
-        // configured one bad response:
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         
+        // configured one bad response:
         let statusURL = PrivoInternal.configuration.ageGateBaseUrl.status
         let headers = [
             "Content-Length": "42",
         ]
-        
-        let response = HTTPURLResponse(url: statusURL, statusCode: 404, httpVersion: nil, headerFields: headers)
-        
+        let badResponse = HTTPURLResponse(url: statusURL, statusCode: 404, httpVersion: nil, headerFields: headers)
+
+        // mock requests
         URLMock.urls = [statusURL: (error: nil,
-                                      data: "The requested resource could not be found.".data(using: .utf8),
-                                      response: response)]
-        
+                                     data: "The requested resource could not be found.".data(using: .utf8),
+                                 response: badResponse)]
         let urlConfig: URLSessionConfiguration = .default
         urlConfig.protocolClasses = [ URLMock.self ]
         
+        // GIVEN
         let ageGate = PrivoAgeGate(urlConfig: urlConfig)
         
         // WHEN
