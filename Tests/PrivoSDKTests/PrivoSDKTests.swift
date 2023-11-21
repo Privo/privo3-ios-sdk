@@ -35,6 +35,12 @@ final class PrivoSDKTests: XCTestCase {
         // will send one analytic request for bad response:
         let allAnalyticRequests = URLMock.invokedRequests.filter({ $0.url?.isAnalytic ?? false })
         XCTAssertTrue( allAnalyticRequests.count == 1 )
+        if let analyticEventErrorData = allAnalyticRequests.first?.analyticEventErrorData {
+            XCTAssertEqual(analyticEventErrorData.errorCode, 404)
+        } else {
+            XCTFail("Request contains incorrect data.")
+        }
+
     }
 }
 

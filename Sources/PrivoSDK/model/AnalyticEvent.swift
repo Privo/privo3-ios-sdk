@@ -23,3 +23,7 @@ struct AnalyticEvent : Encodable {
     var svc = 62 // PrivoIosSDK
     var event = 299 // MetricUnexpectedError
 }
+
+// conforms Decodable for test purposes
+extension AnalyticEventErrorData: Decodable {}
+extension AnalyticEvent: Decodable {}

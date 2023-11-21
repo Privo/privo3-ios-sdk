@@ -15,3 +15,6 @@ public struct PrivoSettings: Encodable {
         self.apiKey = apiKey
     }
 }
+
+// conforms Decodable for test purposes
+extension PrivoSettings: Decodable {}
