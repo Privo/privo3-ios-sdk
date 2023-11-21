@@ -6,7 +6,7 @@ final class PrivoSDKTests: XCTestCase {
     
     // MARK: - analytics event logs
     
-    func test_analytics_event() async {
+    func test_analytics_event() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         
         // configured one bad response:
@@ -27,7 +27,11 @@ final class PrivoSDKTests: XCTestCase {
         let ageGate = PrivoAgeGate(urlConfig: urlConfig)
         
         // WHEN
-        _ = try! await ageGate.getStatus(userIdentifier: UUID().uuidString, nickname: nil)
+        let completionExpectation = expectation(description: "completion")
+        try ageGate.getStatus(userIdentifier: UUID().uuidString, nickname: nil) { _ in
+            completionExpectation.fulfill()
+        }
+        wait(for: [completionExpectation], timeout: 5.0)
         _ = XCTWaiter.wait(for: [expectation(description: "Wait for 0.5 seconds all requests.")], timeout: 0.5)
         
         // THEN
@@ -118,20 +122,5 @@ class URLMock: URLProtocol {
     
     override func stopLoading() {
         // Required to be implemented. Do nothing here.
-    }
-}
-
-
-extension PrivoAgeGate {
-    func getStatus(userIdentifier: String?, nickname: String? = nil) async throws -> AgeGateEvent {
-        return try await withCheckedThrowingContinuation { continuation in
-            do {
-                try self.getStatus(userIdentifier: userIdentifier, nickname: nickname) { ageGateEvent in
-                    continuation.resume(returning: ageGateEvent)
-                }
-            } catch {
-                continuation.resume(throwing: error)
-            }
-        }
     }
 }
