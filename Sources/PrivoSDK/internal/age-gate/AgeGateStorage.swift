@@ -76,12 +76,11 @@ internal class AgeGateStorage {
         return nil
     }
     
-    func getFpId() async -> String {
+    func getFpId() async -> String? {
         if let fpId = keychain.get(getFpIdKey()) { return fpId }
         let fingerprint = DeviceFingerprint()
-        let response = await api.generateFingerprint(fingerprint: fingerprint)
-        //TO DO: need to implement for managing way when there is no id
-        guard let id = response?.id else { return "" }
+        let devicefid = await api.generateFingerprint(fingerprint: fingerprint)
+        guard let id = devicefid?.id else { return nil }
         keychain.set(key: getFpIdKey(), value: id)
         return id
     }
