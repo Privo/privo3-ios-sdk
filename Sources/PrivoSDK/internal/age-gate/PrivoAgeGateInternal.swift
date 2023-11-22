@@ -135,7 +135,9 @@ internal class PrivoAgeGateInternal {
                                     countryCode: data.countryCode)
         do {
             let response = try await api.processBirthDate(data: record)
-            guard let response = response, let status = helpers.toStatus(response.action) else {
+            guard let response = response,
+                  let status = helpers.toStatus(response.action)
+            else {
                 return nil
             }
             let event = AgeGateEvent(status: status,
