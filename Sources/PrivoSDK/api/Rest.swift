@@ -173,7 +173,7 @@ class Rest {
     
     func trackPossibleAFError(_ error: AFError?, _ response: String?, _ code: Int?) {
         let encoder = JSONEncoder()
-        var analyticErrorEvent: AnalyticEventErrorData? = nil
+        let analyticErrorEvent: AnalyticEventErrorData?
         
         if (code != 200 && code != 204 && code != 205) {
             // This branch for HTTP errors.
@@ -189,6 +189,8 @@ class Rest {
                                                         response: response,
                                                         errorCode: error.responseCode,
                                                         privoSettings: nil)
+        } else {
+            analyticErrorEvent = nil
         }
         
         if let analyticErrorEvent,
