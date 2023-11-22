@@ -108,15 +108,11 @@ internal class PrivoAgeGateInternal {
     
     func getAgeGateState(userIdentifier: String?, niсkname: String?) async -> AgeState? {
         let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: niсkname)
-        let fpId = await storage.getFpId()
-        do {
-            let settings = try await storage.serviceSettings.getSettings()
-            guard let settings = settings else { return nil }
-            let state = AgeState(fpId: fpId, agId: agId, settings: settings)
-            return state
-        } catch _ {
+        guard let settings = try? await storage.serviceSettings.getSettings() else {
             return nil
         }
+        let state = AgeState(agId: agId, settings: settings)
+        return state
     }
     
     func runAgeGateByBirthDay(_ data: CheckAgeData) async -> AgeGateEvent? {
@@ -231,8 +227,9 @@ internal class PrivoAgeGateInternal {
     func showAgeGateIdentifier(userIdentifier: String?, nickname: String?) async {
         do {
             let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname)
-            let fpId = await storage.getFpId()
-            guard let settings = try await storage.serviceSettings.getSettings() else { return }
+            guard let settings = try await storage.serviceSettings.getSettings() else {
+                return
+            }
             let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                                 settings: settings,
                                                 userIdentifier: userIdentifier,
@@ -243,7 +240,6 @@ internal class PrivoAgeGateInternal {
                                                 birthDateYYYY: nil,
                                                 redirectUrl: nil,
                                                 agId: agId,
-                                                fpId: fpId,
                                                 age: nil)
             await app.showView(false) {
                 AgeGateView(ageGateData : ageGateData,
