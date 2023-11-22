@@ -8,7 +8,7 @@
 import Foundation
 
 extension URL {
-
+    // Since iOS16 min support version use URL.appending(queryItems: [URLQueryItem]) -> URL
     func withQueryParam(name: String, value: String?) -> URL? {
         if var urlComponents = URLComponents(string: self.absoluteString) {
             // Create array of existing query items
