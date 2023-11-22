@@ -9,31 +9,37 @@ import Alamofire
 import Foundation
 
 
+struct URLComponentConstants: ExpressibleByStringLiteral, RawRepresentable {
+    let rawValue: String
+
+    init(stringLiteral value: String) {
+        rawValue = value
+    }
+    
+    init(rawValue value: String) {
+        rawValue = value
+    }
+}
+
+extension URLComponentConstants {
+    static let analytic: URLComponentConstants = "metrics"
+    static let status: URLComponentConstants = "status"
+    static let api: URLComponentConstants = "api"
+    static let v1_0: URLComponentConstants = "v1.0"
+    static let fingerprint: URLComponentConstants = "fp"
+    static let settings: URLComponentConstants = "settings"
+}
+
 extension URL {
-    var status: URL {
-        return self.appendingPathComponent("status")
+    func appending(_ component: URLComponentConstants) -> URL {
+        return self.appendingPathComponent(component.rawValue)
     }
     
-    var analytic: URL {
-        return self.appendingPathComponent("metrics")
+    func hasSuffix(_ component: URLComponentConstants) -> Bool {
+        return self.absoluteString.hasSuffix(component.rawValue)
     }
     
-    var isAnalytic: Bool {
-        return self.absoluteString.hasSuffix("metrics")
     }
-    
-    var api: URL {
-        return self.appendingPathComponent("api").appendingPathComponent("v1.0")
-    }
-    
-    var fingerprint: URL {
-        return self.api.appendingPathComponent("fp")
-    }
-    
-    var settings: URL {
-        return self.appendingPathComponent("settings")
-    }
-    
 }
 
 
@@ -215,7 +221,7 @@ class Rest {
     }
     
     func sendAnalyticEvent(_ event: AnalyticEvent) {
-        let url = PrivoInternal.configuration.commonUrl.analytic
+        let url = PrivoInternal.configuration.commonUrl.appending(.analytic)
         session.request(url, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response { r in
             print("Analytic Event Sent")
             print(r)
@@ -307,7 +313,7 @@ class Rest {
     }
     
     func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
-        let url = PrivoInternal.configuration.ageGateBaseUrl.status
+        let url = PrivoInternal.configuration.ageGateBaseUrl.appending(.status)
         typealias R = DataResponse<AgeGateStatusResponse,AFError>
         let result: R = await session.request(url.absoluteString,
                                          method: .put,
@@ -359,7 +365,7 @@ class Rest {
     }
     
     func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings? {
-        guard let url = PrivoInternal.configuration.ageGateBaseUrl.settings.withQueryParam(name: "service_identifier", value: serviceIdentifier) else {
+        guard let url = PrivoInternal.configuration.ageGateBaseUrl.appending(.settings).withQueryParam(name: "service_identifier", value: serviceIdentifier) else {
             // unreachable branch
             return nil
         }
@@ -377,7 +383,7 @@ class Rest {
     }
     
     func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
-        var url = PrivoInternal.configuration.authBaseUrl.fingerprint
+        let url = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.fingerprint)
         typealias R = DataResponse<DeviceFingerprintResponse,AFError>
         let result: R = await session.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default)
         trackPossibleAFError(result.error,  result.debugDescription, result.response?.statusCode)
