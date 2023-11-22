@@ -21,6 +21,19 @@ extension URL {
     var isAnalytic: Bool {
         return self.absoluteString.hasSuffix("metrics")
     }
+    
+    var api: URL {
+        return self.appendingPathComponent("api").appendingPathComponent("v1.0")
+    }
+    
+    var fingerprint: URL {
+        return self.api.appendingPathComponent("fp")
+    }
+    
+    var settings: URL {
+        return self.appendingPathComponent("settings")
+    }
+    
 }
 
 
@@ -202,7 +215,7 @@ class Rest {
     }
     
     func sendAnalyticEvent(_ event: AnalyticEvent) {
-        var url = PrivoInternal.configuration.commonUrl.analytic
+        let url = PrivoInternal.configuration.commonUrl.analytic
         session.request(url, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response { r in
             print("Analytic Event Sent")
             print(r)
@@ -346,7 +359,11 @@ class Rest {
     }
     
     func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings? {
-        let url = String(format: "%@/settings?service_identifier=%@", PrivoInternal.configuration.ageGateBaseUrl.absoluteString, serviceIdentifier)
+        guard let url = PrivoInternal.configuration.ageGateBaseUrl.settings.withQueryParam(name: "service_identifier", value: serviceIdentifier) else {
+            // unreachable branch
+            return nil
+        }
+        
         let result: DataResponse<AgeServiceSettings,AFError> = await session.request(url)
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
@@ -360,8 +377,7 @@ class Rest {
     }
     
     func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
-        var url = PrivoInternal.configuration.authBaseUrl
-        url = url.append(["api","v1.0","fp"])
+        var url = PrivoInternal.configuration.authBaseUrl.fingerprint
         typealias R = DataResponse<DeviceFingerprintResponse,AFError>
         let result: R = await session.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default)
         trackPossibleAFError(result.error,  result.debugDescription, result.response?.statusCode)

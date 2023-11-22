@@ -8,18 +8,26 @@ final class PrivoSDKTests: XCTestCase {
     
     func test_analytics_event() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
-        
-        // configured one bad response:
-        let statusURL = PrivoInternal.configuration.ageGateBaseUrl.status
-        let headers = [
-            "Content-Length": "42",
-        ]
-        let badResponse = HTTPURLResponse(url: statusURL, statusCode: 404, httpVersion: nil, headerFields: headers)
 
         // mock requests
-        URLMock.urls = [statusURL: (error: nil,
-                                     data: "The requested resource could not be found.".data(using: .utf8),
-                                 response: badResponse)]
+        let statusURL = PrivoInternal.configuration.ageGateBaseUrl.status
+        let analyticURL = PrivoInternal.configuration.commonUrl.analytic
+        let fingerprintURL = PrivoInternal.configuration.authBaseUrl.fingerprint
+        let settingsURL = PrivoInternal.configuration.ageGateBaseUrl.settings
+        URLMock.urls = [
+            statusURL: (error: nil,
+                         data: "The requested resource could not be found.".data(using: .utf8),
+                     response: HTTPURLResponse(url: statusURL, statusCode: 404, headerFields: ["Content-Length": "42"])),
+          analyticURL: (error: nil,
+                         data: nil,
+                     response: HTTPURLResponse(url: analyticURL, statusCode: 200, headerFields: ["Content-Length": "0"])),
+       fingerprintURL: (error: nil,
+                         data: try! JSONEncoder().encode(DeviceFingerprintResponse.mockSuccess),
+                     response: HTTPURLResponse(url: fingerprintURL, statusCode: 200)),
+          settingsURL: (error: nil,
+                         data: try! JSONEncoder().encode(AgeServiceSettings.mockSuccess),
+                     response: HTTPURLResponse(url: settingsURL, statusCode: 200))
+        ]
         let urlConfig: URLSessionConfiguration = .default
         urlConfig.protocolClasses = [ URLMock.self ]
         
@@ -81,11 +89,8 @@ class URLMock: URLProtocol {
         queue.async {
             Self._invokedRequests.append(request)
         }
-        if let requestURL: URL = request.url {
-            return Self.urls[requestURL] != nil
-        } else {
-            return false
-        }
+        
+        return true
     }
     
     override class func canonicalRequest(for request: URLRequest) -> URLRequest {
@@ -122,5 +127,33 @@ class URLMock: URLProtocol {
     
     override func stopLoading() {
         // Required to be implemented. Do nothing here.
+    }
+}
+
+fileprivate extension AgeServiceSettings {
+    static let mockSuccess = AgeServiceSettings(
+        isGeoApiOn: false,
+        isAllowSelectCountry: true,
+        isProvideUserId: true,
+        isShowStatusUi: false,
+        poolAgeGateStatusInterval: 15,
+        verificationApiKey: "eMVAU4Qk4qrnOtH9GAHOafatybW8xQDg",
+        p2SiteId: 1,
+        logoUrl: nil,
+        customerSupportEmail: nil,
+        isMultiUserOn: true
+    )
+}
+
+fileprivate extension DeviceFingerprintResponse {
+    static let mockSuccess = DeviceFingerprintResponse(
+        id: "uVH-v-fWp9oyENrNBJDllY==",
+        exp: 1701247108
+    )
+}
+
+fileprivate extension HTTPURLResponse {
+    convenience init?(url: URL, statusCode: Int, headerFields: [String: String] = [:]) {
+        self.init(url: url, statusCode: statusCode, httpVersion: nil, headerFields: headerFields)
     }
 }
