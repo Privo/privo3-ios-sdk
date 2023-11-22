@@ -124,7 +124,9 @@ internal class PrivoAgeGateInternal {
     }
     
     func runAgeGateByBirthDay(_ data: CheckAgeData) async -> AgeGateEvent? {
-        let fpId = await storage.getFpId()
+        guard let fpId = await storage.getFpId() else {
+            return nil
+        }
         let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                     fpId: fpId,
                                     birthDate: data.birthDateYYYYMMDD,
