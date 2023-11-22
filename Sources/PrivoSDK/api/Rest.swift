@@ -38,8 +38,6 @@ extension URL {
     func hasSuffix(_ component: URLComponentConstants) -> Bool {
         return self.absoluteString.hasSuffix(component.rawValue)
     }
-    
-    }
 }
 
 
