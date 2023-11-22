@@ -27,7 +27,7 @@ internal class PrivoAgeGateInternal {
         self.helpers = PrivoAgeHelpers(self.storage.serviceSettings)
     }
     
-    public func processStatus(userIdentifier: String?, nickname: String?, agId: String?) async -> AgeGateEvent {
+    func processStatus(userIdentifier: String?, nickname: String?, agId: String?) async -> AgeGateEvent {
         let undefinedAgeGateEvent = AgeGateEvent(
             status: AgeGateStatus.Undefined,
             userIdentifier: userIdentifier,
@@ -62,7 +62,7 @@ internal class PrivoAgeGateInternal {
         return ageGateEvent
     }
     
-    public func linkUser(userIdentifier: String, agId: String, nickname: String?) async -> AgeGateEvent {
+    func linkUser(userIdentifier: String, agId: String, nickname: String?) async -> AgeGateEvent {
         let entities = storage.getAgeGateStoredEntities()
         let isKnownAgId = entities.contains { $0.agId == agId }
         if (!isKnownAgId) {
