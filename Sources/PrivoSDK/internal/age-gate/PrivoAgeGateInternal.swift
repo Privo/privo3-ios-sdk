@@ -16,16 +16,16 @@ internal class PrivoAgeGateInternal {
     private let permissionService: PrivoPermissionServiceType
     private let api: Rest
     private let app: UIApplication
-    private let fpservice: IFpidService
+    private let fpidService: IFpidService
     
     init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared,
          api: Rest = .shared,
          app: UIApplication = .shared,
-         fpservice: IFpidService = FpidService())
+         fpidService: IFpidService = FpidService())
     {
         self.api = api
         self.permissionService = permissionService
-        self.fpservice = fpservice
+        self.fpidService = fpidService
         self.app = app
         self.storage = AgeGateStorage()
         self.helpers = PrivoAgeHelpers(self.storage.serviceSettings)
@@ -41,7 +41,7 @@ internal class PrivoAgeGateInternal {
             countryCode: nil
         )
         
-        guard let fpId = await fpservice.fpid else {
+        guard let fpId = await fpidService.fpid else {
             return undefinedAgeGateEvent
         }
         
@@ -128,7 +128,7 @@ internal class PrivoAgeGateInternal {
     }
     
     func runAgeGateByBirthDay(_ data: CheckAgeData) async -> AgeGateEvent? {
-        guard let fpId = await fpservice.fpid else {
+        guard let fpId = await fpidService.fpid else {
             return nil
         }
         let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
