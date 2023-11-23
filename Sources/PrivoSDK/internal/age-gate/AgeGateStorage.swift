@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AgeGateStorage: FingerprintStorage {
+class AgeGateStorage: IFpidStorage {
     
     //MARK: - Internal properties
     
@@ -90,17 +90,17 @@ class AgeGateStorage: FingerprintStorage {
     }
 }
 
-protocol FingerprintStorage {
+protocol IFpidStorage {
     var fpid: String? { get set }
 }
 
 
-class FingerprintService {
+class FpidService {
     private let source: Rest
-    private var cache: FingerprintStorage
+    private var cache: IFpidStorage
     
     init(source: Rest = .shared,
-         cache: FingerprintStorage = AgeGateStorage()) {
+         cache: IFpidStorage = AgeGateStorage()) {
         self.source = source
         self.cache = cache
     }
