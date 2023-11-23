@@ -9,7 +9,7 @@
 import Foundation
 
 
-class URLMock: URLProtocol {
+class URLSessionMock: URLProtocol {
     typealias URLResult = (error: Error?, data: Data?, response: HTTPURLResponse?)
    
     // MARK: class methods
@@ -36,7 +36,7 @@ class URLMock: URLProtocol {
     }
     private static var _invokedRequests: [URLRequest] = []
     private static var _urls: [URL: URLResult] = [:]
-    private static let queue = DispatchQueue(label: "\(type(of: URLMock.self))")
+    private static let queue = DispatchQueue(label: "\(type(of: URLSessionMock.self))")
 
     override class func canInit(with request: URLRequest) -> Bool {
         queue.async {

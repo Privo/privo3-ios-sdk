@@ -14,7 +14,7 @@ final class PrivoSDKTests: XCTestCase {
         let analyticURL = PrivoInternal.configuration.commonUrl.appending(.analytic)
         let fingerprintURL = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.fingerprint)
         let settingsURL = PrivoInternal.configuration.ageGateBaseUrl.appending(.settings)
-        URLMock.urls = [
+        URLSessionMock.urls = [
             statusURL: (error: nil,
                         data: "The requested resource could not be found.".data(using: .utf8),
                         response: HTTPURLResponse(url: statusURL, statusCode: 404, headerFields: ["Content-Length": "42"])),
@@ -29,7 +29,7 @@ final class PrivoSDKTests: XCTestCase {
                           response: HTTPURLResponse(url: settingsURL, statusCode: 200))
         ]
         let urlConfig: URLSessionConfiguration = .default
-        urlConfig.protocolClasses = [ URLMock.self ]
+        urlConfig.protocolClasses = [ URLSessionMock.self ]
         let rest = Rest(urlConfig: urlConfig)
         
         // GIVEN
@@ -45,7 +45,7 @@ final class PrivoSDKTests: XCTestCase {
         
         // THEN
         // will send one analytic request for bad response:
-        let allAnalyticRequests = URLMock.invokedRequests.filter({ $0.url?.hasSuffix(.analytic) ?? false })
+        let allAnalyticRequests = URLSessionMock.invokedRequests.filter({ $0.url?.hasSuffix(.analytic) ?? false })
         XCTAssertTrue( allAnalyticRequests.count == 1 )
         if let analyticEventErrorData = allAnalyticRequests.first?.analyticEventErrorData {
             XCTAssertEqual(analyticEventErrorData.errorCode, 404)
