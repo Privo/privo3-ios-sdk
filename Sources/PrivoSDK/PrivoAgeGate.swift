@@ -15,8 +15,16 @@ public class PrivoAgeGate {
         ageGate = PrivoAgeGateInternal()
     }
     
-    init(urlConfig: URLSessionConfiguration) {
-        ageGate = PrivoAgeGateInternal(api: Rest(urlConfig: urlConfig))
+    init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared,
+         api: IRest = Rest.shared,
+         app: UIApplication = .shared,
+         fpidService: IFpidService = FpidService()
+    ) {
+        ageGate = PrivoAgeGateInternal(
+            permissionService: permissionService,
+            api: api,
+            app: app,
+            fpidService: fpidService)
     }
     
     public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
