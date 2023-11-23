@@ -7,7 +7,7 @@
 
 import Foundation
 
-internal class AgeGateStorage {
+class AgeGateStorage: FingerprintStorage {
     
     //MARK: - Internal properties
     
@@ -74,39 +74,50 @@ internal class AgeGateStorage {
         return nil
     }
     
-    func getFpId() -> String? {
-        return keychain.get(getFpIdKey())
-    }
+    // MARK: FingerprintStorage
     
-    func setFpId(_ fingerprint: String) {
-        keychain.set(key: getFpIdKey(), value: fingerprint)
+    var fpid: String? {
+        get {
+            return keychain.get(getFpIdKey())
+        }
+        set {
+            if let newValue {
+                keychain.set(key: getFpIdKey(), value: newValue)
+            } else {
+                keychain.delete(getFpIdKey())
+            }
+        }
     }
+}
+
+protocol FingerprintStorage {
+    var fpid: String? { get set }
 }
 
 
 class FingerprintService {
     private let source: Rest
-    private let cache: AgeGateStorage
+    private var cache: FingerprintStorage
     
     init(source: Rest = .shared,
-         cache: AgeGateStorage = AgeGateStorage()) {
+         cache: FingerprintStorage = AgeGateStorage()) {
         self.source = source
         self.cache = cache
     }
     
     func getFpId() async -> String? {
-        if let fpId = cache.getFpId() {
-            return fpId
+        if let fpid = cache.fpid {
+            return fpid
         }
         
-        let rawFpId = DeviceFingerprint()
-        let fpIdResponse = await source.generateFingerprint(fingerprint: rawFpId)
+        let rawFpid = DeviceFingerprint()
+        let fpidResponse = await source.generateFingerprint(fingerprint: rawFpid)
         
-        guard let fpId = fpIdResponse?.id else {
+        guard let fpid = fpidResponse?.id else {
             return nil
         }
-        cache.setFpId(fpId)
+        cache.fpid = fpid
 
-        return fpId
+        return fpid
     }
 }
