@@ -94,8 +94,11 @@ protocol IFpidStorage {
     var fpid: String? { get set }
 }
 
+protocol IFpidService {
+    var fpid: String? { get async }
+}
 
-class FpidService {
+class FpidService: IFpidService {
     private let source: Rest
     private var cache: IFpidStorage
     
@@ -105,7 +108,13 @@ class FpidService {
         self.cache = cache
     }
     
-    func getFpId() async -> String? {
+    var fpid: String? {
+        get async {
+            return await getFpId()
+        }
+    }
+    
+    private func getFpId() async -> String? {
         if let fpid = cache.fpid {
             return fpid
         }
