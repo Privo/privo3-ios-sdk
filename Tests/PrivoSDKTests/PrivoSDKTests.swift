@@ -16,17 +16,17 @@ final class PrivoSDKTests: XCTestCase {
         let settingsURL = PrivoInternal.configuration.ageGateBaseUrl.appending(.settings)
         URLMock.urls = [
             statusURL: (error: nil,
-                         data: "The requested resource could not be found.".data(using: .utf8),
-                     response: HTTPURLResponse(url: statusURL, statusCode: 404, headerFields: ["Content-Length": "42"])),
-          analyticURL: (error: nil,
-                         data: nil,
-                     response: HTTPURLResponse(url: analyticURL, statusCode: 200, headerFields: ["Content-Length": "0"])),
-       fingerprintURL: (error: nil,
-                         data: try! JSONEncoder().encode(DeviceFingerprintResponse.mockSuccess),
-                     response: HTTPURLResponse(url: fingerprintURL, statusCode: 200)),
-          settingsURL: (error: nil,
-                         data: try! JSONEncoder().encode(AgeServiceSettings.mockSuccess),
-                     response: HTTPURLResponse(url: settingsURL, statusCode: 200))
+                        data: "The requested resource could not be found.".data(using: .utf8),
+                        response: HTTPURLResponse(url: statusURL, statusCode: 404, headerFields: ["Content-Length": "42"])),
+            analyticURL: (error: nil,
+                          data: nil,
+                          response: HTTPURLResponse(url: analyticURL, statusCode: 200, headerFields: ["Content-Length": "0"])),
+            fingerprintURL: (error: nil,
+                             data: try JSONEncoder().encode(DeviceFingerprintResponse.mockSuccess),
+                             response: HTTPURLResponse(url: fingerprintURL, statusCode: 200)),
+            settingsURL: (error: nil,
+                          data: try JSONEncoder().encode(AgeServiceSettings.mockSuccess),
+                          response: HTTPURLResponse(url: settingsURL, statusCode: 200))
         ]
         let urlConfig: URLSessionConfiguration = .default
         urlConfig.protocolClasses = [ URLMock.self ]
