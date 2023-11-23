@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Alamofire
 
 internal class PrivoAgeHelpers {
     
@@ -111,7 +112,10 @@ internal class PrivoAgeHelpers {
     }
     
     func checkNetwork() throws {
-        try checkNetwork()
+        let rManager = NetworkReachabilityManager()
+        if (rManager?.isReachable == false) {
+            throw PrivoError.noInternetConnection
+        }
     }
     
     func checkUserData(userIdentifier: String?, nickname: String?, agId: String? = nil) throws {
