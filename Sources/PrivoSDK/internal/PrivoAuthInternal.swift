@@ -20,7 +20,7 @@ struct PrivoAuthView: View {
     
     private let accessIdKey = "access_id"
     private let userDefaults: UserDefaults
-    private let api: Rest
+    private let api: Rest // TODO: close with protocol later
     
     //MARK: - Public initialisers
     

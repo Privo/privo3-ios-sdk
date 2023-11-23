@@ -8,6 +8,14 @@
 import Alamofire
 import Foundation
 
+
+func checkNetwork() throws {
+    let rManager = NetworkReachabilityManager()
+    if (rManager?.isReachable == false) {
+        throw PrivoError.noInternetConnection
+    }
+}
+
 struct BodyStringEncoding: ParameterEncoding {
 
     //MARK: - Private properties

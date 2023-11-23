@@ -10,7 +10,7 @@ internal class PrivoInternal {
     
     //MARK: - Static properties
         
-    static let rest = Rest()
+    static let rest: IRest = Rest.shared
     
     static private var _configuration: PrivoConfiguration?
     static private var _settings: PrivoSettings?

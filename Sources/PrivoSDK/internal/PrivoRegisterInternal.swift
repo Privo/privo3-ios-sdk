@@ -17,14 +17,14 @@ struct PrivoRegisterView: View {
     //MARK: - Private properties
     
     private let siteIdKey = "siteId"
-    private let api: Rest
+    private let api: IRest
     
     //MARK: - Public initialisers
     
     public init(isPresented: Binding<Bool>,
                 onFinish: (() -> Void)? = nil,
                 closeIcon: Image? = nil,
-                api: Rest = .shared) {
+                api: IRest = Rest.shared) {
         self.closeIcon = closeIcon
         self._isPresented = isPresented
         self.onFinish = onFinish

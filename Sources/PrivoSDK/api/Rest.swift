@@ -40,12 +40,29 @@ extension URL {
     }
 }
 
+protocol IRest {
+    func addObjectToTMPStorage<T: Encodable>(value: T, completionHandler: ((String?) -> Void)?)
+    func getObjectFromTMPStorage<T: Decodable>(key: String, completionHandler: @escaping (T?) -> Void)
+    func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void)
+    
+    func processStatus(data: StatusRecord) async -> AgeGateStatusResponse?
+    func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse?
+    func getAuthSessionId() async -> String?
+    func renewToken(oldToken: String, sessionId: String) async -> String?
+    func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings?
+    func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO?
+    func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse?
+    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse?
+    func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse?
+    func trackCustomError(_ errorDescr: String)
+    func sendAnalyticEvent(_ event: AnalyticEvent)
+}
 
-class Rest {
+class Rest: IRest {
     
     //MARK: - Static Shared object
     
-    static var shared: Rest = .init()
+    static var shared: Rest = Rest()
     
     init(urlConfig: URLSessionConfiguration = URLSessionConfiguration.af.default) {
         self.urlConfig = urlConfig
@@ -225,14 +242,7 @@ class Rest {
             print(r)
         }
     }
-    
-    func checkNetwork() throws {
-        let rManager = NetworkReachabilityManager()
-        if (rManager?.isReachable == false) {
-            throw PrivoError.noInternetConnection
-        }
-    }
-    
+        
     func getValueFromTMPStorage(key: String) async -> TmpStorageString? {
         var tmpStorageURL = PrivoInternal.configuration.commonUrl
         tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, key])

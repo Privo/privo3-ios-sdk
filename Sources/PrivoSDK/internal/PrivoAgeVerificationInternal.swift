@@ -16,12 +16,12 @@ internal class PrivoAgeVerificationInternal {
     private let PRIVO_STATE_ID = "privo_state_id";
     
     private let keychain: PrivoKeychain
-    private let api: Rest
+    private let api: IRest
     private let app: UIApplication
     
     //MARK: - Internal initialisers
     
-    init(app: UIApplication = .shared, keychain: PrivoKeychain = .init(), api: Rest = .shared) {
+    init(app: UIApplication = .shared, keychain: PrivoKeychain = .init(), api: IRest = Rest.shared) {
         self.app = app
         self.keychain = keychain
         self.api = api
@@ -111,7 +111,7 @@ struct AgeVerificationView : View {
     let ageVerificationData: AgeVerificationStoreData?
     let onFinish: (([AgeVerificationEventInternal]) -> Void)
     
-    private let api: Rest = .shared
+    private let api: IRest = Rest.shared
     
     //MARK: - Body builder
     

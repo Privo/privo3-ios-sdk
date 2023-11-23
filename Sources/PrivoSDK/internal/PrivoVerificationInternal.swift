@@ -27,13 +27,13 @@ struct VerificationView : View {
     //MARK: - Private properties
     
     private let verification = InternalPrivoVerification()
-    private let api: Rest
+    private let api: IRest
     
     init(state: Binding<PrivoVerificationState>,
          profile: UserVerificationProfile?,
          closeIcon: Image? = nil,
          onFinish: ((Array<VerificationEvent>) -> Void)?,
-         api: Rest = .shared) {
+         api: IRest = Rest.shared) {
         self._state = state
         self.profile = profile
         self.closeIcon = closeIcon
@@ -133,7 +133,7 @@ struct VerificationStateView : View {
 struct InternalPrivoVerification {
     
     private let redirectUrl = PrivoInternal.configuration.verificationUrl.withPath("/#/verification-loading")!.absoluteString
-    private let api: Rest = .shared
+    private let api: IRest = Rest.shared
 
     func storeState(profile: UserVerificationProfile?, completion: @escaping (String?) -> Void ) -> Void {
         guard let apiKey = PrivoInternal.settings.apiKey else { return }

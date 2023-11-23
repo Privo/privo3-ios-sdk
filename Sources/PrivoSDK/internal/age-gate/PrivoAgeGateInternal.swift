@@ -14,12 +14,12 @@ internal class PrivoAgeGateInternal {
     let helpers: PrivoAgeHelpers
     
     private let permissionService: PrivoPermissionServiceType
-    private let api: Rest
+    private let api: IRest
     private let app: UIApplication
     private let fpidService: IFpidService
     
     init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared,
-         api: Rest = .shared,
+         api: IRest = Rest.shared,
          app: UIApplication = .shared,
          fpidService: IFpidService = FpidService())
     {

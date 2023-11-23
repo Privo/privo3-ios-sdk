@@ -99,10 +99,10 @@ protocol IFpidService {
 }
 
 class FpidService: IFpidService {
-    private let source: Rest
+    private let source: IRest
     private var cache: IFpidStorage
     
-    init(source: Rest = .shared,
+    init(source: IRest = Rest.shared,
          cache: IFpidStorage = AgeGateStorage()) {
         self.source = source
         self.cache = cache
