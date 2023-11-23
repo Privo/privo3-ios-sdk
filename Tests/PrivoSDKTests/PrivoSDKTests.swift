@@ -52,17 +52,44 @@ final class PrivoSDKTests: XCTestCase {
         } else {
             XCTFail("Request contains incorrect data.")
         }
+        
+    }
+    
+    // MARK: - lost fp cases
+    
+    func test_lost_fp_get_status() throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        
+        // rest results available status, but...
+        class TestRestMock: RestMock {
+            override func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+                .mockAvailable
+            }
+            
+            override func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
+                .mockAvailable
+            }
+        }
+        
+        // ... fingerprint will be lost.
+        class FpidServiceMock: IFpidService {
+            var fpid: String? { return nil }
+        }
 
-    }
-}
+        let rest = TestRestMock()
+        let fpidService = FpidServiceMock()
+
+        // GIVEN
+        let ageGate = PrivoAgeGate(api: rest, fpidService: fpidService)
         
-    }
-    
-    
-        
+        // WHEN
+        let completionExpectation = expectation(description: "completion")
+        try ageGate.getStatus(userIdentifier: "AvailableUS30UserIdentifier", nickname: nil) { result in
+            // THEN
+            XCTAssert(result.status == .Undefined)
+            completionExpectation.fulfill()
         }
-        
-        }
+        wait(for: [completionExpectation], timeout: 5.0)
     }
     
 }
@@ -74,4 +101,14 @@ fileprivate extension HTTPURLResponse {
     convenience init?(url: URL, statusCode: Int, headerFields: [String: String] = [:]) {
         self.init(url: url, statusCode: statusCode, httpVersion: nil, headerFields: headerFields)
     }
+}
+
+fileprivate extension AgeGateStatusResponse {
+    static let mockAvailable: AgeGateStatusResponse = .init(
+        status: .Allowed,
+        agId: "1cf38293-c1ab-47b1-ab30-95ad447fa5dd",
+        ageRange: .init(start: 18, end: 120, jurisdiction: "US"),
+        extUserId: nil,
+        countryCode: "US"
+    )
 }

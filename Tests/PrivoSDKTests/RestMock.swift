@@ -42,3 +42,58 @@ extension AgeGateStatusResponse {
     )
 }
 
+
+
+class RestMock: IRest {
+    func addObjectToTMPStorage<T>(value: T, completionHandler: ((String?) -> Void)?) where T : Encodable {
+        completionHandler?("")
+    }
+    
+    func getObjectFromTMPStorage<T>(key: String, completionHandler: @escaping (T?) -> Void) where T : Decodable {
+        completionHandler(nil)
+    }
+    
+    func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void) {
+        completionHandler(nil)
+    }
+    
+    func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+        return .mockUnavailable
+    }
+    
+    func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
+        return .mockSuccess
+    }
+    
+    func getAuthSessionId() async -> String? {
+        return nil
+    }
+    
+    func renewToken(oldToken: String, sessionId: String) async -> String? {
+        return nil
+    }
+    
+    func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings? {
+        return .mockSuccess
+    }
+    
+    func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO? {
+        return nil
+    }
+    
+    func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
+        return .mockUnavailable
+    }
+    
+    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
+        return nil
+    }
+    
+    func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse? {
+        return nil
+    }
+    
+    func trackCustomError(_ errorDescr: String) {}
+    
+    func sendAnalyticEvent(_ event: AnalyticEvent) {}
+}
