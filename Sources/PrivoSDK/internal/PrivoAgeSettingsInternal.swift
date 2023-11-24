@@ -13,11 +13,11 @@ class PrivoAgeSettingsInternal {
     //MARK: - Private properties
     
     private var lastSettings: (String,EnviromentType,AgeServiceSettings)? = nil
-    private let api: IRest
+    private let api: Restable
     
     //MARK: - Internal initialisers
     
-    init (api: IRest = Rest.shared) {
+    init (api: Restable = Rest.shared) {
         self.api = api
         Task.detached(priority: .userInitiated) { [weak self] in try? await self?.updateSettings() }
     }

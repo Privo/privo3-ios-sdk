@@ -44,7 +44,7 @@ extension AgeGateStatusResponse {
 
 
 
-class RestMock: IRest {
+class RestMock: Restable {
     func addObjectToTMPStorage<T>(value: T, completionHandler: ((String?) -> Void)?) where T : Encodable {
         completionHandler?("")
     }

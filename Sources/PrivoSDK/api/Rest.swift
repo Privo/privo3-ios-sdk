@@ -40,7 +40,7 @@ extension URL {
     }
 }
 
-protocol IRest {
+protocol Restable {
     func addObjectToTMPStorage<T: Encodable>(value: T, completionHandler: ((String?) -> Void)?)
     func getObjectFromTMPStorage<T: Decodable>(key: String, completionHandler: @escaping (T?) -> Void)
     func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void)
@@ -58,7 +58,7 @@ protocol IRest {
     func sendAnalyticEvent(_ event: AnalyticEvent)
 }
 
-class Rest: IRest {
+class Rest: Restable {
     
     //MARK: - Static Shared object
     

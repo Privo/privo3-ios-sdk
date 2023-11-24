@@ -99,10 +99,10 @@ protocol FpIdable {
 }
 
 class FpIdService: FpIdable {
-    private let source: IRest
+    private let source: Restable
     private var storage: FpIdStorage
     
-    init(source: IRest = Rest.shared,
+    init(source: Restable = Rest.shared,
          storage: FpIdStorage = AgeGateStorage()) {
         self.source = source
         self.storage = storage

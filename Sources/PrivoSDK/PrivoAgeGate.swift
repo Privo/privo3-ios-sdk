@@ -16,7 +16,7 @@ public class PrivoAgeGate {
     }
     
     init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared,
-         api: IRest = Rest.shared,
+         api: Restable = Rest.shared,
          app: UIApplication = .shared,
          fpIdService: FpIdable = FpIdService()
     ) {
