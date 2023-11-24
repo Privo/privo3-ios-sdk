@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AgeGateStorage: IFpIdStorage {
+class AgeGateStorage: FpIdStorage {
     
     //MARK: - Internal properties
     
@@ -90,7 +90,7 @@ class AgeGateStorage: IFpIdStorage {
     }
 }
 
-protocol IFpIdStorage {
+protocol FpIdStorage {
     var fpId: String? { get set }
 }
 
@@ -100,10 +100,10 @@ protocol FpIdable {
 
 class FpIdService: FpIdable {
     private let source: IRest
-    private var storage: IFpIdStorage
+    private var storage: FpIdStorage
     
     init(source: IRest = Rest.shared,
-         storage: IFpIdStorage = AgeGateStorage()) {
+         storage: FpIdStorage = AgeGateStorage()) {
         self.source = source
         self.storage = storage
     }
