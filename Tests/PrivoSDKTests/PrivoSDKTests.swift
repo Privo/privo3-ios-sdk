@@ -72,21 +72,21 @@ final class PrivoSDKTests: XCTestCase {
         }
         
         // ... fingerprint will be lost.
-        class FpidServiceMock: IFpidService {
-            var fpid: String? { return nil }
+        class FpIdServiceMock: IFpIdService {
+            var fpId: String? { return nil }
         }
 
         let rest = TestRestMock()
-        let fpidService = FpidServiceMock()
+        let fpIdService = FpIdServiceMock()
 
         // GIVEN
-        let ageGate = PrivoAgeGate(api: rest, fpidService: fpidService)
+        let ageGate = PrivoAgeGate(api: rest, fpIdService: fpIdService)
         
         // WHEN
         let completionExpectation = expectation(description: "completion")
-        try ageGate.getStatus(userIdentifier: "AvailableUS30UserIdentifier", nickname: nil) { result in
+        try ageGate.getStatus(userIdentifier: "AvailableUS30UserIdentifier", nickname: nil) { ageGateEvent in
             // THEN
-            XCTAssert(result.status == .Undefined)
+            XCTAssert(ageGateEvent.status == .Undefined)
             completionExpectation.fulfill()
         }
         wait(for: [completionExpectation], timeout: 5.0)

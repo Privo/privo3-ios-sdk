@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AgeGateStorage: IFpidStorage {
+class AgeGateStorage: IFpIdStorage {
     
     //MARK: - Internal properties
     
@@ -76,7 +76,7 @@ class AgeGateStorage: IFpidStorage {
     
     // MARK: FingerprintStorage
     
-    var fpid: String? {
+    var fpId: String? {
         get {
             return keychain.get(getFpIdKey())
         }
@@ -90,43 +90,43 @@ class AgeGateStorage: IFpidStorage {
     }
 }
 
-protocol IFpidStorage {
-    var fpid: String? { get set }
+protocol IFpIdStorage {
+    var fpId: String? { get set }
 }
 
-protocol IFpidService {
-    var fpid: String? { get async }
+protocol IFpIdService {
+    var fpId: String? { get async }
 }
 
-class FpidService: IFpidService {
+class FpIdService: IFpIdService {
     private let source: IRest
-    private var cache: IFpidStorage
+    private var cache: IFpIdStorage
     
     init(source: IRest = Rest.shared,
-         cache: IFpidStorage = AgeGateStorage()) {
+         cache: IFpIdStorage = AgeGateStorage()) {
         self.source = source
         self.cache = cache
     }
     
-    var fpid: String? {
+    var fpId: String? {
         get async {
             return await getFpId()
         }
     }
     
     private func getFpId() async -> String? {
-        if let fpid = cache.fpid {
-            return fpid
+        if let fpId = cache.fpId {
+            return fpId
         }
         
-        let rawFpid = DeviceFingerprint()
-        let fpidResponse = await source.generateFingerprint(fingerprint: rawFpid)
+        let rawFpId = DeviceFingerprint()
+        let fpIdResponse = await source.generateFingerprint(fingerprint: rawFpId)
         
-        guard let fpid = fpidResponse?.id else {
+        guard let fpId = fpIdResponse?.id else {
             return nil
         }
-        cache.fpid = fpid
+        cache.fpId = fpId
 
-        return fpid
+        return fpId
     }
 }
