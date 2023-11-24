@@ -100,12 +100,12 @@ protocol IFpIdService {
 
 class FpIdService: IFpIdService {
     private let source: IRest
-    private var cache: IFpIdStorage
+    private var storage: IFpIdStorage
     
     init(source: IRest = Rest.shared,
-         cache: IFpIdStorage = AgeGateStorage()) {
+         storage: IFpIdStorage = AgeGateStorage()) {
         self.source = source
-        self.cache = cache
+        self.storage = storage
     }
     
     var fpId: String? {
@@ -115,7 +115,7 @@ class FpIdService: IFpIdService {
     }
     
     private func getFpId() async -> String? {
-        if let fpId = cache.fpId {
+        if let fpId = storage.fpId {
             return fpId
         }
         
@@ -125,7 +125,7 @@ class FpIdService: IFpIdService {
         guard let fpId = fpIdResponse?.id else {
             return nil
         }
-        cache.fpId = fpId
+        storage.fpId = fpId
 
         return fpId
     }
