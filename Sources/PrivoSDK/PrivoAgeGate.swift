@@ -18,7 +18,7 @@ public class PrivoAgeGate {
     init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared,
          api: Restable = Rest.shared,
          app: UIApplication = .shared,
-         fpIdService: FpIdable = FpIdService()
+         fpIdService: FpIdentifiable = FpIdService()
     ) {
         ageGate = PrivoAgeGateInternal(
             permissionService: permissionService,

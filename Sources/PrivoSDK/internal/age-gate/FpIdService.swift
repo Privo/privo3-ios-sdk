@@ -8,12 +8,11 @@
 
 import Foundation
 
-
-protocol FpIdable {
+protocol FpIdentifiable {
     var fpId: String? { get async }
 }
 
-class FpIdService: FpIdable {
+class FpIdService: FpIdentifiable {
     private let source: Restable
     private var storage: FpIdStorage
     
