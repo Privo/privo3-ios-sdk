@@ -92,6 +92,48 @@ final class PrivoSDKTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 5.0)
     }
     
+    func test_lost_fp_run_birthday() throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        
+        // rest results available status, but...
+        class TestRestMock: RestMock {
+            override func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+                .mockUnavailable
+            }
+            
+            override func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
+                return .mockAvailable
+            }
+        }
+        
+        // ... fingerprint will be lost.
+        class FpIdServiceMock: IFpIdService {
+            var fpId: String? { return nil }
+        }
+
+        let rest = TestRestMock()
+        let fpidService = FpIdServiceMock()
+
+        // GIVEN
+        let ageGate = PrivoAgeGate(api: rest, fpIdService: fpidService)
+        
+        // WHEN
+        let completionExpectation = expectation(description: "completion")
+        try ageGate.run(CheckAgeData(
+            userIdentifier: UUID().uuidString,
+            birthDateYYYYMMDD: nil,
+            birthDateYYYYMM: nil,
+            birthDateYYYY: nil,
+            age: 30,
+            countryCode: "US",
+            nickname: nil
+        )) { ageGateEvent in
+            // THEN
+            XCTAssert(ageGateEvent == nil)
+            completionExpectation.fulfill()
+        }
+        wait(for: [completionExpectation], timeout: 5.0)
+    }
 }
 
 
@@ -107,6 +149,27 @@ fileprivate extension AgeGateStatusResponse {
     static let mockAvailable: AgeGateStatusResponse = .init(
         status: .Allowed,
         agId: "1cf38293-c1ab-47b1-ab30-95ad447fa5dd",
+        ageRange: .init(start: 18, end: 120, jurisdiction: "US"),
+        extUserId: nil,
+        countryCode: "US"
+    )
+}
+
+fileprivate extension AgeGateEvent {
+    static let mockAvailable: AgeGateEvent = .init(
+        status: .Allowed,
+        userIdentifier: "16DF78D2-6B84-44BE-AA66-C5CB5FE876EE",
+        nickname: nil,
+        agId: "c1c13321-84f1-4cc8-8e04-6b35382080f7",
+        ageRange: .init(start: 18, end: 120, jurisdiction: "US"),
+        countryCode: "US"
+    )
+}
+
+fileprivate extension AgeGateActionResponse {
+    static let mockAvailable: AgeGateActionResponse = .init(
+        action: .Allow,
+        agId: "c1c13321-84f1-4cc8-8e04-6b35382080f7",
         ageRange: .init(start: 18, end: 120, jurisdiction: "US"),
         extUserId: nil,
         countryCode: "US"
