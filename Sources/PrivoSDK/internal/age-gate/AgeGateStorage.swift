@@ -7,6 +7,11 @@
 
 import Foundation
 
+
+protocol FpIdStorage {
+    var fpId: String? { get set }
+}
+
 class AgeGateStorage: FpIdStorage {
     
     //MARK: - Internal properties
@@ -87,46 +92,5 @@ class AgeGateStorage: FpIdStorage {
                 keychain.delete(getFpIdKey())
             }
         }
-    }
-}
-
-protocol FpIdStorage {
-    var fpId: String? { get set }
-}
-
-protocol FpIdable {
-    var fpId: String? { get async }
-}
-
-class FpIdService: FpIdable {
-    private let source: Restable
-    private var storage: FpIdStorage
-    
-    init(source: Restable = Rest.shared,
-         storage: FpIdStorage = AgeGateStorage()) {
-        self.source = source
-        self.storage = storage
-    }
-    
-    var fpId: String? {
-        get async {
-            return await getFpId()
-        }
-    }
-    
-    private func getFpId() async -> String? {
-        if let fpId = storage.fpId {
-            return fpId
-        }
-        
-        let rawFpId = DeviceFingerprint()
-        let fpIdResponse = await source.generateFingerprint(fingerprint: rawFpId)
-        
-        guard let fpId = fpIdResponse?.id else {
-            return nil
-        }
-        storage.fpId = fpId
-
-        return fpId
     }
 }
