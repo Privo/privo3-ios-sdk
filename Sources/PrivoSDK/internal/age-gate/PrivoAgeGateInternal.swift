@@ -16,12 +16,12 @@ internal class PrivoAgeGateInternal {
     private let permissionService: PrivoPermissionServiceType
     private let api: IRest
     private let app: UIApplication
-    private let fpIdService: IFpIdService
+    private let fpIdService: FpIdable
     
     init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared,
          api: IRest = Rest.shared,
          app: UIApplication = .shared,
-         fpIdService: IFpIdService = FpIdService())
+         fpIdService: FpIdable = FpIdService())
     {
         self.api = api
         self.permissionService = permissionService

@@ -72,7 +72,7 @@ final class PrivoSDKTests: XCTestCase {
         }
         
         // ... fingerprint will be lost.
-        class FpIdServiceMock: IFpIdService {
+        class FpIdServiceMock: FpIdable {
             var fpId: String? { return nil }
         }
 
@@ -107,7 +107,7 @@ final class PrivoSDKTests: XCTestCase {
         }
         
         // ... fingerprint will be lost.
-        class FpIdServiceMock: IFpIdService {
+        class FpIdServiceMock: FpIdable {
             var fpId: String? { return nil }
         }
 

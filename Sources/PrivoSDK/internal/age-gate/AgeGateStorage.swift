@@ -94,11 +94,11 @@ protocol IFpIdStorage {
     var fpId: String? { get set }
 }
 
-protocol IFpIdService {
+protocol FpIdable {
     var fpId: String? { get async }
 }
 
-class FpIdService: IFpIdService {
+class FpIdService: FpIdable {
     private let source: IRest
     private var storage: IFpIdStorage
     
