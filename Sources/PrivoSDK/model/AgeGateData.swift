@@ -21,6 +21,7 @@ internal struct CheckAgeStoreData: Encodable {
     let birthDateYYYY: String?
     let redirectUrl: String?;
     let agId: String?;
+    let fpId: String?;
     let age: Int?
     
     init(serviceIdentifier: String,
@@ -33,6 +34,7 @@ internal struct CheckAgeStoreData: Encodable {
          birthDateYYYY: String?,
          redirectUrl: String?,
          agId: String?,
+         fpId: String?,
          age: Int?) {
         self.serviceIdentifier = serviceIdentifier
         self.settings = settings
@@ -44,6 +46,7 @@ internal struct CheckAgeStoreData: Encodable {
         self.birthDateYYYY = birthDateYYYY
         self.redirectUrl = redirectUrl
         self.agId = agId
+        self.fpId = fpId
         self.age = age
     }
     
@@ -61,6 +64,7 @@ internal struct CheckAgeStoreData: Encodable {
              birthDateYYYY: data.birthDateYYYY,
              redirectUrl: redirectUrl,
              agId: state.agId,
+             fpId: state.fpId,
              age: data.age)
     }
     

@@ -120,10 +120,12 @@ internal class PrivoAgeGateInternal {
     
     func getAgeGateState(userIdentifier: String?, niсkname: String?) async -> AgeState? {
         let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: niсkname)
-        guard let settings = try? await storage.serviceSettings.getSettings() else {
+        guard let settings = try? await storage.serviceSettings.getSettings(),
+              let fpId = await fpIdService.fpId
+        else {
             return nil
         }
-        let state = AgeState(agId: agId, settings: settings)
+        let state = AgeState(fpId: fpId, agId: agId, settings: settings)
         return state
     }
     
@@ -242,7 +244,9 @@ internal class PrivoAgeGateInternal {
     func showAgeGateIdentifier(userIdentifier: String?, nickname: String?) async {
         do {
             let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname)
-            guard let settings = try await storage.serviceSettings.getSettings() else {
+            guard let settings = try await storage.serviceSettings.getSettings(),
+                  let fpId = await fpIdService.fpId
+            else {
                 return
             }
             let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
@@ -255,6 +259,7 @@ internal class PrivoAgeGateInternal {
                                                 birthDateYYYY: nil,
                                                 redirectUrl: nil,
                                                 agId: agId,
+                                                fpId: fpId,
                                                 age: nil)
             await app.showView(false) {
                 AgeGateView(ageGateData : ageGateData,
