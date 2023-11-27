@@ -30,7 +30,7 @@ public class PrivoAgeGate {
     public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
         Task.init {
             try ageGate.helpers.checkNetwork()
-            try ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
+            try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
             let event = await ageGate.getStatusEvent(userIdentifier, nickname: nickname)
             ageGate.storage.storeInfoFromEvent(event: event)
             completionHandler(event)
@@ -39,7 +39,7 @@ public class PrivoAgeGate {
     
     public func run(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) throws {
         Task.init {
-            try ageGate.helpers.checkRequest(data)
+            try await ageGate.helpers.checkRequest(data)
             let statusEvent = await ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname)
             ageGate.storage.storeInfoFromEvent(event: statusEvent)
             if (statusEvent.status != AgeGateStatus.Undefined) {
@@ -60,7 +60,7 @@ public class PrivoAgeGate {
     
     public func recheck(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) throws {
         Task.init {
-            try ageGate.helpers.checkRequest(data)
+            try await ageGate.helpers.checkRequest(data)
             if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
                 let event = await ageGate.recheckAgeGateByBirthDay(data)
                 ageGate.storage.storeInfoFromEvent(event: event)
@@ -76,7 +76,7 @@ public class PrivoAgeGate {
     public func linkUser(userIdentifier: String, agId: String, nickname: String?, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
         Task.init {
             try ageGate.helpers.checkNetwork()
-            try ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
+            try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
             let event = await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
             ageGate.storage.storeInfoFromEvent(event: event)
             completionHandler(event)
