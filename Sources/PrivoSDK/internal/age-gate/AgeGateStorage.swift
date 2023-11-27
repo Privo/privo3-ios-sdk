@@ -7,7 +7,12 @@
 
 import Foundation
 
-internal class AgeGateStorage {
+
+protocol FpIdStorage {
+    var fpId: String? { get set }
+}
+
+class AgeGateStorage: FpIdStorage {
     
     //MARK: - Internal properties
     
@@ -19,13 +24,11 @@ internal class AgeGateStorage {
     private let AGE_GATE_STORED_ENTITY_KEY = "AgeGateStoredEntity"
     
     private let keychain: PrivoKeychain
-    private let api: Rest
     
     //MARK: - Internal initialisers
     
-    init(keyChain: PrivoKeychain = .init(), serviceSettings: PrivoAgeSettingsInternal = .init(), api: Rest = .shared) {
+    init(keyChain: PrivoKeychain = .init(), serviceSettings: PrivoAgeSettingsInternal = .init()) {
         self.keychain = keyChain
-        self.api = api
         self.serviceSettings = serviceSettings
     }
     
@@ -76,14 +79,18 @@ internal class AgeGateStorage {
         return nil
     }
     
-    func getFpId() async -> String {
-        if let fpId = keychain.get(getFpIdKey()) { return fpId }
-        let fingerprint = DeviceFingerprint()
-        let response = await api.generateFingerprint(fingerprint: fingerprint)
-        //TO DO: need to implement for managing way when there is no id
-        guard let id = response?.id else { return "" }
-        keychain.set(key: getFpIdKey(), value: id)
-        return id
-    }
+    // MARK: FingerprintStorage
     
+    var fpId: String? {
+        get {
+            return keychain.get(getFpIdKey())
+        }
+        set {
+            if let newValue {
+                keychain.set(key: getFpIdKey(), value: newValue)
+            } else {
+                keychain.delete(getFpIdKey())
+            }
+        }
+    }
 }

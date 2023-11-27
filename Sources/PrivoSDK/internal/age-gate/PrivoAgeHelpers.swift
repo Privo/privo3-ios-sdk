@@ -111,7 +111,7 @@ internal class PrivoAgeHelpers {
     }
     
     func checkNetwork() throws {
-        try PrivoInternal.rest.checkNetwork()
+        try URLSession.checkNetwork()
     }
     
     func checkUserData(userIdentifier: String?, nickname: String?, agId: String? = nil) throws {

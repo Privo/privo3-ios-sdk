@@ -14,25 +14,26 @@ final class PrivoSDKTests: XCTestCase {
         let analyticURL = PrivoInternal.configuration.commonUrl.appending(.analytic)
         let fingerprintURL = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.fingerprint)
         let settingsURL = PrivoInternal.configuration.ageGateBaseUrl.appending(.settings)
-        URLMock.urls = [
+        URLSessionMock.urls = [
             statusURL: (error: nil,
-                         data: "The requested resource could not be found.".data(using: .utf8),
-                     response: HTTPURLResponse(url: statusURL, statusCode: 404, headerFields: ["Content-Length": "42"])),
-          analyticURL: (error: nil,
-                         data: nil,
-                     response: HTTPURLResponse(url: analyticURL, statusCode: 200, headerFields: ["Content-Length": "0"])),
-       fingerprintURL: (error: nil,
-                         data: try! JSONEncoder().encode(DeviceFingerprintResponse.mockSuccess),
-                     response: HTTPURLResponse(url: fingerprintURL, statusCode: 200)),
-          settingsURL: (error: nil,
-                         data: try! JSONEncoder().encode(AgeServiceSettings.mockSuccess),
-                     response: HTTPURLResponse(url: settingsURL, statusCode: 200))
+                        data: "The requested resource could not be found.".data(using: .utf8),
+                        response: HTTPURLResponse(url: statusURL, statusCode: 404, headerFields: ["Content-Length": "42"])),
+            analyticURL: (error: nil,
+                          data: nil,
+                          response: HTTPURLResponse(url: analyticURL, statusCode: 200, headerFields: ["Content-Length": "0"])),
+            fingerprintURL: (error: nil,
+                             data: try JSONEncoder().encode(DeviceFingerprintResponse.mockSuccess),
+                             response: HTTPURLResponse(url: fingerprintURL, statusCode: 200)),
+            settingsURL: (error: nil,
+                          data: try JSONEncoder().encode(AgeServiceSettings.mockSuccess),
+                          response: HTTPURLResponse(url: settingsURL, statusCode: 200))
         ]
         let urlConfig: URLSessionConfiguration = .default
-        urlConfig.protocolClasses = [ URLMock.self ]
+        urlConfig.protocolClasses = [ URLSessionMock.self ]
+        let rest = Rest(urlConfig: urlConfig)
         
         // GIVEN
-        let ageGate = PrivoAgeGate(urlConfig: urlConfig)
+        let ageGate = PrivoAgeGate(api: rest)
         
         // WHEN
         let completionExpectation = expectation(description: "completion")
@@ -44,116 +45,133 @@ final class PrivoSDKTests: XCTestCase {
         
         // THEN
         // will send one analytic request for bad response:
-        let allAnalyticRequests = URLMock.invokedRequests.filter({ $0.url?.hasSuffix(.analytic) ?? false })
+        let allAnalyticRequests = URLSessionMock.invokedRequests.filter({ $0.url?.hasSuffix(.analytic) ?? false })
         XCTAssertTrue( allAnalyticRequests.count == 1 )
         if let analyticEventErrorData = allAnalyticRequests.first?.analyticEventErrorData {
             XCTAssertEqual(analyticEventErrorData.errorCode, 404)
         } else {
             XCTFail("Request contains incorrect data.")
         }
-
+        
     }
-}
-
-
-class URLMock: URLProtocol {
-    typealias URLResult = (error: Error?, data: Data?, response: HTTPURLResponse?)
-   
-    // MARK: class methods
-    static var invokedRequests: [URLRequest] {
-        get {
-            return queue.sync(execute: { Self._invokedRequests })
-        }
-        set {
-            queue.async {
-                Self._invokedRequests = newValue
+    
+    // MARK: - lost fp cases
+    
+    func test_lost_fp_get_status() throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        
+        // rest results available status, but...
+        class TestRestMock: RestMock {
+            override func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+                .mockAvailable
+            }
+            
+            override func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
+                .mockAvailable
             }
         }
+        
+        // ... fingerprint will be lost.
+        class FpIdServiceMock: FpIdentifiable {
+            var fpId: String? { return nil }
+        }
+
+        let rest = TestRestMock()
+        let fpIdService = FpIdServiceMock()
+
+        // GIVEN
+        let ageGate = PrivoAgeGate(api: rest, fpIdService: fpIdService)
+        
+        // WHEN
+        let completionExpectation = expectation(description: "completion")
+        try ageGate.getStatus(userIdentifier: "AvailableUS30UserIdentifier", nickname: nil) { ageGateEvent in
+            // THEN
+            XCTAssert(ageGateEvent.status == .Undefined)
+            completionExpectation.fulfill()
+        }
+        wait(for: [completionExpectation], timeout: 5.0)
     }
     
-    static var urls: [URL: URLResult] {
-        get {
-            return queue.sync(execute: { Self._urls })
-        }
-        set {
-            queue.async {
-                Self._urls = newValue
+    func test_lost_fp_run_birthday() throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        
+        // rest results available status, but...
+        class TestRestMock: RestMock {
+            override func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+                .mockUnavailable
+            }
+            
+            override func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
+                return .mockAvailable
             }
         }
-    }
-    private static var _invokedRequests: [URLRequest] = []
-    private static var _urls: [URL: URLResult] = [:]
-    private static let queue = DispatchQueue(label: "\(type(of: URLMock.self))")
-
-    override class func canInit(with request: URLRequest) -> Bool {
-        queue.async {
-            Self._invokedRequests.append(request)
-        }
         
-        return true
-    }
-    
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
-        // Required to be implemented here. Just return what is passed
-        return request
-    }
-    
-    // MARK: instance methods
-    
-    override func startLoading() {
-        guard let requestURL = request.url,
-              let (error, data, response) = Self.urls[requestURL]
-        else {
-            // unreachable branch
-            let unreachableBranchError = NSError(domain: NSURLErrorDomain, code:NSURLErrorUnknown, userInfo: nil)
-            client?.urlProtocol(self, didFailWithError: unreachableBranchError)
-            return
+        // ... fingerprint will be lost.
+        class FpIdServiceMock: FpIdentifiable {
+            var fpId: String? { return nil }
         }
 
-        if let response {
-            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        }
+        let rest = TestRestMock()
+        let fpidService = FpIdServiceMock()
+
+        // GIVEN
+        let ageGate = PrivoAgeGate(api: rest, fpIdService: fpidService)
         
-        if let data {
-            client?.urlProtocol(self, didLoad: data)
+        // WHEN
+        let completionExpectation = expectation(description: "completion")
+        try ageGate.run(CheckAgeData(
+            userIdentifier: UUID().uuidString,
+            birthDateYYYYMMDD: nil,
+            birthDateYYYYMM: nil,
+            birthDateYYYY: nil,
+            age: 30,
+            countryCode: "US",
+            nickname: nil
+        )) { ageGateEvent in
+            // THEN
+            XCTAssert(ageGateEvent == nil)
+            completionExpectation.fulfill()
         }
-        
-        if let error {
-            client?.urlProtocol(self, didFailWithError: error)
-        } else {
-            client?.urlProtocolDidFinishLoading(self)
-        }
-    }
-    
-    override func stopLoading() {
-        // Required to be implemented. Do nothing here.
+        wait(for: [completionExpectation], timeout: 5.0)
     }
 }
 
-fileprivate extension AgeServiceSettings {
-    static let mockSuccess = AgeServiceSettings(
-        isGeoApiOn: false,
-        isAllowSelectCountry: true,
-        isProvideUserId: true,
-        isShowStatusUi: false,
-        poolAgeGateStatusInterval: 15,
-        verificationApiKey: "eMVAU4Qk4qrnOtH9GAHOafatybW8xQDg",
-        p2SiteId: 1,
-        logoUrl: nil,
-        customerSupportEmail: nil,
-        isMultiUserOn: true
-    )
-}
 
-fileprivate extension DeviceFingerprintResponse {
-    static let mockSuccess = DeviceFingerprintResponse(
-        id: "uVH-v-fWp9oyENrNBJDllY==",
-        exp: 1701247108
-    )
-}
+
 
 fileprivate extension HTTPURLResponse {
     convenience init?(url: URL, statusCode: Int, headerFields: [String: String] = [:]) {
         self.init(url: url, statusCode: statusCode, httpVersion: nil, headerFields: headerFields)
     }
+}
+
+fileprivate extension AgeGateStatusResponse {
+    static let mockAvailable: AgeGateStatusResponse = .init(
+        status: .Allowed,
+        agId: "1cf38293-c1ab-47b1-ab30-95ad447fa5dd",
+        ageRange: .init(start: 18, end: 120, jurisdiction: "US"),
+        extUserId: nil,
+        countryCode: "US"
+    )
+}
+
+fileprivate extension AgeGateEvent {
+    static let mockAvailable: AgeGateEvent = .init(
+        status: .Allowed,
+        userIdentifier: "16DF78D2-6B84-44BE-AA66-C5CB5FE876EE",
+        nickname: nil,
+        agId: "c1c13321-84f1-4cc8-8e04-6b35382080f7",
+        ageRange: .init(start: 18, end: 120, jurisdiction: "US"),
+        countryCode: "US"
+    )
+}
+
+fileprivate extension AgeGateActionResponse {
+    static let mockAvailable: AgeGateActionResponse = .init(
+        action: .Allow,
+        agId: "c1c13321-84f1-4cc8-8e04-6b35382080f7",
+        ageRange: .init(start: 18, end: 120, jurisdiction: "US"),
+        extUserId: nil,
+        countryCode: "US"
+    )
 }

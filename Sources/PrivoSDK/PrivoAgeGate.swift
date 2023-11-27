@@ -15,10 +15,18 @@ public class PrivoAgeGate {
         ageGate = PrivoAgeGateInternal()
     }
     
-    init(urlConfig: URLSessionConfiguration) {
-        ageGate = PrivoAgeGateInternal(api: Rest(urlConfig: urlConfig))
+    init(permissionService: PrivoPermissionServiceType = PrivoPermissionService.shared,
+         api: Restable = Rest.shared,
+         app: UIApplication = .shared,
+         fpIdService: FpIdentifiable = FpIdService()
+    ) {
+        ageGate = PrivoAgeGateInternal(
+            permissionService: permissionService,
+            api: api,
+            app: app,
+            fpIdService: fpIdService)
     }
-    
+
     public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
         Task.init {
             try ageGate.helpers.checkNetwork()
