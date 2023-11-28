@@ -35,7 +35,7 @@ public class PrivoAgeGate {
         Task {
             do {
                 try ageGate.helpers.checkNetwork()
-                try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
+                try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: nil)
                 let event = await ageGate.getStatusEvent(userIdentifier, nickname: nickname)
                 ageGate.storage.storeInfoFromEvent(event: event)
                 completionHandler(event)
@@ -112,7 +112,7 @@ public class PrivoAgeGate {
         Task {
             do {
                 try ageGate.helpers.checkNetwork()
-                try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
+                try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: agId)
                 let event = await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
                 ageGate.storage.storeInfoFromEvent(event: event)
                 completionHandler(event)

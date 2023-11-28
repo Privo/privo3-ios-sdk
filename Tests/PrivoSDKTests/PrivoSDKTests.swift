@@ -240,15 +240,15 @@ final class PrivoSDKTests: XCTestCase {
         let completionExpectation = expectation(description: "completion").assertForOverFulfill(true)
         ageGate.linkUser(
             userIdentifier: UUID().uuidString,
-            agId: UUID().uuidString,
-            nickname: ""
+            agId: "",
+            nickname: nil
         ) { ageGateEvent in
             XCTFail()
             completionExpectation.fulfill()
         } errorHandler: { error in
             // THEN
             if let ageGateError = error as? AgeGateError {
-                XCTAssert(ageGateError == .notAllowedEmptyStringNickname)
+                XCTAssert(ageGateError == .notAllowedEmptyStringAgId)
             } else {
                 XCTFail()
             }

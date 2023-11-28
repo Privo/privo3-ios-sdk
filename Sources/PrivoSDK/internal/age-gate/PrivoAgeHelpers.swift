@@ -114,7 +114,7 @@ internal class PrivoAgeHelpers {
         try URLSession.checkNetwork()
     }
     
-    func checkUserData(userIdentifier: String?, nickname: String?, agId: String? = nil) async throws {
+    func checkUserData(userIdentifier: String?, nickname: String?, agId: String?) async throws {
         if let userIdentifier = userIdentifier, userIdentifier.isEmpty {
             throw AgeGateError.notAllowedEmptyStringUserIdentifier
         }
@@ -133,7 +133,7 @@ internal class PrivoAgeHelpers {
     
     func checkRequest(_ data: CheckAgeData) async throws {
         try checkNetwork()
-        try await checkUserData(userIdentifier: data.userIdentifier, nickname: data.nickname)
+        try await checkUserData(userIdentifier: data.userIdentifier, nickname: data.nickname, agId: nil)
         if let (date, format) = getDateAndFormat(data) {
             if !isAgeCorrect(rawDate: date, format: format) {
                 throw AgeGateError.incorrectDateOfBirht
