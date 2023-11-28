@@ -42,29 +42,31 @@ public class PrivoAgeGate {
         }
     }
     
-        }
-    }
-    
-    public func run(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) throws {
-        Task.init {
-            try await ageGate.helpers.checkRequest(data)
-            let statusEvent = await ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname)
-            ageGate.storage.storeInfoFromEvent(event: statusEvent)
-            if (statusEvent.status != AgeGateStatus.Undefined) {
-                completionHandler(statusEvent)
-            } else {
-                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
-                    let newEvent = await ageGate.runAgeGateByBirthDay(data)
-                    ageGate.storage.storeInfoFromEvent(event: newEvent)
-                    completionHandler(newEvent)
+    public func run(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
+        Task {
+            do {
+                try await ageGate.helpers.checkRequest(data)
+                let statusEvent = await ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname)
+                ageGate.storage.storeInfoFromEvent(event: statusEvent)
+                if (statusEvent.status != AgeGateStatus.Undefined) {
+                    completionHandler(statusEvent)
                 } else {
-                    let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: nil)
-                    ageGate.storage.storeInfoFromEvent(event: event)
-                    completionHandler(event)
+                    if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
+                        let newEvent = await ageGate.runAgeGateByBirthDay(data)
+                        ageGate.storage.storeInfoFromEvent(event: newEvent)
+                        completionHandler(newEvent)
+                    } else {
+                        let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: nil)
+                        ageGate.storage.storeInfoFromEvent(event: event)
+                        completionHandler(event)
+                    }
                 }
+            } catch {
+                completionHandler(nil)
             }
         }
     }
+    
     
     public func recheck(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) throws {
         Task.init {

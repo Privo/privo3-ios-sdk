@@ -119,7 +119,7 @@ final class PrivoSDKTests: XCTestCase {
         
         // WHEN
         let completionExpectation = expectation(description: "completion")
-        try ageGate.run(CheckAgeData(
+        ageGate.run(CheckAgeData(
             userIdentifier: UUID().uuidString,
             birthDateYYYYMMDD: nil,
             birthDateYYYYMM: nil,
