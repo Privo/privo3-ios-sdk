@@ -27,7 +27,11 @@ public class PrivoAgeGate {
             fpIdService: fpIdService)
     }
 
-    public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) {
+    public func getStatus(userIdentifier: String?,
+                          nickname: String? = nil,
+                          completionHandler: @escaping (AgeGateEvent) -> Void,
+                          errorHandler: ((Error) -> Void)? = nil)
+    {
         Task {
             do {
                 try ageGate.helpers.checkNetwork()
@@ -36,13 +40,15 @@ public class PrivoAgeGate {
                 ageGate.storage.storeInfoFromEvent(event: event)
                 completionHandler(event)
             } catch {
-                // TODO: return error
-                print("Unexpected issue in \(#function)\(#line)")
+                errorHandler?(error)
             }
         }
     }
     
-    public func run(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
+    public func run(_ data: CheckAgeData,
+                    completionHandler: @escaping (AgeGateEvent?) -> Void,
+                    errorHandler: ((Error) -> Void)? = nil)
+    {
         Task {
             do {
                 try await ageGate.helpers.checkRequest(data)
@@ -66,12 +72,15 @@ public class PrivoAgeGate {
                     }
                 }
             } catch {
-                completionHandler(nil)
+                errorHandler?(error)
             }
         }
     }
     
-    public func recheck(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
+    public func recheck(_ data: CheckAgeData,
+                        completionHandler: @escaping (AgeGateEvent?) -> Void,
+                        errorHandler: ((Error) -> Void)? = nil)
+    {
         Task {
             do {
                 try await ageGate.helpers.checkRequest(data)
@@ -89,12 +98,17 @@ public class PrivoAgeGate {
                     completionHandler(event)
                 }
             } catch {
-                completionHandler(nil)
+                errorHandler?(error)
             }
         }
     }
     
-    public func linkUser(userIdentifier: String, agId: String, nickname: String?, completionHandler: @escaping (AgeGateEvent) -> Void) {
+    public func linkUser(userIdentifier: String,
+                         agId: String,
+                         nickname: String?,
+                         completionHandler: @escaping (AgeGateEvent) -> Void,
+                         errorHandler: ((Error) -> Void)? = nil)
+    {
         Task {
             do {
                 try ageGate.helpers.checkNetwork()
@@ -103,8 +117,7 @@ public class PrivoAgeGate {
                 ageGate.storage.storeInfoFromEvent(event: event)
                 completionHandler(event)
             } catch {
-                // TODO: return error
-                print("Unexpected issue in \(#function)\(#line)")
+                errorHandler?(error)
             }
         }
     }
