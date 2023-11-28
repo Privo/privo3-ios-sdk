@@ -37,7 +37,7 @@ final class PrivoSDKTests: XCTestCase {
         
         // WHEN
         let completionExpectation = expectation(description: "completion")
-        try ageGate.getStatus(userIdentifier: UUID().uuidString, nickname: nil) { _ in
+        ageGate.getStatus(userIdentifier: UUID().uuidString, nickname: nil) { _ in
             completionExpectation.fulfill()
         }
         wait(for: [completionExpectation], timeout: 5.0)
@@ -84,7 +84,7 @@ final class PrivoSDKTests: XCTestCase {
         
         // WHEN
         let completionExpectation = expectation(description: "completion")
-        try ageGate.getStatus(userIdentifier: "AvailableUS30UserIdentifier", nickname: nil) { ageGateEvent in
+        ageGate.getStatus(userIdentifier: "AvailableUS30UserIdentifier", nickname: nil) { ageGateEvent in
             // THEN
             XCTAssert(ageGateEvent.status == .Undefined)
             completionExpectation.fulfill()

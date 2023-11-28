@@ -27,13 +27,21 @@ public class PrivoAgeGate {
             fpIdService: fpIdService)
     }
 
-    public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
-        Task.init {
-            try ageGate.helpers.checkNetwork()
-            try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
-            let event = await ageGate.getStatusEvent(userIdentifier, nickname: nickname)
-            ageGate.storage.storeInfoFromEvent(event: event)
-            completionHandler(event)
+    public func getStatus(userIdentifier: String?, nickname: String? = nil, completionHandler: @escaping (AgeGateEvent) -> Void) {
+        Task {
+            do {
+                try ageGate.helpers.checkNetwork()
+                try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
+                let event = await ageGate.getStatusEvent(userIdentifier, nickname: nickname)
+                ageGate.storage.storeInfoFromEvent(event: event)
+                completionHandler(event)
+            } catch {
+                // TODO: return error
+                print("Unexpected issue in \(#function)\(#line)")
+            }
+        }
+    }
+    
         }
     }
     
