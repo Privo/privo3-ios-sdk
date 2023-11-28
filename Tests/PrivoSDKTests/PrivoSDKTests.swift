@@ -134,9 +134,130 @@ final class PrivoSDKTests: XCTestCase {
         }
         wait(for: [completionExpectation], timeout: 5.0)
     }
+    
+    // MARK: - exception handling in primary public methods
+    func test_age_gate_get_status_throws() throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        let rest = RestMock()
+        
+        // GIVEN
+        let ageGate = PrivoAgeGate(api: rest)
+        
+        // WHEN
+        let completionExpectation = expectation(description: "completion").assertForOverFulfill(true)
+        ageGate.getStatus(userIdentifier: "") { ageGateEvent in
+            XCTFail()
+            completionExpectation.fulfill()
+        } errorHandler: { error in
+            // THEN
+            if let ageGateError = error as? AgeGateError {
+                XCTAssert(ageGateError == .notAllowedEmptyStringUserIdentifier)
+            } else {
+                XCTFail()
+            }
+            completionExpectation.fulfill()
+        }
+        
+        wait(for: [completionExpectation], timeout: 5.0)
+    }
+    
+    func test_age_gate_run_throws() throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        let rest = RestMock()
+        
+        // GIVEN
+        let checkAgeData = CheckAgeData(
+            userIdentifier: UUID().uuidString,
+            birthDateYYYYMMDD: nil,
+            birthDateYYYYMM: nil,
+            birthDateYYYY: "1980",
+            age: 3000,
+            countryCode: "US",
+            nickname: nil
+        )
+        let ageGate = PrivoAgeGate(api: rest)
+        
+        // WHEN
+        let completionExpectation = expectation(description: "completion").assertForOverFulfill(true)
+        ageGate.run(checkAgeData) { ageGateEvent in
+            XCTFail()
+            completionExpectation.fulfill()
+        } errorHandler: { error in
+            // THEN
+            if let ageGateError = error as? AgeGateError {
+                XCTAssert(ageGateError == .incorrectAge)
+            } else {
+                XCTFail()
+            }
+            completionExpectation.fulfill()
+        }
+        
+        wait(for: [completionExpectation], timeout: 5.0)
+    }
+    
+    func test_age_gate_recheck_throws() throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        let rest = RestMock()
+        
+        // GIVEN
+        let checkAgeData = CheckAgeData(
+            userIdentifier: UUID().uuidString,
+            birthDateYYYYMMDD: nil,
+            birthDateYYYYMM: nil,
+            birthDateYYYY: "one thousand nine hundred eighty",
+            age: 30,
+            countryCode: "US",
+            nickname: UUID().uuidString
+        )
+        let ageGate = PrivoAgeGate(api: rest)
+        
+        // WHEN
+        let completionExpectation = expectation(description: "completion").assertForOverFulfill(true)
+        ageGate.recheck(checkAgeData) { ageGateEvent in
+            XCTFail()
+            completionExpectation.fulfill()
+        } errorHandler: { error in
+            // THEN
+            if let ageGateError = error as? AgeGateError {
+                XCTAssert(ageGateError == .incorrectDateOfBirht)
+            } else {
+                XCTFail()
+            }
+            completionExpectation.fulfill()
+        }
+        
+        wait(for: [completionExpectation], timeout: 5.0)
+    }
+    
+    func test_age_gate_link_user_throws() throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        let rest = RestMock()
+        
+        // GIVEN
+        let ageGate = PrivoAgeGate(api: rest)
+        
+        // WHEN
+        let completionExpectation = expectation(description: "completion").assertForOverFulfill(true)
+        ageGate.linkUser(
+            userIdentifier: UUID().uuidString,
+            agId: UUID().uuidString,
+            nickname: ""
+        ) { ageGateEvent in
+            XCTFail()
+            completionExpectation.fulfill()
+        } errorHandler: { error in
+            // THEN
+            if let ageGateError = error as? AgeGateError {
+                XCTAssert(ageGateError == .notAllowedEmptyStringNickname)
+            } else {
+                XCTFail()
+            }
+            completionExpectation.fulfill()
+        }
+        
+        wait(for: [completionExpectation], timeout: 5.0)
+    }
 }
-
-
 
 
 fileprivate extension HTTPURLResponse {
