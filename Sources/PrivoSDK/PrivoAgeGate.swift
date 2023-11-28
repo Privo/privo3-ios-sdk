@@ -67,18 +67,22 @@ public class PrivoAgeGate {
         }
     }
     
-    
-    public func recheck(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) throws {
-        Task.init {
-            try await ageGate.helpers.checkRequest(data)
-            if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
-                let event = await ageGate.recheckAgeGateByBirthDay(data)
-                ageGate.storage.storeInfoFromEvent(event: event)
-                completionHandler(event)
-            } else {
-                let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired)
-                ageGate.storage.storeInfoFromEvent(event: event)
-                completionHandler(event)
+    public func recheck(_ data: CheckAgeData, completionHandler: @escaping (AgeGateEvent?) -> Void) {
+        Task {
+            do {
+                try await ageGate.helpers.checkRequest(data)
+                // TODO: better formatting
+                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
+                    let event = await ageGate.recheckAgeGateByBirthDay(data)
+                    ageGate.storage.storeInfoFromEvent(event: event)
+                    completionHandler(event)
+                } else {
+                    let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired)
+                    ageGate.storage.storeInfoFromEvent(event: event)
+                    completionHandler(event)
+                }
+            } catch {
+                completionHandler(nil)
             }
         }
     }
