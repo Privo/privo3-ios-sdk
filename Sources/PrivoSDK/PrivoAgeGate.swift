@@ -87,13 +87,18 @@ public class PrivoAgeGate {
         }
     }
     
-    public func linkUser(userIdentifier: String, agId: String, nickname: String?, completionHandler: @escaping (AgeGateEvent) -> Void) throws {
-        Task.init {
-            try ageGate.helpers.checkNetwork()
-            try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
-            let event = await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
-            ageGate.storage.storeInfoFromEvent(event: event)
-            completionHandler(event)
+    public func linkUser(userIdentifier: String, agId: String, nickname: String?, completionHandler: @escaping (AgeGateEvent) -> Void) {
+        Task {
+            do {
+                try ageGate.helpers.checkNetwork()
+                try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname)
+                let event = await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
+                ageGate.storage.storeInfoFromEvent(event: event)
+                completionHandler(event)
+            } catch {
+                // TODO: return error
+                print("Unexpected issue in \(#function)\(#line)")
+            }
         }
     }
     
