@@ -51,7 +51,11 @@ public class PrivoAgeGate {
                 if (statusEvent.status != AgeGateStatus.Undefined) {
                     completionHandler(statusEvent)
                 } else {
-                    if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
+                    if (data.birthDateYYYYMMDD != nil
+                    ||  data.birthDateYYYYMM != nil
+                    ||  data.birthDateYYYY != nil
+                    ||  data.age != nil)
+                    {
                         let newEvent = await ageGate.runAgeGateByBirthDay(data)
                         ageGate.storage.storeInfoFromEvent(event: newEvent)
                         completionHandler(newEvent)
@@ -71,8 +75,11 @@ public class PrivoAgeGate {
         Task {
             do {
                 try await ageGate.helpers.checkRequest(data)
-                // TODO: better formatting
-                if (data.birthDateYYYYMMDD != nil || data.birthDateYYYYMM != nil || data.birthDateYYYY != nil || data.age != nil) {
+                if (data.birthDateYYYYMMDD != nil
+                ||  data.birthDateYYYYMM != nil
+                ||  data.birthDateYYYY != nil
+                ||  data.age != nil)
+                {
                     let event = await ageGate.recheckAgeGateByBirthDay(data)
                     ageGate.storage.storeInfoFromEvent(event: event)
                     completionHandler(event)
