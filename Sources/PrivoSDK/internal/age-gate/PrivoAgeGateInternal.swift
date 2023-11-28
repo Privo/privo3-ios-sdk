@@ -240,15 +240,16 @@ internal class PrivoAgeGateInternal {
         }
         return result
     }
-                                                                                       
+    
     func showAgeGateIdentifier(userIdentifier: String?, nickname: String?) async {
         do {
             let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname)
             guard let settings = try await storage.serviceSettings.getSettings(),
                   let fpId = await fpIdService.fpId
-            else {
+            else { 
                 return
             }
+            try helpers.checkNetwork()
             let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                                 settings: settings,
                                                 userIdentifier: userIdentifier,

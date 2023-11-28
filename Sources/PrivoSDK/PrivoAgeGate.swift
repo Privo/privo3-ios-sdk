@@ -102,9 +102,8 @@ public class PrivoAgeGate {
         }
     }
     
-    public func showIdentifierModal(userIdentifier: String?, nickname: String? = nil) throws {
-        Task.init(priority: .userInitiated) {
-            try ageGate.helpers.checkNetwork()
+    public func showIdentifierModal(userIdentifier: String?, nickname: String? = nil) {
+        Task {
             await ageGate.showAgeGateIdentifier(userIdentifier: userIdentifier, nickname: nickname)
         }
     }
