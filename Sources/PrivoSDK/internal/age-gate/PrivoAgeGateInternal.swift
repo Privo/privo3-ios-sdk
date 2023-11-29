@@ -243,13 +243,13 @@ internal class PrivoAgeGateInternal {
     
     func showAgeGateIdentifier(userIdentifier: String?, nickname: String?) async {
         do {
+            try helpers.checkNetwork()
             let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname)
             guard let settings = try await storage.serviceSettings.getSettings(),
                   let fpId = await fpIdService.fpId
             else { 
                 return
             }
-            try helpers.checkNetwork()
             let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                                 settings: settings,
                                                 userIdentifier: userIdentifier,
