@@ -57,7 +57,7 @@ final class PrivoSDKTests: XCTestCase {
     
     // MARK: - lost fp cases
     
-    func test_lost_fp_get_status() throws {
+    func test_age_gate_get_status_undefined__lost_fp() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         
         // rest results available status, but...
@@ -92,7 +92,7 @@ final class PrivoSDKTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 5.0)
     }
     
-    func test_lost_fp_run_birthday() throws {
+    func test_age_gate_run_birthday_nil__lost_fp() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         
         // rest results available status, but...
@@ -136,7 +136,7 @@ final class PrivoSDKTests: XCTestCase {
     }
     
     // MARK: - exception handling in primary public methods
-    func test_age_gate_get_status_throws() throws {
+    func test_age_gate_get_status_throws__empty_user_id() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         let rest = RestMock()
         
@@ -161,7 +161,7 @@ final class PrivoSDKTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 5.0)
     }
     
-    func test_age_gate_run_throws() throws {
+    func test_age_gate_run_nil__incorrect_age() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         let rest = RestMock()
         
@@ -188,7 +188,7 @@ final class PrivoSDKTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 5.0)
     }
     
-    func test_age_gate_recheck_throws() throws {
+    func test_age_gate_recheck_nil__incorrect_birthdate() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         let rest = RestMock()
         
@@ -215,7 +215,7 @@ final class PrivoSDKTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 5.0)
     }
     
-    func test_age_gate_link_user_throws() throws {
+    func test_age_gate_link_user_throws__empty_agid() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         let rest = RestMock()
         
