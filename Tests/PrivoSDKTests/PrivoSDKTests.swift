@@ -88,6 +88,9 @@ final class PrivoSDKTests: XCTestCase {
             // THEN
             XCTAssert(ageGateEvent.status == .Undefined)
             completionExpectation.fulfill()
+        } errorHandler: { error in
+            XCTFail()
+            completionExpectation.fulfill()
         }
         wait(for: [completionExpectation], timeout: 5.0)
     }
