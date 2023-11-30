@@ -171,7 +171,7 @@ final class PrivoSDKTests: XCTestCase {
             birthDateYYYYMMDD: nil,
             birthDateYYYYMM: nil,
             birthDateYYYY: "1980",
-            age: 3000,
+            age: 3000, // .incorrectAge
             countryCode: "US",
             nickname: nil
         )
@@ -180,15 +180,8 @@ final class PrivoSDKTests: XCTestCase {
         // WHEN
         let completionExpectation = expectation(description: "completion").assertForOverFulfill(true)
         ageGate.run(checkAgeData) { ageGateEvent in
-            XCTFail()
-            completionExpectation.fulfill()
-        } errorHandler: { error in
             // THEN
-            if let ageGateError = error as? AgeGateError {
-                XCTAssert(ageGateError == .incorrectAge)
-            } else {
-                XCTFail()
-            }
+            XCTAssertNil(ageGateEvent)
             completionExpectation.fulfill()
         }
         
@@ -204,7 +197,7 @@ final class PrivoSDKTests: XCTestCase {
             userIdentifier: UUID().uuidString,
             birthDateYYYYMMDD: nil,
             birthDateYYYYMM: nil,
-            birthDateYYYY: "one thousand nine hundred eighty",
+            birthDateYYYY: "one thousand nine hundred eighty", // .incorrectDateOfBirht
             age: 30,
             countryCode: "US",
             nickname: UUID().uuidString
@@ -214,15 +207,8 @@ final class PrivoSDKTests: XCTestCase {
         // WHEN
         let completionExpectation = expectation(description: "completion").assertForOverFulfill(true)
         ageGate.recheck(checkAgeData) { ageGateEvent in
-            XCTFail()
-            completionExpectation.fulfill()
-        } errorHandler: { error in
             // THEN
-            if let ageGateError = error as? AgeGateError {
-                XCTAssert(ageGateError == .incorrectDateOfBirht)
-            } else {
-                XCTFail()
-            }
+            XCTAssertNil(ageGateEvent)
             completionExpectation.fulfill()
         }
         

@@ -46,8 +46,7 @@ public class PrivoAgeGate {
     }
     
     public func run(_ data: CheckAgeData,
-                    completionHandler: @escaping (AgeGateEvent?) -> Void,
-                    errorHandler: ((Error) -> Void)? = nil)
+                    completionHandler: @escaping (AgeGateEvent?) -> Void)
     {
         Task {
             do {
@@ -72,14 +71,13 @@ public class PrivoAgeGate {
                     }
                 }
             } catch {
-                errorHandler?(error)
+                completionHandler(nil)
             }
         }
     }
     
     public func recheck(_ data: CheckAgeData,
-                        completionHandler: @escaping (AgeGateEvent?) -> Void,
-                        errorHandler: ((Error) -> Void)? = nil)
+                        completionHandler: @escaping (AgeGateEvent?) -> Void)
     {
         Task {
             do {
@@ -98,7 +96,7 @@ public class PrivoAgeGate {
                     completionHandler(event)
                 }
             } catch {
-                errorHandler?(error)
+                completionHandler(nil)
             }
         }
     }
