@@ -7,12 +7,22 @@
 import Foundation
 
 public struct UserVerificationProfile: Encodable {
+    
     public var firstName: String?
+    
     public var lastName: String?
-    public var birthDateYYYYMMDD: String? // "yyyy-MM-dd"
+    
+    /// Date string in the "yyyy-MM-dd" date-format
+    public var birthDateYYYYMMDD: String?
+    
     public var email: String?
+    
     public var postalCode: String?
+    
+    /// Phone number in the full international format (E.164, e.g. "+17024181234")
     public var phone: String?
+    
+    /// Unique identifier passed by Partner and returned in all responses by PRIVO.
     public var partnerDefinedUniqueID: String?
     
     @available(*, deprecated)

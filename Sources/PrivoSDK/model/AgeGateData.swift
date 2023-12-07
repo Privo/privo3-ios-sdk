@@ -71,13 +71,30 @@ internal struct CheckAgeStoreData: Encodable {
 }
 
 public struct CheckAgeData: Hashable {
-    public let userIdentifier: String? ; // uniq user identifier
-    public let birthDateYYYYMMDD: String?; // "yyyy-MM-dd" format
-    public let birthDateYYYYMM: String? // "2021-03" format
-    public let birthDateYYYY: String? // "2021" format
-    public let age: Int? // 31, age format
-    public let countryCode: String?; // Alpha-2 country code, e.g US
-    public let nickname: String?; // Nickname of user for multi-user integration. Can not be an empty string ("").
+    
+    /// Unique external user identifier.
+    /// Please don't use empty string ("") as a value. It will cause an error. We support real values or nil if you don't have it.
+    public let userIdentifier: String?
+    
+    /// External user birthdate in "yyyy-MM-dd" format.
+    public let birthDateYYYYMMDD: String?
+    
+    /// External user birth date in "yyyy-MM" format.
+    public let birthDateYYYYMM: String?
+    
+    /// External user birth date in "yyyy" format. Derived birthDate will be calculated with Dec 31 by default.
+    public let birthDateYYYY: String?
+    
+    /// External user age format. Derived birthDate will be calculated with current day and month by default.
+    public let age: Int?
+    
+    /// Two-letter country code [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2), e.g. US
+    public let countryCode: String?
+    
+    ///  Nickname.
+    ///  Please use only in case of multi-user integration.
+    ///  Please don't use empty string "" in it.
+    public let nickname: String?
     
     public init(
         userIdentifier: String? = nil,
