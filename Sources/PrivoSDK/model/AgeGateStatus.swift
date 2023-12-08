@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Please check the Age Gate Status Description [here](https://developer.privo.com/js-sdk/ag-js-sdk-statusdescription.html).
 public enum AgeGateStatus: String, Decodable, Encodable, Hashable {
     case Undefined = "Undefined"
     case Blocked = "Blocked"

@@ -8,6 +8,7 @@
 import SwiftUI
 import JWTDecode
 
+/// SwiftUI button element that opens a modal window by clicking on it. User is prompted to Sign In inside this modal window. Depending on the integration settings, this button can be customized with branded PRIVO styles by default.
 public struct PrivoAuthButton<Label> : View where Label : View {
     
     //MARK: - Internal properties
@@ -22,7 +23,19 @@ public struct PrivoAuthButton<Label> : View where Label : View {
     private let accessIdKey = "accessId"
     
     //MARK: - Public initialisers
-    
+   
+    /// Constructor
+    ///
+    ///     PrivoAuthButton(label: {
+    ///       Text("Sign In")
+    ///     }, onFinish: { token in
+    ///       self.token = token
+    ///     }).padding()
+    ///
+    /// - Parameters:
+    ///   - label: customizable Swift UI Label element for the button. It can contains text and any styling inside it.
+    ///   - onFinish: optional completion callback that will provide token if Auth was successful. Otherwise it will provide nil.
+    ///   - closeIcon: optional image for close icon in modal dialog. If nothing is specified, the default image will be used.
     public init(@ViewBuilder label: () -> Label,
                 onFinish: ((String?) -> Void)? = nil,
                 closeIcon: (() -> Image)? = nil) {
@@ -47,6 +60,7 @@ public struct PrivoAuthButton<Label> : View where Label : View {
     }
 }
 
+/// SwiftUI button element that opens a modal window by clicking on it. User is prompted to create an account inside this modal window. Depending on the integration settings, this button can be customized with branded PRIVO styles by default.
 public struct PrivoRegisterButton<Label> : View where Label : View {
     
     //MARK: - Internal properties
@@ -58,6 +72,21 @@ public struct PrivoRegisterButton<Label> : View where Label : View {
     
     //MARK: - Public initialisers
     
+    /// Constructor
+    ///
+    ///     PrivoRegisterButton(isPresented: $showRegistration, label: {
+    ///       Text("Register")
+    ///     }){
+    ///       DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+    ///         showRegistration = false
+    ///       }
+    ///     }.padding()
+    ///
+    /// - Parameters:
+    ///   - isPresented: binding state value that shows status of modal window presentation. Changed to true automatically when a user press button. Should be changed to false when you want to close the modal dialog.
+    ///   - label: customizable SwiftUI Label element for the button. It can contains text and any styling inside it.
+    ///   - onFinish: optional completion handler that will provide token if Auth was successful. Otherwise it will provide nil. You can change isPresented state value to false inside this callback. You also can change isPresented after some delay. In this case user will be able to see "Congratulation" page content inside modal dialog.
+    ///   - closeIcon: optional image for close icon in modal dialog. If nothing is specified, the default image will be used.
     public init(isPresented: Binding<Bool>,
                 @ViewBuilder label: () -> Label,
                 onFinish: (() -> Void)? = nil,
@@ -114,6 +143,9 @@ public class PrivoAuth {
     
     //MARK: - Public functions
     
+    /// Shows a modal window. User is prompted to Create an Account inside this modal window.
+    /// NOTE: this dialog should be closed from completion callback. (*This can be done after a short delay. In this case, the user will be able to read content of the congratulations page.*)
+    /// - Parameter completion: closure to execute.
     public func showRegister(_ completion: ((AuthDialog) -> Void)?) {
         Task.init(priority: .userInitiated) { @MainActor in
             let authDialog = AuthDialog()
@@ -127,6 +159,8 @@ public class PrivoAuth {
         }
     }
     
+    /// Shows a modal window. User is prompted to Sign In inside this modal window. It returns a new user token as a result.
+    /// - Parameter completion: closure to execute.
     public func showAuth(_ completion: ((String?) -> Void)?) {
         Task.init(priority: .userInitiated) { @MainActor in
             let authDialog = AuthDialog()
@@ -141,6 +175,7 @@ public class PrivoAuth {
         }
     }
     
+    /// - Returns: a previously issued token, if it have not expired. Can return nil if token wasn't issued or expired
     public func getToken() -> String? {
         if let token = userDefaults.string(forKey: PrivoInternal.configuration.tokenStorageKey) {
             if let jwt = try? decode(jwt: token) {
@@ -157,6 +192,14 @@ public class PrivoAuth {
         return nil
     }
     
+    /// Renew token. Return token and it's status.
+    ///
+    ///     Privo.auth.renewToken() { tokenStatus in
+    ///       let token: String? = tokenStatus?.token
+    ///       let isRenewed: Bool? = tokenStatus?.isRenewed
+    ///     }
+    ///
+    /// - Parameter completionHandler: closure to execute.
     public func renewToken(completionHandler: @escaping (TokenStatus?) -> Void) {
         Task.init(priority: .userInitiated) {
             guard let oldToken = getToken() else {
@@ -176,7 +219,8 @@ public class PrivoAuth {
         }
     }
     
-    public func logout() -> Void {
+    /// Logout and clean previously issued token.
+    public func logout() {
         userDefaults.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
     

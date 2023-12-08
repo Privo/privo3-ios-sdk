@@ -7,6 +7,45 @@
 import Foundation
 import UIKit
 
+/// ### Age Gate Flow Diagrams
+///
+/// Simple Age Gate Flow Diagram
+/// ![Simple Age Gate Flow Diagram](https://developer.privo.com/images/AgeGate-Mobile.drawio.png)
+///
+/// Age Gate Flow Diagram (with Age Recheck)
+/// ![Age Gate Flow Diagram](https://developer.privo.com/images/Updated-Mobile_AgeRecheck.drawio.png)
+///
+/// Age Gate MultiUser Flow Diagram
+/// ![Age Gate MultiUser Flow Diagram](https://developer.privo.com/images/Mobile_AgeGate_MultiUser.drawio.png)
+///
+/// ### Age Gate SDK example
+///
+///     Privo.ageGate.getStatus(userIdentifier) { s in
+///         event = s
+///     }
+///     ...
+///     let data = CheckAgeData(
+///       userIdentifier: userIdentifier,
+///       birthDateYYYYMMDD: birthDate,
+///       countryCode: country
+///     )
+///     Privo.ageGate.run(data) { s in
+///       event = s
+///     }
+///     ...
+///     Privo.ageGate.recheck(data) { s in
+///       event = s
+///     }
+///
+/// ### Sample SDK Response
+/// 
+///     { // json
+///       "id": "861dc238-...-c1dfe",
+///       "status": "Allowed",
+///       "extUserId": "9ede0f0-...a78", // optional
+///       "countryCode": "US" // optional
+///     }
+///
 public class PrivoAgeGate {
     
     private let ageGate: PrivoAgeGateInternal
@@ -26,7 +65,13 @@ public class PrivoAgeGate {
             app: app,
             fpIdService: fpIdService)
     }
-
+    
+    /// The method allows checking the existing Age Gate status.
+    /// - Parameters:
+    ///   - userIdentifier: external user identifier (please don't use empty string ("") as a value. It will cause an error. We support real values or nil if you don't have it)
+    ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
+    ///   - completionHandler: closure which used to handle the result of an asynchronous operation and takes as input argument.
+    ///   - errorHandler: optional parameter with default value nil. Called instead of the completionHandler when an error occurs. Takes an Error instance as input argument.
     public func getStatus(userIdentifier: String?,
                           nickname: String? = nil,
                           completionHandler: @escaping (AgeGateEvent) -> Void,
@@ -45,6 +90,10 @@ public class PrivoAgeGate {
         }
     }
     
+    /// The method runs the Age Gate check. If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
+    /// - Parameters:
+    ///   - data
+    ///   - completionHandler: A closure to execute. Nil indicates a failure has occurred.
     public func run(_ data: CheckAgeData,
                     completionHandler: @escaping (AgeGateEvent?) -> Void)
     {
@@ -76,6 +125,10 @@ public class PrivoAgeGate {
         }
     }
     
+    /// The method allows rechecking data if the birth date provided by a user was updated.
+    /// - Parameters:
+    ///   - data
+    ///   - completionHandler: A closure to execute. Nil indicates a failure has occurred.
     public func recheck(_ data: CheckAgeData,
                         completionHandler: @escaping (AgeGateEvent?) -> Void)
     {
@@ -101,6 +154,15 @@ public class PrivoAgeGate {
         }
     }
     
+    /// The method will link user to specified userIdentifier.
+    /// It's used in multi-user flow, when account creation (on partner side) happens after age-gate.
+    /// Please note that linkUser can be used only for users that doesn't have userIdentifier yet. You can't change userIdentifier if user already have it.
+    /// - Parameters:
+    ///   - userIdentifier: External user identifier. Please don't use empty string ("") as a value. It will cause an error. We support real values or null if you don't have it
+    ///   - agId: Age gate identifier that you get as a response from sdk on previous steps.
+    ///   - nickname: Please use only in case of multi-user integration. Please don't use empty string "" in it.
+    ///   - completionHandler: Closure which used to handle the result of an asynchronous operation.
+    ///   - errorHandler: Called instead of the completionHandler when an error occurs.
     public func linkUser(userIdentifier: String,
                          agId: String,
                          nickname: String?,
@@ -120,12 +182,17 @@ public class PrivoAgeGate {
         }
     }
     
+    /// The method will show a modal dialog with user age gate identifier (can be used to contact customer support).
+    /// - Parameters:
+    ///   - userIdentifier: External user identifier. Please, don't use empty string ("") as a value. It will cause an error. We support real values or null if you don't have it.
+    ///   - nickname: Please use only in case of multi-user integration. Please don't use empty string "" in it.
     public func showIdentifierModal(userIdentifier: String?, nickname: String? = nil) {
         Task {
             await ageGate.showAgeGateIdentifier(userIdentifier: userIdentifier, nickname: nickname)
         }
     }
     
+    /// The method allows a partner to hide the Age Gate widget.
     public func hide() {
         Task.init(priority: .userInitiated) {
             await ageGate.hide()
