@@ -9,7 +9,7 @@ import Security
 import Foundation
 import os.log
 
-struct PrivoKeychain {
+class PrivoKeychain {
     
     //MARK: - Private properties
     

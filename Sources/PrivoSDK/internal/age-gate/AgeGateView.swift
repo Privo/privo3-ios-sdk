@@ -28,7 +28,7 @@ struct AgeGateView : View {
     
     @State
     fileprivate var state: PrivoAgeGateState = PrivoAgeGateState()
-    private let api: Rest = .shared
+    private let api: Restable = Rest.shared
     
     //MARK: - Body builder
     

@@ -96,14 +96,20 @@ public class PrivoAuth {
     
     private let app: UIApplication
     private let userDefaults: UserDefaults
-    private let api: Rest
+    private let api: Restable
     
     //MARK: - Public initialisers
     
     public init(app: UIApplication = .shared, userDefaults: UserDefaults = .standard) {
         self.app = app
         self.userDefaults = userDefaults
-        self.api = .shared
+        self.api = Rest.shared
+    }
+    
+    init(app: UIApplication = .shared, userDefaults: UserDefaults = .standard, api: Restable = Rest.shared) {
+        self.app = app
+        self.userDefaults = userDefaults
+        self.api = api
     }
     
     //MARK: - Public functions
