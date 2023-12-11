@@ -12,11 +12,15 @@ struct ModalWebView: View {
     var isPresented: Bool
     @ObservedObject
     var model = WebViewModel(permissionService: PrivoCameraPermissionService.shared)
+    
+    @State
+    private var isLoading: Bool = true
+    
     let config: WebviewConfig
   
     var body: some View {
       return
-        LoadingView(isShowing: $model.isLoading) {
+        LoadingView(isShowing: $isLoading) {
             VStack() {
               if (self.config.showCloseIcon) {
                   HStack() {
@@ -33,7 +37,7 @@ struct ModalWebView: View {
                       })
                   }
               }
-              Webview(viewModel: model, config: config)
+              Webview(isLoading: $isLoading, viewModel: model, config: config)
             }
         
         }

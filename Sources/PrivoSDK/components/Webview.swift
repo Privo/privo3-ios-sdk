@@ -12,8 +12,6 @@ struct WebviewConfig {
     var onClose: (() -> Void)?
 }
 class WebViewModel: ObservableObject {
-    @Published
-    var isLoading: Bool = true
     
     let permissionService: PrivoCameraPermissionServiceType
     
@@ -25,6 +23,7 @@ class WebViewModel: ObservableObject {
 struct Webview: UIViewRepresentable {
     
     //MARK: - Internal properties
+    @Binding var isLoading: Bool
     
     @ObservedObject
     var viewModel: WebViewModel
@@ -44,7 +43,7 @@ struct Webview: UIViewRepresentable {
      */
     
     func makeCoordinator() -> WebViewCoordinator {
-        let coordinator = WebViewCoordinator(viewModel)
+        let coordinator = WebViewCoordinator($isLoading, viewModel)
         coordinator.finishCriteria = config.finishCriteria
         coordinator.onFinish = config.onFinish
         coordinator.printCriteria = config.printCriteria
@@ -126,7 +125,10 @@ struct Webview: UIViewRepresentable {
         let fileManager = FileManager()
         var lastFileDestinationURL: URL?
         
-        init(_ viewModel: WebViewModel) {
+        @Binding var isLoading: Bool
+        
+        init(_ isLoading: Binding<Bool>, _ viewModel: WebViewModel) {
+            self._isLoading = isLoading
             self.viewModel = viewModel
         }
         
@@ -150,17 +152,17 @@ struct Webview: UIViewRepresentable {
         }
         
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            viewModel.isLoading = false
+            isLoading = false
         }
 
         /*
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-            viewModel.isLoading = true
+            isLoading = true
         }
         */
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-            viewModel.isLoading = false
+            isLoading = false
         }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
