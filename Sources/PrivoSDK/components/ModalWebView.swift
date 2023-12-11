@@ -10,8 +10,8 @@ import SwiftUI
 struct ModalWebView: View {
     @Binding
     var isPresented: Bool
-    @ObservedObject
-    var model = WebViewModel(permissionService: PrivoCameraPermissionService.shared)
+    
+    private let permissionService = PrivoCameraPermissionService.shared
     
     @State
     private var isLoading: Bool = true
@@ -37,7 +37,7 @@ struct ModalWebView: View {
                       })
                   }
               }
-              Webview(isLoading: $isLoading, viewModel: model, config: config)
+              Webview(isLoading: $isLoading, permissionService: permissionService, config: config)
             }
         
         }

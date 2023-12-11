@@ -23,10 +23,11 @@ class WebViewModel: ObservableObject {
 struct Webview: UIViewRepresentable {
     
     //MARK: - Internal properties
-    @Binding var isLoading: Bool
+    @Binding
+    var isLoading: Bool
     
-    @ObservedObject
-    var viewModel: WebViewModel
+    let permissionService: PrivoCameraPermissionServiceType
+    
     let config: WebviewConfig
     
     /*
@@ -43,7 +44,7 @@ struct Webview: UIViewRepresentable {
      */
     
     func makeCoordinator() -> WebViewCoordinator {
-        let coordinator = WebViewCoordinator($isLoading, viewModel)
+        let coordinator = WebViewCoordinator($isLoading, permissionService)
         coordinator.finishCriteria = config.finishCriteria
         coordinator.onFinish = config.onFinish
         coordinator.printCriteria = config.printCriteria
@@ -114,8 +115,11 @@ struct Webview: UIViewRepresentable {
     }
     
     class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
-        private var viewModel: WebViewModel
+        private var permissionService: PrivoCameraPermissionServiceType
         private let printLoadingHelper = PrintLoadingHelper();
+        
+        @Binding
+        private var isLoading: Bool
         
         var printCriteria: String?
         var finishCriteria: String?
@@ -125,11 +129,10 @@ struct Webview: UIViewRepresentable {
         let fileManager = FileManager()
         var lastFileDestinationURL: URL?
         
-        @Binding var isLoading: Bool
         
-        init(_ isLoading: Binding<Bool>, _ viewModel: WebViewModel) {
+        init(_ isLoading: Binding<Bool>, _ permissionService: PrivoCameraPermissionServiceType) {
             self._isLoading = isLoading
-            self.viewModel = viewModel
+            self.permissionService = permissionService
         }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -207,7 +210,7 @@ struct Webview: UIViewRepresentable {
                      initiatedByFrame frame: WKFrameInfo,
                      type: WKMediaCaptureType,
                      decisionHandler: @escaping (WKPermissionDecision) -> Void) {
-            viewModel.permissionService.checkPermission(for: type, completion: decisionHandler)
+            permissionService.checkPermission(for: type, completion: decisionHandler)
         }
         
         class PrintLoadingHelper: NSObject, WKNavigationDelegate {
