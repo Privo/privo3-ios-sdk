@@ -12,8 +12,6 @@ struct WebviewConfig {
     var onClose: (() -> Void)?
 }
 class WebViewModel: ObservableObject {
-    @Published
-    var isLoading: Bool = true
     
     let permissionService: PrivoCameraPermissionServiceType
     
@@ -25,9 +23,11 @@ class WebViewModel: ObservableObject {
 struct Webview: UIViewRepresentable {
     
     //MARK: - Internal properties
+    @Binding
+    var isLoading: Bool
     
-    @ObservedObject
-    var viewModel: WebViewModel
+    let permissionService: PrivoCameraPermissionServiceType
+    
     let config: WebviewConfig
     
     /*
@@ -44,7 +44,7 @@ struct Webview: UIViewRepresentable {
      */
     
     func makeCoordinator() -> WebViewCoordinator {
-        let coordinator = WebViewCoordinator(viewModel)
+        let coordinator = WebViewCoordinator($isLoading, permissionService)
         coordinator.finishCriteria = config.finishCriteria
         coordinator.onFinish = config.onFinish
         coordinator.printCriteria = config.printCriteria
@@ -115,19 +115,23 @@ struct Webview: UIViewRepresentable {
     }
     
     class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
-        private var viewModel: WebViewModel
+        private var permissionService: PrivoCameraPermissionServiceType
         private let printLoadingHelper = PrintLoadingHelper();
+        
+        @Binding
+        private var isLoading: Bool
         
         var printCriteria: String?
         var finishCriteria: String?
         var onLoad: (() -> Void)?
         var onFinish: ((String) -> Void)?
         
-        let fileManager = FileManager()
-        var lastFileDestinationURL: URL?
+        // let fileManager = FileManager()
+        // var lastFileDestinationURL: URL?
         
-        init(_ viewModel: WebViewModel) {
-            self.viewModel = viewModel
+        init(_ isLoading: Binding<Bool>, _ permissionService: PrivoCameraPermissionServiceType) {
+            self._isLoading = isLoading
+            self.permissionService = permissionService
         }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -150,17 +154,17 @@ struct Webview: UIViewRepresentable {
         }
         
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            viewModel.isLoading = false
+            isLoading = false
         }
 
         /*
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-            viewModel.isLoading = true
+            isLoading = true
         }
         */
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-            viewModel.isLoading = false
+            isLoading = false
         }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
@@ -205,7 +209,7 @@ struct Webview: UIViewRepresentable {
                      initiatedByFrame frame: WKFrameInfo,
                      type: WKMediaCaptureType,
                      decisionHandler: @escaping (WKPermissionDecision) -> Void) {
-            viewModel.permissionService.checkPermission(for: type, completion: decisionHandler)
+            permissionService.checkPermission(for: type, completion: decisionHandler)
         }
         
         class PrintLoadingHelper: NSObject, WKNavigationDelegate {
