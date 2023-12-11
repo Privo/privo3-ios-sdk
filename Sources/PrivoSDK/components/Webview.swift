@@ -126,9 +126,8 @@ struct Webview: UIViewRepresentable {
         var onLoad: (() -> Void)?
         var onFinish: ((String) -> Void)?
         
-        let fileManager = FileManager()
-        var lastFileDestinationURL: URL?
-        
+        // let fileManager = FileManager()
+        // var lastFileDestinationURL: URL?
         
         init(_ isLoading: Binding<Bool>, _ permissionService: PrivoCameraPermissionServiceType) {
             self._isLoading = isLoading
