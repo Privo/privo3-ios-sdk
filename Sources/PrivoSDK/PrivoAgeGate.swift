@@ -72,6 +72,7 @@ public class PrivoAgeGate {
     ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
     ///   - completionHandler: closure which used to handle the result of an asynchronous operation and takes as input argument.
     ///   - errorHandler: optional parameter with default value nil. Called instead of the completionHandler when an error occurs. Takes an Error instance as input argument.
+    @available(*, renamed: "getStatus(userIdentifier:nickname:)")
     public func getStatus(userIdentifier: String?,
                           nickname: String? = nil,
                           completionHandler: @escaping (AgeGateEvent) -> Void,
@@ -79,48 +80,62 @@ public class PrivoAgeGate {
     {
         Task {
             do {
-                try ageGate.helpers.checkNetwork()
-                try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: nil)
-                let event = await ageGate.getStatusEvent(userIdentifier, nickname: nickname)
-                ageGate.storage.storeInfoFromEvent(event: event)
-                completionHandler(event)
+                let result = try await getStatus(userIdentifier: userIdentifier, nickname: nickname)
+                completionHandler(result)
             } catch {
                 errorHandler?(error)
             }
         }
     }
     
+    // TODO: documentation
+    public func getStatus(userIdentifier: String?,
+                          nickname: String? = nil) async throws -> AgeGateEvent {
+        try ageGate.helpers.checkNetwork()
+        try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: nil)
+        let event = await ageGate.getStatusEvent(userIdentifier, nickname: nickname)
+        ageGate.storage.storeInfoFromEvent(event: event)
+        return event
+    }
+    
     /// The method runs the Age Gate check. If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
     /// - Parameters:
     ///   - data
     ///   - completionHandler: A closure to execute. Nil indicates a failure has occurred.
+    @available(*, renamed: "run(_:)")
     public func run(_ data: CheckAgeData,
                     completionHandler: @escaping (AgeGateEvent?) -> Void)
     {
         Task {
             do {
-                try await ageGate.helpers.checkRequest(data)
-                let statusEvent = await ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname)
-                ageGate.storage.storeInfoFromEvent(event: statusEvent)
-                if (statusEvent.status != AgeGateStatus.Undefined) {
-                    completionHandler(statusEvent)
-                } else {
-                    if (data.birthDateYYYYMMDD != nil
-                    ||  data.birthDateYYYYMM != nil
-                    ||  data.birthDateYYYY != nil
-                    ||  data.age != nil)
-                    {
-                        let newEvent = await ageGate.runAgeGateByBirthDay(data)
-                        ageGate.storage.storeInfoFromEvent(event: newEvent)
-                        completionHandler(newEvent)
-                    } else {
-                        let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: nil)
-                        ageGate.storage.storeInfoFromEvent(event: event)
-                        completionHandler(event)
-                    }
-                }
+                let result = try await run(data)
+                completionHandler(result)
             } catch {
                 completionHandler(nil)
+            }
+        }
+    }
+    
+    // TODO: documentation
+    public func run(_ data: CheckAgeData) async throws -> AgeGateEvent? { // TODO: AgeGateEvent nonnil
+        try await ageGate.helpers.checkRequest(data)
+        let statusEvent = await ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname)
+        ageGate.storage.storeInfoFromEvent(event: statusEvent)
+        if (statusEvent.status != AgeGateStatus.Undefined) {
+            return statusEvent
+        } else {
+            if (data.birthDateYYYYMMDD != nil
+            ||  data.birthDateYYYYMM != nil
+            ||  data.birthDateYYYY != nil
+            ||  data.age != nil)
+            {
+                let newEvent = await ageGate.runAgeGateByBirthDay(data)
+                ageGate.storage.storeInfoFromEvent(event: newEvent)
+                return newEvent // TODO: throw exception
+            } else {
+                let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: nil)
+                ageGate.storage.storeInfoFromEvent(event: event)
+                return event // TODO: throw exception
             }
         }
     }
@@ -129,28 +144,35 @@ public class PrivoAgeGate {
     /// - Parameters:
     ///   - data
     ///   - completionHandler: A closure to execute. Nil indicates a failure has occurred.
+    @available(*, renamed: "recheck(_:)")
     public func recheck(_ data: CheckAgeData,
                         completionHandler: @escaping (AgeGateEvent?) -> Void)
     {
         Task {
             do {
-                try await ageGate.helpers.checkRequest(data)
-                if (data.birthDateYYYYMMDD != nil
-                ||  data.birthDateYYYYMM != nil
-                ||  data.birthDateYYYY != nil
-                ||  data.age != nil)
-                {
-                    let event = await ageGate.recheckAgeGateByBirthDay(data)
-                    ageGate.storage.storeInfoFromEvent(event: event)
-                    completionHandler(event)
-                } else {
-                    let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired)
-                    ageGate.storage.storeInfoFromEvent(event: event)
-                    completionHandler(event)
-                }
+                let result = try await recheck(data)
+                completionHandler(result)
             } catch {
                 completionHandler(nil)
             }
+        }
+    }
+    
+    // TODO: documentation
+    public func recheck(_ data: CheckAgeData) async throws -> AgeGateEvent? { // TODO: AgeGateEvent nonnil
+        try await ageGate.helpers.checkRequest(data)
+        if (data.birthDateYYYYMMDD != nil
+        ||  data.birthDateYYYYMM != nil
+        ||  data.birthDateYYYY != nil
+        ||  data.age != nil)
+        {
+            let event = await ageGate.recheckAgeGateByBirthDay(data)
+            ageGate.storage.storeInfoFromEvent(event: event)
+            return event
+        } else {
+            let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired)
+            ageGate.storage.storeInfoFromEvent(event: event)
+            return event
         }
     }
     
@@ -163,6 +185,7 @@ public class PrivoAgeGate {
     ///   - nickname: Please use only in case of multi-user integration. Please don't use empty string "" in it.
     ///   - completionHandler: Closure which used to handle the result of an asynchronous operation.
     ///   - errorHandler: Called instead of the completionHandler when an error occurs.
+    @available(*, renamed: "linkUser(userIdentifier:agId:nickname:errorHandler:)")
     public func linkUser(userIdentifier: String,
                          agId: String,
                          nickname: String?,
@@ -171,15 +194,23 @@ public class PrivoAgeGate {
     {
         Task {
             do {
-                try ageGate.helpers.checkNetwork()
-                try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: agId)
-                let event = await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
-                ageGate.storage.storeInfoFromEvent(event: event)
-                completionHandler(event)
+                let result = try await linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
+                completionHandler(result)
             } catch {
                 errorHandler?(error)
             }
         }
+    }
+    
+    // TODO: documentation
+    public func linkUser(userIdentifier: String,
+                         agId: String,
+                         nickname: String?) async throws -> AgeGateEvent {
+        try ageGate.helpers.checkNetwork()
+        try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: agId)
+        let event = await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
+        ageGate.storage.storeInfoFromEvent(event: event)
+        return event
     }
     
     /// The method will show a modal dialog with user age gate identifier (can be used to contact customer support).
