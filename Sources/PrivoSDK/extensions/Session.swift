@@ -3,10 +3,10 @@ import Alamofire
 
 extension Session {
     
-    func request<T:Decodable,P:Encodable>(with url: URLConvertible,
+    func request<T:Decodable,P:Encodable>(_ url: URLConvertible,
                                           method: HTTPMethod = .get,
-                                          parameters: P? = nil,
-                                          encoder: ParameterEncoder = URLEncodedFormParameterEncoder.default,
+                                          parameters: P?,
+                                          encoder: ParameterEncoder,
                                           emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
         return await withCheckedContinuation { promise in
             request(url, method: method, parameters: parameters, encoder: encoder)
