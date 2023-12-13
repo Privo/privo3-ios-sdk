@@ -16,7 +16,7 @@ extension Session {
         }
     }
     
-    func request<T:Decodable>(with2 url: URLConvertible,
+    func request<T:Decodable>(_ url: URLConvertible,
                               method: HTTPMethod = .get,
                               encoding: ParameterEncoding = URLEncoding.default,
                               emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
@@ -28,7 +28,7 @@ extension Session {
       }
     }
     
-    func request(with4 url: URLConvertible) async -> DataResponse<Data?, AFError> {
+    func request(_ url: URLConvertible) async -> DataResponse<Data?, AFError> {
         return await withCheckedContinuation{ promise in
             request(url)
                 .response() {
