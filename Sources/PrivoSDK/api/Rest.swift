@@ -246,7 +246,7 @@ class Rest: Restable {
     func getValueFromTMPStorage(key: String) async -> TmpStorageString? {
         var tmpStorageURL = PrivoInternal.configuration.commonUrl
         tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, key])
-        let response: DataResponse<TmpStorageString,AFError> = await session.request(tmpStorageURL)
+        let response: DataResponse<TmpStorageString,AFError> = await session.request(with2: tmpStorageURL)
         trackPossibleAFError(response.error, response.debugDescription, response.response?.statusCode)
         return response.value
     }
@@ -256,7 +256,7 @@ class Rest: Restable {
         tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, Rest.putComponent])
         let data = TmpStorageString(data: value, ttl: ttl)
         typealias R = DataResponse<TmpStorageResponse,AFError>
-        let result: R = await session.request(tmpStorageURL, method: .post, parameter: data, encoder: JSONParameterEncoder.default)
+        let result: R = await session.request(with5: tmpStorageURL, method: .post, parameter: data, encoder: JSONParameterEncoder.default)
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         let id = result.value?.id
         return id
@@ -283,7 +283,7 @@ class Rest: Restable {
         var urlComponent = url.urlComponent()
         urlComponent.queryItems = [.init(name: "service_identifier", value: serviceIdentifier)]
         url = urlComponent.url ?? url
-        let result: DataResponse<ServiceInfo,AFError> = await session.request(url)
+        let result: DataResponse<ServiceInfo,AFError> = await session.request(with2: url)
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
     }
@@ -297,7 +297,7 @@ class Rest: Restable {
             .init(name: "redirect_uri", value: "")
         ]
         url = urlComponent.url ?? url
-        let result = await session.request(url)
+        let result = await session.request(with4: url)
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         guard let redirectUrl = result.response?.url,
               let components = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: true),
@@ -314,7 +314,7 @@ class Rest: Restable {
         urlComponent.queryItems = [.init(name: "session_id", value: sessionId)]
         url = urlComponent.url ?? url
         typealias R = DataResponse<LoginResponse,AFError>
-        let result: R = await session.request(url, method: .post, encoding: BodyStringEncoding(body: oldToken))
+        let result: R = await session.request(with3: url, method: .post, encoding: BodyStringEncoding(body: oldToken))
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         let token = result.value?.token
         return token
@@ -323,7 +323,7 @@ class Rest: Restable {
     func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
         let url = PrivoInternal.configuration.ageGateBaseUrl.appending(.status)
         typealias R = DataResponse<AgeGateStatusResponse,AFError>
-        let result: R = await session.request(url.absoluteString,
+        let result: R = await session.request(with: url.absoluteString,
                                          method: .put,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
@@ -335,7 +335,7 @@ class Rest: Restable {
     func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateActionResponse,AFError>
-        let result: R = await session.request(url,
+        let result: R = await session.request(with5: url,
                                          method: .post,
                                          parameter: data,
                                          encoder: JSONParameterEncoder.default,
@@ -348,7 +348,7 @@ class Rest: Restable {
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse? {
         let url = String(format: "%@/recheck", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateActionResponse,AFError>
-        let result: R = await session.request(url,
+        let result: R = await session.request(with: url,
                                          method: .put,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
@@ -363,7 +363,7 @@ class Rest: Restable {
     func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
         let url = String(format: "%@/link-user", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateStatusResponse,AFError>
-        let result: R = await session.request(url,
+        let result: R = await session.request(with: url,
                                          method: .post,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
@@ -378,14 +378,14 @@ class Rest: Restable {
             return nil
         }
         
-        let result: DataResponse<AgeServiceSettings,AFError> = await session.request(url)
+        let result: DataResponse<AgeServiceSettings,AFError> = await session.request(with2: url)
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
     }
     
     func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO? {
         let url = String(format: "%@/age-verification?verification_identifier=%@", PrivoInternal.configuration.ageVerificationBaseUrl.absoluteString, verificationIdentifier)
-        let result: DataResponse<AgeVerificationTO,AFError> = await session.request(url)
+        let result: DataResponse<AgeVerificationTO,AFError> = await session.request(with2: url)
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         return result.value
     }
@@ -393,7 +393,7 @@ class Rest: Restable {
     func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
         let url = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.fingerprint)
         typealias R = DataResponse<DeviceFingerprintResponse,AFError>
-        let result: R = await session.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default)
+        let result: R = await session.request(with: url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default)
         trackPossibleAFError(result.error,  result.debugDescription, result.response?.statusCode)
         return result.value
     }
