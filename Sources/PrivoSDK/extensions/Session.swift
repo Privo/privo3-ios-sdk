@@ -30,19 +30,8 @@ extension Session {
     
     func request(with4 url: URLConvertible) async -> DataResponse<Data?, AFError> {
         return await withCheckedContinuation{ promise in
-            request(url).response() { promise.resume(returning: $0) }
-        }
-    }
-    
-    func request<T:Decodable,
-                 P:Encodable>(with5 url: URLConvertible,
-                              method: HTTPMethod = .get,
-                              parameter: P? = nil,
-                              encoder: ParameterEncoder = URLEncodedFormParameterEncoder.default,
-                              emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
-        return await withCheckedContinuation { promise in
-            request(url, method: method, parameters: parameter, encoder: encoder)
-                .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
+            request(url)
+                .response() {
                     promise.resume(returning: $0)
                 }
         }

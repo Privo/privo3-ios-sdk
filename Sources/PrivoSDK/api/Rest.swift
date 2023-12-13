@@ -256,7 +256,12 @@ class Rest: Restable {
         tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, Rest.putComponent])
         let data = TmpStorageString(data: value, ttl: ttl)
         typealias R = DataResponse<TmpStorageResponse,AFError>
-        let result: R = await session.request(with5: tmpStorageURL, method: .post, parameter: data, encoder: JSONParameterEncoder.default)
+        let result: R = await session.request(
+            with: tmpStorageURL,
+            method: .post,
+            parameters: data,
+            encoder: JSONParameterEncoder.default
+        )
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         let id = result.value?.id
         return id
@@ -335,9 +340,9 @@ class Rest: Restable {
     func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         typealias R = DataResponse<AgeGateActionResponse,AFError>
-        let result: R = await session.request(with5: url,
+        let result: R = await session.request(with: url,
                                          method: .post,
-                                         parameter: data,
+                                         parameters: data,
                                          encoder: JSONParameterEncoder.default,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
