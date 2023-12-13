@@ -36,7 +36,7 @@ extension Session {
         }
     }
     
-    func request(with4 url: URLConvertible) async -> AFDataResponse<Data?> {
+    func request(with4 url: URLConvertible) async -> DataResponse<Data?, AFError> {
         return await withCheckedContinuation{ promise in
             request(url).response() { promise.resume(returning: $0) }
         }
