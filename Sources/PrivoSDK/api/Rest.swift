@@ -314,7 +314,7 @@ class Rest: Restable {
         urlComponent.queryItems = [.init(name: "session_id", value: sessionId)]
         url = urlComponent.url ?? url
         typealias R = DataResponse<LoginResponse,AFError>
-        let result: R = await session.request(with3: url, method: .post, encoding: BodyStringEncoding(body: oldToken))
+        let result: R = await session.request(with2: url, method: .post, encoding: BodyStringEncoding(body: oldToken))
         trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
         let token = result.value?.token
         return token
