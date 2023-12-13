@@ -74,6 +74,7 @@ class Rest: Restable {
     private static let storageComponent = "storage"
     private static let putComponent = "put"
     private static let sessionID = "session_id"
+    private static let acceptableStatusCodes: Set<Int> = [200, 204, 205]
     private static let emptyResponsesCodes: Set<Int> = .init([200,204,205])
     
     private let urlConfig: URLSessionConfiguration
@@ -205,33 +206,21 @@ class Rest: Restable {
         }
     }
     
-    func trackPossibleAFError(_ error: AFError?, _ response: String?, _ code: Int?) {
-        let encoder = JSONEncoder()
-        let analyticErrorEvent: AnalyticEventErrorData?
-        
-        if (code != 200 && code != 204 && code != 205) {
-            // This branch for HTTP errors.
-            analyticErrorEvent = AnalyticEventErrorData(errorMessage: nil,
-                                                        response: response,
-                                                        errorCode: code,
-                                                        privoSettings: nil)
-        } else if let error = error {
-            // This branch for:
-            // - underlying errors like network request timeout,
-            // - (overlying) decoding parsing error.
-            analyticErrorEvent = AnalyticEventErrorData(errorMessage: error.errorDescription,
-                                                        response: response,
-                                                        errorCode: error.responseCode,
-                                                        privoSettings: nil)
-        } else {
-            analyticErrorEvent = nil
-        }
-        
-        if let analyticErrorEvent,
-           let jsonData = try? encoder.encode(analyticErrorEvent) {
-            let jsonString = String(decoding: jsonData, as: UTF8.self)
-            let analyticEvent = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
-            sendAnalyticEvent(analyticEvent)
+    func trackPossibleAFError(_ error: AFError?, _ response: String?) {
+        if let error = error {
+            let analyticErrorEvent = AnalyticEventErrorData(
+                errorMessage: error.errorDescription,
+                response: response,
+                errorCode: error.responseCode,
+                privoSettings: nil
+            )
+            
+            let encoder = JSONEncoder()
+            if  let jsonData = try? encoder.encode(analyticErrorEvent) {
+                let jsonString = String(decoding: jsonData, as: UTF8.self)
+                let analyticEvent = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
+                sendAnalyticEvent(analyticEvent)
+            }
         }
     }
     
@@ -246,8 +235,8 @@ class Rest: Restable {
     func getValueFromTMPStorage(key: String) async -> TmpStorageString? {
         var tmpStorageURL = PrivoInternal.configuration.commonUrl
         tmpStorageURL = tmpStorageURL.append([Rest.storageComponent, key])
-        let response: AFDataResponse<TmpStorageString> = await session.request(tmpStorageURL)
-        trackPossibleAFError(response.error, response.debugDescription, response.response?.statusCode)
+        let response: AFDataResponse<TmpStorageString> = await session.request(tmpStorageURL, acceptableStatusCodes: Rest.acceptableStatusCodes)
+        trackPossibleAFError(response.error, response.debugDescription)
         return response.value
     }
     
@@ -259,9 +248,10 @@ class Rest: Restable {
             tmpStorageURL,
             method: .post,
             parameters: data,
-            encoder: JSONParameterEncoder.default
+            encoder: JSONParameterEncoder.default,
+            acceptableStatusCodes: Rest.acceptableStatusCodes
         )
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription)
         let id = result.value?.id
         return id
     }
@@ -287,8 +277,8 @@ class Rest: Restable {
         var urlComponent = url.urlComponent()
         urlComponent.queryItems = [.init(name: "service_identifier", value: serviceIdentifier)]
         url = urlComponent.url ?? url
-        let result: AFDataResponse<ServiceInfo> = await session.request(url)
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        let result: AFDataResponse<ServiceInfo> = await session.request(url, acceptableStatusCodes: Rest.acceptableStatusCodes)
+        trackPossibleAFError(result.error, result.debugDescription)
         return result.value
     }
     
@@ -301,8 +291,8 @@ class Rest: Restable {
             .init(name: "redirect_uri", value: "")
         ]
         url = urlComponent.url ?? url
-        let result: AFDataResponse<Data?> = await session.request(url)
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        let result: AFDataResponse<Data?> = await session.request(url, acceptableStatusCodes: Rest.acceptableStatusCodes)
+        trackPossibleAFError(result.error, result.debugDescription)
         guard let redirectUrl = result.response?.url,
               let components = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: true),
               let sessionId = components.queryItems?.first(where: { $0.name == Rest.sessionID })?.value else {
@@ -320,9 +310,10 @@ class Rest: Restable {
         let result: AFDataResponse<LoginResponse> = await session.request(
             url,
             method: .post,
-            encoding: BodyStringEncoding(body: oldToken)
+            encoding: BodyStringEncoding(body: oldToken),
+            acceptableStatusCodes: Rest.acceptableStatusCodes
         )
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription)
         let token = result.value?.token
         return token
     }
@@ -333,8 +324,9 @@ class Rest: Restable {
                                          method: .put,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
+                                         acceptableStatusCodes: Rest.acceptableStatusCodes,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription)
         return result.value
     }
     
@@ -344,8 +336,9 @@ class Rest: Restable {
                                          method: .post,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
+                                         acceptableStatusCodes: Rest.acceptableStatusCodes,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription)
         if let ageEstimationError = existedAgeEstimationError(result) { throw ageEstimationError }
         return result.value
     }
@@ -356,8 +349,9 @@ class Rest: Restable {
                                          method: .put,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
+                                         acceptableStatusCodes: Rest.acceptableStatusCodes,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription)
         if let ageEstimationError = existedAgeEstimationError(result) {
             throw ageEstimationError
         }
@@ -370,8 +364,9 @@ class Rest: Restable {
                                          method: .post,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
+                                         acceptableStatusCodes: Rest.acceptableStatusCodes,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        trackPossibleAFError(result.error, result.debugDescription)
         return result.value
     }
     
@@ -381,22 +376,29 @@ class Rest: Restable {
             return nil
         }
         
-        let result: AFDataResponse<AgeServiceSettings> = await session.request(url)
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        let result: AFDataResponse<AgeServiceSettings> = await session.request(url, acceptableStatusCodes: Rest.acceptableStatusCodes)
+        trackPossibleAFError(result.error, result.debugDescription)
         return result.value
     }
     
     func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO? {
         let url = String(format: "%@/age-verification?verification_identifier=%@", PrivoInternal.configuration.ageVerificationBaseUrl.absoluteString, verificationIdentifier)
-        let result: AFDataResponse<AgeVerificationTO> = await session.request(url)
-        trackPossibleAFError(result.error, result.debugDescription, result.response?.statusCode)
+        let result: AFDataResponse<AgeVerificationTO> = await session.request(url, acceptableStatusCodes: Rest.acceptableStatusCodes)
+        trackPossibleAFError(result.error, result.debugDescription)
         return result.value
     }
     
     func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
         let url = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.fingerprint)
-        let result: AFDataResponse<DeviceFingerprintResponse> = await session.request(url, method: .post, parameters: fingerprint, encoder: JSONParameterEncoder.default)
-        trackPossibleAFError(result.error,  result.debugDescription, result.response?.statusCode)
+        let result: AFDataResponse<DeviceFingerprintResponse> = await session.request(
+            url,
+            method: .post,
+            parameters:
+            fingerprint,
+            encoder: JSONParameterEncoder.default,
+            acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        trackPossibleAFError(result.error,  result.debugDescription)
         return result.value
     }
     
