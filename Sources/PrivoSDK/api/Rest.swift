@@ -52,7 +52,7 @@ protocol Restable {
     func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings
     func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO?
     func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse?
-    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse?
+    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse?
     func trackCustomError(_ errorDescr: String)
     func sendAnalyticEvent(_ event: AnalyticEvent)
@@ -375,17 +375,23 @@ class Rest: Restable {
         return result.value
     }
     
-    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
+    // throws CustomServerErrorResponse or PrivoError
+    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        let result: AFDataResponse<AgeGateActionResponse> = await session.request(url,
-                                         method: .post,
-                                         parameters: data,
-                                         encoder: JSONParameterEncoder.default,
-                                         acceptableStatusCodes: Rest.acceptableStatusCodes,
-                                         emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.debugDescription)
-        if let ageEstimationError = existedAgeEstimationError(result) { throw ageEstimationError }
-        return result.value
+        
+        let response: AFDataResponse<AgeGateActionResponse> = await session.request(
+            url,
+            method: .post,
+            parameters: data,
+            encoder: JSONParameterEncoder.default,
+            acceptableStatusCodes: Rest.acceptableStatusCodes,
+            emptyResponseCodes: Rest.emptyResponsesCodes
+        )
+        if let ageEstimationError = existedAgeEstimationError(response) {
+            throw ageEstimationError
+        }
+        let result = try trackPossibleAFErrorAndReturn(response)
+        return result
     }
     
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse? {
