@@ -11,6 +11,8 @@ import Foundation
 public enum PrivoError: Error {
     case noInternetConnection
     case networkConnectionProblem(_ error: Error?)
+    
+    case unknown
 }
 
 public enum AgeGateError: Error {

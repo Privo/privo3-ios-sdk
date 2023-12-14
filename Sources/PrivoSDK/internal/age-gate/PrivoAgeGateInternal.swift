@@ -41,7 +41,10 @@ internal class PrivoAgeGateInternal {
             countryCode: nil
         )
         
-        guard let fpId = await fpIdService.fpId else {
+        let fpId: String
+        do {
+            fpId = try await fpIdService.fpId
+        } catch {
             return undefinedAgeGateEvent
         }
         
@@ -118,19 +121,16 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    func getAgeGateState(userIdentifier: String?, niсkname: String?) async -> AgeState? {
+    func getAgeGateState(userIdentifier: String?, niсkname: String?) async throws -> AgeState {
         let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: niсkname)
-        guard let settings = try? await storage.serviceSettings.getSettings(),
-              let fpId = await fpIdService.fpId
-        else {
-            return nil
-        }
+        let settings = try await storage.serviceSettings.getSettings()
+        let fpId = try await fpIdService.fpId
         let state = AgeState(fpId: fpId, agId: agId, settings: settings)
         return state
     }
     
     func runAgeGateByBirthDay(_ data: CheckAgeData) async -> AgeGateEvent? {
-        guard let fpId = await fpIdService.fpId else {
+        guard let fpId = try? await fpIdService.fpId else {
             return nil
         }
         let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
@@ -205,7 +205,7 @@ internal class PrivoAgeGateInternal {
     func runAgeGate(_ data: CheckAgeData,
                     prevEvent: AgeGateEvent?,
                     recheckRequired: AgeGateInternalAction?) async -> AgeGateEvent? {
-        guard let state = await getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname) else { return nil }
+        guard let state = try? await getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname) else { return nil }
         let redirectUrl = PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString
         let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                                 state: state,
@@ -245,8 +245,9 @@ internal class PrivoAgeGateInternal {
         do {
             try helpers.checkNetwork()
             let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname)
-            guard let settings = try await storage.serviceSettings.getSettings(),
-                  let fpId = await fpIdService.fpId
+            let settings = try await storage.serviceSettings.getSettings()
+            
+            guard let fpId = try? await fpIdService.fpId
             else { 
                 return
             }

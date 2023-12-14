@@ -120,7 +120,7 @@ internal class PrivoAgeHelpers {
         }
         if let nickname = nickname {
             if nickname.isEmpty { throw AgeGateError.notAllowedEmptyStringNickname }
-            let settings = await serviceSettings.getSettingsT()
+            let settings = try await serviceSettings.getSettings()
             if !settings.isMultiUserOn {
                 // we have a Nickname but isMultiUserOn not allowed in partner configuration
                 throw AgeGateError.notAllowedMultiUserUsage
