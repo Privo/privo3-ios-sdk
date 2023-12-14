@@ -56,7 +56,7 @@ internal class PrivoAgeHelpers {
         }
     }
     
-    func toStatus(_ action: AgeGateAction?) -> AgeGateStatus? {
+    func toStatus(_ action: AgeGateAction) -> AgeGateStatus {
         switch action {
             case .Allow:
                 return .Allowed
@@ -72,8 +72,6 @@ internal class PrivoAgeHelpers {
                 return .MultiUserBlocked
             case .AgeEstimationBlocked:
                 return .AgeEstimationBlocked
-            default:
-                return .Undefined
         }
     }
     
