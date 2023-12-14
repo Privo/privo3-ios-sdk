@@ -224,6 +224,47 @@ class Rest: Restable {
         }
     }
     
+    func trackPossibleAFErrorAndReturn<T>(_ response: AFDataResponse<T>) throws -> T {
+        let error: AFError? = response.error
+        let description: String? = response.debugDescription
+        
+        if let error = error {
+            let analyticErrorEvent = AnalyticEventErrorData(
+                errorMessage: error.errorDescription,
+                response: description,
+                errorCode: error.responseCode,
+                privoSettings: nil
+            )
+            
+            let encoder = JSONEncoder()
+            if  let jsonData = try? encoder.encode(analyticErrorEvent) {
+                let jsonString = String(decoding: jsonData, as: UTF8.self)
+                let analyticEvent = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
+                sendAnalyticEvent(analyticEvent)
+            }
+            
+            switch error {
+            case let .sessionTaskFailed(error: error):
+                let nserror = error as NSError
+                switch nserror.code {
+                case NSURLErrorNotConnectedToInternet:
+                    throw PrivoError.noInternetConnection
+                default:
+                    throw PrivoError.networkConnectionProblem(nserror)
+                }
+                
+            default:
+                throw PrivoError.networkConnectionProblem(error.underlyingError)
+            }
+        }
+        
+        if let result = response.value {
+            return result
+        } else {
+            throw PrivoError.networkConnectionProblem(nil)
+        }
+    }
+    
     func sendAnalyticEvent(_ event: AnalyticEvent) {
         let url = PrivoInternal.configuration.commonUrl.appending(.analytic)
         session.request(url, method: .post, parameters: event, encoder: JSONParameterEncoder.default).response { r in
