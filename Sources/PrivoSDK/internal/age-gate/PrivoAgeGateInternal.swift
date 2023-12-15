@@ -175,9 +175,6 @@ internal class PrivoAgeGateInternal {
                                          countryCode: data.countryCode)
         do {
             let response = try await api.processRecheck(data: record)
-            guard let response = response else {
-                return nil
-            }
             let status = helpers.toStatus(response.action)
             let event = AgeGateEvent(status: status,
                                      userIdentifier: response.extUserId,

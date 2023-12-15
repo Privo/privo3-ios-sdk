@@ -53,7 +53,7 @@ protocol Restable {
     func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO?
     func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse?
     func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse
-    func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse?
+    func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse
     func trackCustomError(_ errorDescr: String)
     func sendAnalyticEvent(_ event: AnalyticEvent)
 }
@@ -393,19 +393,18 @@ class Rest: Restable {
         return result
     }
     
-    func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse? {
+    func processRecheck(data: RecheckStatusRecord) async throws /*(PrivoError or CustomServerErrorResponse)*/ -> AgeGateActionResponse {
         let url = String(format: "%@/recheck", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        let result: AFDataResponse<AgeGateActionResponse> = await session.request(url,
+        let response: AFDataResponse<AgeGateActionResponse> = await session.request(url,
                                          method: .put,
                                          parameters: data,
                                          encoder: JSONParameterEncoder.default,
                                          acceptableStatusCodes: Rest.acceptableStatusCodes,
                                          emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.debugDescription)
-        if let ageEstimationError = existedAgeEstimationError(result) {
+        if let ageEstimationError = existedAgeEstimationError(response) {
             throw ageEstimationError
         }
-        return result.value
+        return try trackPossibleAFErrorAndReturn(response)
     }
     
     func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
