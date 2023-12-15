@@ -45,7 +45,7 @@ protocol Restable {
     func getObjectFromTMPStorage<T: Decodable>(key: String, completionHandler: @escaping (T?) -> Void)
     func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void)
     
-    func processStatus(data: StatusRecord) async -> AgeGateStatusResponse?
+    func processStatus(data: StatusRecord) async throws -> AgeGateStatusResponse
     func generateFingerprint(fingerprint: DeviceFingerprint) async throws -> DeviceFingerprintResponse
     func getAuthSessionId() async -> String?
     func renewToken(oldToken: String, sessionId: String) async -> String?
@@ -273,16 +273,17 @@ class Rest: Restable {
         return token
     }
     
-    func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+    func processStatus(data: StatusRecord) async throws /*(PrivoError)*/ -> AgeGateStatusResponse {
         let url = PrivoInternal.configuration.ageGateBaseUrl.appending(.status)
-        let result: AFDataResponse<AgeGateStatusResponse> = await session.request(url.absoluteString,
-                                         method: .put,
-                                         parameters: data,
-                                         encoder: JSONParameterEncoder.default,
-                                         acceptableStatusCodes: Rest.acceptableStatusCodes,
-                                         emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.debugDescription)
-        return result.value
+        let response: AFDataResponse<AgeGateStatusResponse> = await session.request(
+            url.absoluteString,
+            method: .put,
+            parameters: data,
+            encoder: JSONParameterEncoder.default,
+            acceptableStatusCodes: Rest.acceptableStatusCodes,
+            emptyResponseCodes: Rest.emptyResponsesCodes
+        )
+        return try trackPossibleAFErrorAndReturn(response)
     }
     
     func processBirthDate(data: FpStatusRecord) async throws /*(PrivoError or CustomServerErrorResponse)*/ -> AgeGateActionResponse {

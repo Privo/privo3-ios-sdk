@@ -24,7 +24,7 @@ class PrivoAgeSettingsInternal {
     
     //MARK: - Internal functions
     
-    func getSettings() async throws -> AgeServiceSettings {
+    func getSettings() async throws /*(PrivoError)*/ -> AgeServiceSettings {
         let envType = PrivoInternal.settings.envType
         guard lastSettings?.0 == PrivoInternal.settings.serviceIdentifier && lastSettings?.1 == envType else {
             let settings = try await updateSettings()
@@ -39,7 +39,7 @@ class PrivoAgeSettingsInternal {
     
     //MARK: - Private functions
     
-    private func updateSettings() async throws -> AgeServiceSettings {
+    private func updateSettings() async throws /*(PrivoError)*/ -> AgeServiceSettings {
         let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
         let envType = PrivoInternal.settings.envType
         let settings = try await api.getAgeServiceSettings(serviceIdentifier: serviceIdentifier)

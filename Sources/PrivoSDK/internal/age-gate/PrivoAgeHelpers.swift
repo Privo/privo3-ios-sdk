@@ -129,7 +129,7 @@ internal class PrivoAgeHelpers {
         }
     }
     
-    func checkRequest(_ data: CheckAgeData) async throws {
+    func checkRequest(_ data: CheckAgeData) async throws /*(PrivoError or AgeGateError)*/ {
         try checkNetwork()
         try await checkUserData(userIdentifier: data.userIdentifier, nickname: data.nickname, agId: nil)
         if let (date, format) = getDateAndFormat(data) {

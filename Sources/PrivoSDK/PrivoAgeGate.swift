@@ -90,7 +90,7 @@ public class PrivoAgeGate {
     
     // TODO: documentation
     public func getStatus(userIdentifier: String?,
-                          nickname: String? = nil) async throws -> AgeGateEvent {
+                          nickname: String? = nil) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
         try ageGate.helpers.checkNetwork()
         try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: nil)
         let event = await ageGate.getStatusEvent(userIdentifier, nickname: nickname)
@@ -117,7 +117,7 @@ public class PrivoAgeGate {
     }
     
     // TODO: documentation
-    public func run(_ data: CheckAgeData) async throws -> AgeGateEvent? { // TODO: AgeGateEvent nonnil
+    public func run(_ data: CheckAgeData) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
         try await ageGate.helpers.checkRequest(data)
         let statusEvent = await ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname)
         ageGate.storage.storeInfoFromEvent(event: statusEvent)
@@ -129,13 +129,13 @@ public class PrivoAgeGate {
             ||  data.birthDateYYYY != nil
             ||  data.age != nil)
             {
-                let newEvent = await ageGate.runAgeGateByBirthDay(data)
+                let newEvent = try await ageGate.runAgeGateByBirthDay(data)
                 ageGate.storage.storeInfoFromEvent(event: newEvent)
-                return newEvent // TODO: throw exception
+                return newEvent
             } else {
-                let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: nil)
+                let event = try await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: nil)
                 ageGate.storage.storeInfoFromEvent(event: event)
-                return event // TODO: throw exception
+                return event
             }
         }
     }
@@ -166,13 +166,17 @@ public class PrivoAgeGate {
         ||  data.birthDateYYYY != nil
         ||  data.age != nil)
         {
-            let event = await ageGate.recheckAgeGateByBirthDay(data)
-            ageGate.storage.storeInfoFromEvent(event: event)
-            return event
+            if let event = await ageGate.recheckAgeGateByBirthDay(data) {
+                ageGate.storage.storeInfoFromEvent(event: event)
+                return event
+            }
+            return nil
         } else {
-            let event = await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired)
-            ageGate.storage.storeInfoFromEvent(event: event)
-            return event
+            if let event = try? await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired) {
+                ageGate.storage.storeInfoFromEvent(event: event)
+                return event
+            }
+            return nil
         }
     }
     
