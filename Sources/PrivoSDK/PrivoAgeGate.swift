@@ -159,24 +159,20 @@ public class PrivoAgeGate {
     }
     
     // TODO: documentation
-    public func recheck(_ data: CheckAgeData) async throws -> AgeGateEvent? { // TODO: AgeGateEvent nonnil
+    public func recheck(_ data: CheckAgeData) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
         try await ageGate.helpers.checkRequest(data)
         if (data.birthDateYYYYMMDD != nil
         ||  data.birthDateYYYYMM != nil
         ||  data.birthDateYYYY != nil
         ||  data.age != nil)
         {
-            if let event = await ageGate.recheckAgeGateByBirthDay(data) {
-                ageGate.storage.storeInfoFromEvent(event: event)
-                return event
-            }
-            return nil
+            let event = try await ageGate.recheckAgeGateByBirthDay(data)
+            ageGate.storage.storeInfoFromEvent(event: event)
+            return event
         } else {
-            if let event = try? await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired) {
-                ageGate.storage.storeInfoFromEvent(event: event)
-                return event
-            }
-            return nil
+            let event = try await ageGate.runAgeGate(data, prevEvent: nil, recheckRequired: .RecheckRequired)
+            ageGate.storage.storeInfoFromEvent(event: event)
+            return event
         }
     }
     

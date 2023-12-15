@@ -149,8 +149,10 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    func recheckAgeGateByBirthDay(_ data: CheckAgeData) async -> AgeGateEvent? {
-        guard let agId = storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.nickname) else { return nil }
+    func recheckAgeGateByBirthDay(_ data: CheckAgeData) async throws /*(PrivoError)*/ -> AgeGateEvent {
+        guard let agId = storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.nickname) else {
+            throw PrivoError.unknown
+        }
         let record = RecheckStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                          agId: agId,
                                          birthDate: data.birthDateYYYYMMDD,
@@ -169,15 +171,12 @@ internal class PrivoAgeGateInternal {
                                      countryCode: response.countryCode)
             let actions: [AgeGateAction] = [.Consent, .IdentityVerify, .AgeVerify]
             guard actions.contains(response.action) else { return event }
-            let newEvent = try? await runAgeGate(data, prevEvent: event, recheckRequired: nil)
+            let newEvent = try await runAgeGate(data, prevEvent: event, recheckRequired: nil)
             return newEvent
         } catch is CustomServerErrorResponse {
             _ = await permissionService.checkCameraPermission()
-            let event = try? await runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRecheckRequired)
+            let event = try await runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRecheckRequired)
             return event
-        } catch _ {
-            print("Unexpected issue in \(#function)\(#line)")
-            return nil
         }
     }
     
