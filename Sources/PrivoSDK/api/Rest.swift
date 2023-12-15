@@ -228,7 +228,7 @@ class Rest: Restable {
         }
     }
     
-    func trackPossibleAFErrorAndReturn<T>(_ response: AFDataResponse<T>) throws -> T {
+    func trackPossibleAFErrorAndReturn<T>(_ response: AFDataResponse<T>) throws /*(PrivoError)*/ -> T {
         let error: AFError? = response.error
         let description: String? = response.debugDescription
         
@@ -375,8 +375,7 @@ class Rest: Restable {
         return result.value
     }
     
-    // throws CustomServerErrorResponse or PrivoError
-    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse {
+    func processBirthDate(data: FpStatusRecord) async throws /*(PrivoError or CustomServerErrorResponse)*/ -> AgeGateActionResponse {
         let url = String(format: "%@/birthdate", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
         
         let response: AFDataResponse<AgeGateActionResponse> = await session.request(
@@ -421,7 +420,7 @@ class Rest: Restable {
         return result.value
     }
     
-    func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings {
+    func getAgeServiceSettings(serviceIdentifier: String) async throws /*(PrivoError)*/ -> AgeServiceSettings {
         guard let url = PrivoInternal.configuration.ageGateBaseUrl.appending(.settings).withQueryParam(name: "service_identifier", value: serviceIdentifier) else {
             // unreachable branch
             throw PrivoError.unknown
@@ -438,7 +437,7 @@ class Rest: Restable {
         return result.value
     }
     
-    func generateFingerprint(fingerprint: DeviceFingerprint) async throws -> DeviceFingerprintResponse {
+    func generateFingerprint(fingerprint: DeviceFingerprint) async throws /*(PrivoError)*/ -> DeviceFingerprintResponse {
         let url = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.fingerprint)
         let response: AFDataResponse<DeviceFingerprintResponse> = await session.request(
             url,
