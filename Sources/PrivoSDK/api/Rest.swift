@@ -89,13 +89,6 @@ class Rest: Restable {
         }
     }
     
-    func addValueToTMPStorage(value: String, ttl: Int? = nil, completionHandler: ((String?) -> Void)? = nil) {
-        Task.init {
-            let result = await addValueToTMPStorage(value: value, ttl: ttl)
-            completionHandler?(result)
-        }
-    }
-    
     func getObjectFromTMPStorage<T: Decodable>(key: String, completionHandler: @escaping (T?) -> Void) {
         Task.init {
             let result:T? = await getObjectFromTMPStorage(key: key)
@@ -113,85 +106,6 @@ class Rest: Restable {
     func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void) {
         Task.init {
             let result = await getServiceInfo(serviceIdentifier: serviceIdentifier)
-            completionHandler(result)
-        }
-    }
-    
-    func getAuthSessionId(completionHandler: @escaping (String?) -> Void) {
-        Task.init {
-            let result = await getAuthSessionId()
-            completionHandler(result)
-        }
-    }
-    
-    func renewToken(oldToken: String, sessionId: String, completionHandler: @escaping (String?) -> Void) {
-        Task.init {
-            let result = await renewToken(oldToken: oldToken, sessionId: sessionId)
-            completionHandler(result)
-        }
-    }
-    
-    func processStatus(data: StatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
-        Task.init {
-            let result = await processStatus(data: data)
-            completionHandler(result)
-        }
-    }
-    
-    func processBirthDate(data: FpStatusRecord,
-                          completionHandler: @escaping (AgeGateActionResponse?) -> Void,
-                          ageEstimationHandler: @escaping (CustomServerErrorResponse) -> Void) {
-        Task.init {
-            do {
-                let result = try await processBirthDate(data: data)
-                completionHandler(result)
-            } catch let error {
-                if let error = error as? CustomServerErrorResponse {
-                    ageEstimationHandler(error)
-                }
-            }
-        }
-    }
-    
-    func processRecheck(data: RecheckStatusRecord,
-                        completionHandler: @escaping (AgeGateActionResponse?) -> Void,
-                        ageEstimationHandler: @escaping (CustomServerErrorResponse) -> Void) {
-        Task.init {
-            do {
-                let result = try await processRecheck(data: data)
-                completionHandler(result)
-            } catch let error {
-                if let error = error as? CustomServerErrorResponse {
-                    ageEstimationHandler(error)
-                }
-            }
-        }
-    }
-    
-    func processLinkUser(data: LinkUserStatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
-        Task {
-            let result = try? await processLinkUser(data: data)
-            completionHandler(result)
-        }
-    }
-    
-    func getAgeServiceSettings(serviceIdentifier: String, completionHandler: @escaping (AgeServiceSettings?) -> Void) {
-        Task.init {
-            let result = try? await getAgeServiceSettings(serviceIdentifier: serviceIdentifier)
-            completionHandler(result)
-        }
-    }
-    
-    func getAgeVerification(verificationIdentifier: String, completionHandler: @escaping (AgeVerificationTO?) -> Void) {
-        Task.init {
-            let result = await getAgeVerification(verificationIdentifier: verificationIdentifier)
-            completionHandler(result)
-        }
-    }
-    
-    func generateFingerprint(fingerprint: DeviceFingerprint, completionHandler: @escaping (DeviceFingerprintResponse?) -> Void) {
-        Task {
-            let result = try? await generateFingerprint(fingerprint: fingerprint)
             completionHandler(result)
         }
     }

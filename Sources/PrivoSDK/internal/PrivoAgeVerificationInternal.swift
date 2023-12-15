@@ -45,13 +45,6 @@ internal class PrivoAgeVerificationInternal {
         keychain.set(key: key, value: verificationIdentifier)
     }
     
-    func getLastEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeVerificationEvent) -> Void) {
-        Task.init {
-            let result = await getLastEvent(userIdentifier)
-            completionHandler(result)
-        }
-    }
-    
     func getLastEvent(_ userIdentifier: String?) async -> AgeVerificationEvent {
         let key = "\(AGE_VERIFICATION_EVENT_KEY)-\(userIdentifier ?? "")"
         guard let verificationIdentifier = keychain.get(key) else { return .init(status: .Undefined, profile: nil) }
