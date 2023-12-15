@@ -191,12 +191,8 @@ class Rest: Restable {
     
     func generateFingerprint(fingerprint: DeviceFingerprint, completionHandler: @escaping (DeviceFingerprintResponse?) -> Void) {
         Task {
-            do {
-                let result = try await generateFingerprint(fingerprint: fingerprint)
-                completionHandler(result)
-            } catch {
-                completionHandler(nil)
-            }
+            let result = try? await generateFingerprint(fingerprint: fingerprint)
+            completionHandler(result)
         }
     }
     

@@ -23,12 +23,12 @@ class FpIdService: FpIdentifiable {
     }
     
     var fpId: String {
-        get async throws {
+        get async throws /*(PrivoError)*/ {
             return try await getFpId()
         }
     }
     
-    private func getFpId() async throws -> String {
+    private func getFpId() async throws /*(PrivoError)*/ -> String {
         if let fpId = storage.fpId {
             return fpId
         }

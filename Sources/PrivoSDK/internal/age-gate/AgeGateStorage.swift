@@ -86,7 +86,7 @@ class AgeGateStorage: FpIdStorage {
             return keychain.get(getFpIdKey())
         }
         set {
-            if let newValue {
+            if let newValue = newValue {
                 keychain.set(key: getFpIdKey(), value: newValue)
             } else {
                 keychain.delete(getFpIdKey())
