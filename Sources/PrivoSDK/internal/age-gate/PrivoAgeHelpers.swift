@@ -108,11 +108,11 @@ internal class PrivoAgeHelpers {
         return false
     }
     
-    func checkNetwork() throws {
+    func checkNetwork() throws /*(PrivoError)*/ {
         try URLSession.checkNetwork()
     }
     
-    func checkUserData(userIdentifier: String?, nickname: String?, agId: String?) async throws {
+    func checkUserData(userIdentifier: String?, nickname: String?, agId: String?) async throws /*(AgeGateError)*/ {
         if let userIdentifier = userIdentifier, userIdentifier.isEmpty {
             throw AgeGateError.notAllowedEmptyStringUserIdentifier
         }

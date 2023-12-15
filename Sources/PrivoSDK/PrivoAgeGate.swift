@@ -205,10 +205,10 @@ public class PrivoAgeGate {
     // TODO: documentation
     public func linkUser(userIdentifier: String,
                          agId: String,
-                         nickname: String?) async throws -> AgeGateEvent {
+                         nickname: String?) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
         try ageGate.helpers.checkNetwork()
         try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: agId)
-        let event = await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
+        let event = try await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
         ageGate.storage.storeInfoFromEvent(event: event)
         return event
     }

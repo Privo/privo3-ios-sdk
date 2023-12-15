@@ -51,7 +51,7 @@ protocol Restable {
     func renewToken(oldToken: String, sessionId: String) async -> String?
     func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings
     func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO?
-    func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse?
+    func processLinkUser(data: LinkUserStatusRecord) async throws -> AgeGateStatusResponse
     func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse
     func trackCustomError(_ errorDescr: String)
@@ -169,8 +169,8 @@ class Rest: Restable {
     }
     
     func processLinkUser(data: LinkUserStatusRecord, completionHandler: @escaping (AgeGateStatusResponse?) -> Void) {
-        Task.init {
-            let result = await processLinkUser(data: data)
+        Task {
+            let result = try? await processLinkUser(data: data)
             completionHandler(result)
         }
     }
@@ -407,16 +407,17 @@ class Rest: Restable {
         return try trackPossibleAFErrorAndReturn(response)
     }
     
-    func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
+    func processLinkUser(data: LinkUserStatusRecord) async throws /*(Privo)*/ -> AgeGateStatusResponse {
         let url = String(format: "%@/link-user", PrivoInternal.configuration.ageGateBaseUrl.absoluteString)
-        let result: AFDataResponse<AgeGateStatusResponse> = await session.request(url,
-                                         method: .post,
-                                         parameters: data,
-                                         encoder: JSONParameterEncoder.default,
-                                         acceptableStatusCodes: Rest.acceptableStatusCodes,
-                                         emptyResponseCodes: Rest.emptyResponsesCodes)
-        trackPossibleAFError(result.error, result.debugDescription)
-        return result.value
+        let response: AFDataResponse<AgeGateStatusResponse> = await session.request(
+            url,
+            method: .post,
+            parameters: data,
+            encoder: JSONParameterEncoder.default,
+            acceptableStatusCodes: Rest.acceptableStatusCodes,
+            emptyResponseCodes: Rest.emptyResponsesCodes
+        )
+        return try trackPossibleAFErrorAndReturn(response)
     }
     
     func getAgeServiceSettings(serviceIdentifier: String) async throws /*(PrivoError)*/ -> AgeServiceSettings {

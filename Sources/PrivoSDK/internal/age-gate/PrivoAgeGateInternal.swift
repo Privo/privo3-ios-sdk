@@ -69,7 +69,7 @@ internal class PrivoAgeGateInternal {
         return ageGateEvent
     }
     
-    func linkUser(userIdentifier: String, agId: String, nickname: String?) async -> AgeGateEvent {
+    func linkUser(userIdentifier: String, agId: String, nickname: String?) async throws /*(PrivoError)*/ -> AgeGateEvent {
         let entities = storage.getAgeGateStoredEntities()
         let isKnownAgId = entities.contains { $0.agId == agId }
         if (!isKnownAgId) {
@@ -85,16 +85,7 @@ internal class PrivoAgeGateInternal {
         let record = LinkUserStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                           agId: agId,
                                           extUserId: userIdentifier)
-        let response = await api.processLinkUser(data: record)
-        guard let response = response else {
-            let event = AgeGateEvent(status: AgeGateStatus.Undefined,
-                                     userIdentifier: userIdentifier,
-                                     nickname: nickname,
-                                     agId: agId,
-                                     ageRange: nil,
-                                     countryCode: nil)
-            return event
-        }
+        let response = try await api.processLinkUser(data: record)
         let event = AgeGateEvent(status: response.status.toStatus(),
                                  userIdentifier: response.extUserId,
                                  nickname: nickname,
