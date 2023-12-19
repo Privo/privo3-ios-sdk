@@ -172,6 +172,22 @@ final class PrivoSDKTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 5.0)
     }
     
+    func test_age_gate_get_status_async_throws__empty_user_id() async throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        let rest = RestMock()
+        
+        // GIVEN
+        let ageGate = PrivoAgeGate(api: rest)
+        
+        // WHEN
+        do {
+            _ = try await ageGate.getStatus(userIdentifier: "")
+        // THEN
+        } catch let ageGateError as AgeGateError {
+            XCTAssert(ageGateError == .notAllowedEmptyStringUserIdentifier)
+        }
+    }
+    
     func test_age_gate_run_nil__incorrect_age() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         let rest = RestMock()
@@ -199,6 +215,31 @@ final class PrivoSDKTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 5.0)
     }
     
+    func test_age_gate_run_async_throws__incorrect_age() async throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        let rest = RestMock()
+        
+        // GIVEN
+        let checkAgeData = CheckAgeData(
+            userIdentifier: UUID().uuidString,
+            birthDateYYYYMMDD: nil,
+            birthDateYYYYMM: nil,
+            birthDateYYYY: "1980",
+            age: 3000, // .incorrectAge
+            countryCode: "US",
+            nickname: nil
+        )
+        let ageGate = PrivoAgeGate(api: rest)
+        
+        // WHEN
+        do {
+            _ = try await ageGate.run(checkAgeData)
+        // THEN
+        } catch let ageGateError as AgeGateError {
+            XCTAssert(ageGateError == .incorrectAge)
+        }
+    }
+    
     func test_age_gate_recheck_nil__incorrect_birthdate() throws {
         Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
         let rest = RestMock()
@@ -224,6 +265,31 @@ final class PrivoSDKTests: XCTestCase {
         }
         
         wait(for: [completionExpectation], timeout: 5.0)
+    }
+    
+    func test_age_gate_recheck_async_throws__incorrect_birthdate() async throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        let rest = RestMock()
+        
+        // GIVEN
+        let checkAgeData = CheckAgeData(
+            userIdentifier: UUID().uuidString,
+            birthDateYYYYMMDD: nil,
+            birthDateYYYYMM: nil,
+            birthDateYYYY: "one thousand nine hundred eighty", // .incorrectDateOfBirht
+            age: 30,
+            countryCode: "US",
+            nickname: UUID().uuidString
+        )
+        let ageGate = PrivoAgeGate(api: rest)
+        
+        // WHEN
+        do {
+            _ = try await ageGate.recheck(checkAgeData)
+        } catch let ageGateError as AgeGateError {
+            // THEN
+            XCTAssert(ageGateError == .incorrectDateOfBirht)
+        }
     }
     
     func test_age_gate_link_user_throws__empty_agid() throws {
@@ -254,8 +320,26 @@ final class PrivoSDKTests: XCTestCase {
         
         wait(for: [completionExpectation], timeout: 5.0)
     }
+    
+    func test_age_gate_link_user_async_throws__empty_agid() async throws {
+        Privo.initialize(settings: PrivoSettings(serviceIdentifier: "privolock", envType: .Dev))
+        let rest = RestMock()
+        
+        // GIVEN
+        let ageGate = PrivoAgeGate(api: rest)
+        
+        // WHEN
+        do {
+            _ = try await ageGate.linkUser(
+                userIdentifier: UUID().uuidString,
+                agId: "",
+                nickname: nil)
+        // THEN
+        } catch let ageGateError as AgeGateError {
+            XCTAssert(ageGateError == .notAllowedEmptyStringAgId)
+        }
+    }
 }
-
 
 fileprivate extension HTTPURLResponse {
     convenience init?(url: URL, statusCode: Int, headerFields: [String: String] = [:]) {
