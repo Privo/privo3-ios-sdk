@@ -56,13 +56,13 @@ class RestMock: Restable {
     func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void) {
         completionHandler(nil)
     }
-    
-    func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
-        return .mockUnavailable
+
+    func processStatus(data: StatusRecord) async throws -> AgeGateStatusResponse {
+        throw PrivoError.noInternetConnection
     }
     
-    func generateFingerprint(fingerprint: DeviceFingerprint) async -> DeviceFingerprintResponse? {
-        return .mockSuccess
+    func generateFingerprint(fingerprint: DeviceFingerprint) async throws -> DeviceFingerprintResponse {
+        throw PrivoError.noInternetConnection
     }
     
     func getAuthSessionId() async -> String? {
@@ -73,24 +73,24 @@ class RestMock: Restable {
         return nil
     }
     
-    func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings? {
-        return .mockSuccess
+    func getAgeServiceSettings(serviceIdentifier: String) async throws -> AgeServiceSettings {
+        throw PrivoError.noInternetConnection
     }
     
     func getAgeVerification(verificationIdentifier: String) async -> AgeVerificationTO? {
         return nil
     }
     
-    func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
-        return .mockUnavailable
+    func processLinkUser(data: LinkUserStatusRecord) async throws -> AgeGateStatusResponse {
+        throw PrivoError.noInternetConnection
     }
     
-    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
-        return nil
+    func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse {
+        throw PrivoError.noInternetConnection
     }
     
-    func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse? {
-        return nil
+    func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse {
+        throw PrivoError.noInternetConnection
     }
     
     func trackCustomError(_ errorDescr: String) {}

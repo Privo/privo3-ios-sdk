@@ -62,18 +62,22 @@ final class PrivoSDKTests: XCTestCase {
         
         // rest results available status, but...
         class TestRestMock: RestMock {
-            override func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+            override func processStatus(data: StatusRecord) async -> AgeGateStatusResponse {
                 .mockAvailable
             }
             
-            override func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse? {
+            override func processLinkUser(data: LinkUserStatusRecord) async -> AgeGateStatusResponse {
                 .mockAvailable
             }
         }
         
         // ... fingerprint will be lost.
         class FpIdServiceMock: FpIdentifiable {
-            var fpId: String? { return nil }
+            var fpId: String {
+                get throws {
+                    throw PrivoError.unknown
+                }
+            }
         }
 
         let rest = TestRestMock()
@@ -100,18 +104,22 @@ final class PrivoSDKTests: XCTestCase {
         
         // rest results available status, but...
         class TestRestMock: RestMock {
-            override func processStatus(data: StatusRecord) async -> AgeGateStatusResponse? {
+            override func processStatus(data: StatusRecord) async -> AgeGateStatusResponse {
                 .mockUnavailable
             }
             
-            override func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse? {
+            override func processBirthDate(data: FpStatusRecord) async throws -> AgeGateActionResponse {
                 return .mockAvailable
             }
         }
         
         // ... fingerprint will be lost.
         class FpIdServiceMock: FpIdentifiable {
-            var fpId: String? { return nil }
+            var fpId: String {
+                get throws {
+                    throw PrivoError.unknown
+                }
+            }
         }
 
         let rest = TestRestMock()
