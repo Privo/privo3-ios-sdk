@@ -1,4 +1,28 @@
+import Foundation
 
+/// You also will need to get credentials from PRIVO to work with this SDK.
+///
+/// ### Init Privo SDK Sample
+///
+///   @main
+///   struct DemoApp: App {
+///     init() {
+///       // You can add your settings rirht here
+///       Privo.initialize(
+///         settings: PrivoSettings(
+///                     serviceIdentifier: "{{value}}",
+///                     envType: .Int,
+///                     apiKey: "{{value}}"
+///                   )
+///       )
+///     }
+///     var body: some Scene {
+///       WindowGroup {
+///         ContentView()
+///       }
+///     }
+///   }
+///
 public class Privo {
     
     //MARK: - Public properties
@@ -13,6 +37,14 @@ public class Privo {
     }
     
     //MARK: - Public functions
+    
+    /// Init PrivoSDK with credentials provided by PRIVO.
+    ///
+    /// Make sure that you have initialized the PRIVO SDK before any usage of it. It is a good idea to do this immediately after launching the application.
+    ///
+    ///     Privo.initialize( settings: PrivoSettings(serviceIdentifier: "{{value}}", envType: .Prod,  apiKey: "{{value}}"))
+    ///
+    /// - Parameter settings
     public static func initialize(settings: PrivoSettings) {
         PrivoInternal.initialize(settings: settings)
     }

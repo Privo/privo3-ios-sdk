@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 public struct PrivoVerificationButton<Label> : View where Label : View {
     
     //MARK: - Public properties
@@ -28,6 +27,16 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
     
     //MARK: - Public initialisers
     
+    
+    /// Constructor
+    ///
+    ///     PrivoVerificationButton(label: {
+    ///       Text("Show Verification")
+    ///     }, onFinish: {
+    ///       events in
+    ///       self.events = events
+    ///     }, profile: nil).padding()
+    ///
     public init(@ViewBuilder label: () -> Label,
                 profile: UserVerificationProfile? = nil,
                 onFinish: (([VerificationEvent]) -> Void)? = nil,
@@ -65,7 +74,28 @@ public struct PrivoVerificationButton<Label> : View where Label : View {
     
 }
 
-
+/// ### Identity Verification SDK example
+///
+///     let profile = UserVerificationProfile(
+///       firstName: "{{value}}",
+///       lastName: "{{value}}",
+///       birthDateYYYYMMDD: "1970-01-01",
+///       email: "{{value}}",
+///       postalCode: "{{value}}",
+///       phone: "{{value}}",
+///       partnerDefinedUniqueID: "{{value}}",
+///     )
+///     Privo.verification.showVerificationModal(profile) {
+///         verificationEvents in
+///         for verificationEvent in verificationEvents {
+///             verificationEvent.event
+///             verificationEvent.result
+///             verificationEvent.data
+///             verificationEvent.errorCode
+///             verificationEvent.errorMessage
+///         }
+///     }
+///
 public class PrivoVerification {
     
     //MARK: - Private properties
@@ -82,6 +112,15 @@ public class PrivoVerification {
     
     //MARK: - Public functions
     
+    /// Used to show PRIVO Verification Modal Dialog
+    ///
+    ///       Privo.verification.showVerification(profile: UserVerificationProfile) {
+    ///         (verificationEvents: [VerificationEvent]) in
+    ///       }
+    ///
+    /// - Parameters:
+    ///   - profile
+    ///   - completion: closure which used to handle the result of an asynchronous operation.
     public func showVerification(_ profile: UserVerificationProfile?,
                                  completion: (([VerificationEvent]) -> Void)?) {
         Task.init(priority: .userInitiated) { @MainActor in
