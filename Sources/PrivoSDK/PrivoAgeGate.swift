@@ -88,7 +88,11 @@ public class PrivoAgeGate {
         }
     }
     
-    // TODO: documentation
+    /// The method allows checking the existing Age Gate status.
+    /// - Parameters:
+    ///   - userIdentifier: external user identifier (please don't use empty string ("") as a value. It will cause an error. We support real values or nil if you don't have it)
+    ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
+    /// - Returns: AgeGateEvent
     public func getStatus(userIdentifier: String?,
                           nickname: String? = nil) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
         try ageGate.helpers.checkNetwork()
@@ -116,7 +120,10 @@ public class PrivoAgeGate {
         }
     }
     
-    // TODO: documentation
+    
+    /// The method runs the Age Gate check. If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
+    /// - Parameter data:
+    /// - Returns: AgeGateEvent
     public func run(_ data: CheckAgeData) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
         try await ageGate.helpers.checkRequest(data)
         let statusEvent = await ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname)
@@ -158,7 +165,9 @@ public class PrivoAgeGate {
         }
     }
     
-    // TODO: documentation
+    /// The method allows rechecking data if the birth date provided by a user was updated.
+    /// - Parameter data:
+    /// - Returns: AgeGateEvent
     public func recheck(_ data: CheckAgeData) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
         try await ageGate.helpers.checkRequest(data)
         if (data.birthDateYYYYMMDD != nil
@@ -202,7 +211,14 @@ public class PrivoAgeGate {
         }
     }
     
-    // TODO: documentation
+    /// The method will link user to specified userIdentifier.
+    /// It's used in multi-user flow, when account creation (on partner side) happens after age-gate.
+    /// Please note that linkUser can be used only for users that doesn't have userIdentifier yet. You can't change userIdentifier if user already have it.
+    /// - Parameters:
+    ///   - userIdentifier: External user identifier. Please don't use empty string ("") as a value. It will cause an error. We support real values or null if you don't have it
+    ///   - agId: Age gate identifier that you get as a response from sdk on previous steps.
+    ///   - nickname: Please use only in case of multi-user integration. Please don't use empty string "" in it.
+    /// - Returns: AgeGateEvent
     public func linkUser(userIdentifier: String,
                          agId: String,
                          nickname: String?) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
