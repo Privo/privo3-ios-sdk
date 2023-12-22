@@ -143,19 +143,7 @@ class Rest: Restable {
         let description: String? = response.debugDescription
         
         if let error = error {
-            let analyticErrorEvent = AnalyticEventErrorData(
-                errorMessage: error.errorDescription,
-                response: description,
-                errorCode: error.responseCode,
-                privoSettings: nil
-            )
-            
-            let encoder = JSONEncoder()
-            if  let jsonData = try? encoder.encode(analyticErrorEvent) {
-                let jsonString = String(decoding: jsonData, as: UTF8.self)
-                let analyticEvent = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
-                sendAnalyticEvent(analyticEvent)
-            }
+            trackPossibleAFError(error, description)
             
             switch error {
             case let .sessionTaskFailed(error: error):
