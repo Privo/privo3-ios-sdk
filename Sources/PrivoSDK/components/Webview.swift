@@ -135,7 +135,10 @@ struct Webview: UIViewRepresentable {
         }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            decisionHandler(.allow)
+            var result: WKNavigationActionPolicy = .allow
+            defer {
+                decisionHandler(result)
+            }
             if let url = navigationAction.request.url?.absoluteString,
                let finishCriteria = finishCriteria,
                let onFinish = onFinish {
@@ -147,6 +150,16 @@ struct Webview: UIViewRepresentable {
             if let url = navigationAction.request.url,
                let scheme = url.scheme {
                 if (scheme.lowercased() == "mailto") {
+                    result = .cancel
+                } else if (scheme.lowercased().starts(with: "http")
+                       && navigationAction.navigationType == .linkActivated
+                       && url.host?.replacingOccurrences(of: "www.", with: "") == "privo.com")
+                {
+                    // if user-interaction link inside webview was activated, for example, "Privacy Policy", "Terms of Use" links.
+                    result = .cancel
+                }
+                
+                if result == .cancel {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
                     return
                 }
