@@ -13,7 +13,6 @@ public enum PrivoError: Error {
     case networkConnectionProblem(_ error: Error?)
     
     case cancelled
-    case unknown
 }
 
 public enum AgeGateError: Error {
