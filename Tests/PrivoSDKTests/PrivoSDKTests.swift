@@ -75,7 +75,7 @@ final class PrivoSDKTests: XCTestCase {
         class FpIdServiceMock: FpIdentifiable {
             var fpId: String {
                 get throws {
-                    throw PrivoError.unknown
+                    throw PrivoError.noInternetConnection
                 }
             }
         }
@@ -117,7 +117,7 @@ final class PrivoSDKTests: XCTestCase {
         class FpIdServiceMock: FpIdentifiable {
             var fpId: String {
                 get throws {
-                    throw PrivoError.unknown
+                    throw PrivoError.noInternetConnection
                 }
             }
         }
