@@ -190,17 +190,28 @@ internal class PrivoAgeGateInternal {
                                                 data: data,
                                                 redirectUrl: redirectUrl)
         let targetPage = helpers.getStatusTargetPage(prevEvent?.status, recheckRequired: recheckRequired)
-        let result: AgeGateEvent? = await withCheckedContinuation { promise in
+        let pseudoCancelEvent = AgeGateEvent(
+            status: .Canceled,
+            userIdentifier: nil,
+            nickname: nil,
+            agId: nil,
+            ageRange: nil,
+            countryCode: nil
+        )
+        let result: AgeGateEvent = await withCheckedContinuation { promise in
             Task.init { @MainActor [weak self] in
                 guard let self = self else {
-                    promise.resume(returning: nil)
+                    promise.resume(returning: pseudoCancelEvent)
                     return
                 }
                 self.app.showView(false, content: {
                     AgeGateView(ageGateData: ageGateData,
                                 targetPage: targetPage,
                                 onFinish: { [weak self] events in
-                        guard let self = self else { promise.resume(returning: nil); return }
+                        guard let self = self else {
+                            promise.resume(returning: pseudoCancelEvent)
+                            return
+                        }
                         for e in events {
                             if (e.status == .IdentityVerified || e.status == .AgeVerified) {
                                  let result = await self.processStatus(userIdentifier: e.userIdentifier,
@@ -212,7 +223,8 @@ internal class PrivoAgeGateInternal {
                             }
                         }
                         if events.isEmpty {
-                            promise.resume(returning: nil)
+                            // unreachable case
+                            promise.resume(returning: pseudoCancelEvent)
                         }
                         await self.hide()
                      })
@@ -224,11 +236,7 @@ internal class PrivoAgeGateInternal {
             throw PrivoError.cancelled
         }
         
-        if let result = result {
-            return result
-        } else {
-            throw PrivoError.unknown
-        }
+        return result
     }
     
     func showAgeGateIdentifier(userIdentifier: String?, nickname: String?) async {
