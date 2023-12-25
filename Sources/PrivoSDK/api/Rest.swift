@@ -75,7 +75,7 @@ class Rest: Restable {
     private static let putComponent = "put"
     private static let sessionID = "session_id"
     private static let acceptableStatusCodes: Set<Int> = [200, 204, 205]
-    private static let emptyResponsesCodes: Set<Int> = .init([200,204,205])
+    private static let emptyResponsesCodes: Set<Int> = acceptableStatusCodes
     
     private let urlConfig: URLSessionConfiguration
     private let session: Session
