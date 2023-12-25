@@ -151,9 +151,13 @@ class Rest: Restable {
                 switch nserror.code {
                 case NSURLErrorNotConnectedToInternet:
                     throw PrivoError.noInternetConnection
+                case NSURLErrorCancelled:
+                    throw PrivoError.cancelled
                 default:
                     throw PrivoError.networkConnectionProblem(nserror)
                 }
+            case .explicitlyCancelled:
+                throw PrivoError.cancelled
                 
             default:
                 throw PrivoError.networkConnectionProblem(error.underlyingError)
@@ -355,6 +359,7 @@ class Rest: Restable {
         guard let data = response.data,
               let customServiceError = try? JSONDecoder().decode(CustomServerErrorResponse.self, from: data),
               customServiceError.code == CustomServerErrorResponse.AGE_ESTIMATION_ERROR else { return nil }
+        
         return customServiceError
     }
 

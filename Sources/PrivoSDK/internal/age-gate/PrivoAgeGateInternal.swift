@@ -217,6 +217,10 @@ internal class PrivoAgeGateInternal {
             }
         }
         
+        if Task.isCancelled {
+            throw PrivoError.cancelled
+        }
+        
         if let result = result {
             return result
         } else {

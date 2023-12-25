@@ -12,6 +12,7 @@ public enum PrivoError: Error {
     case noInternetConnection
     case networkConnectionProblem(_ error: Error?)
     
+    case cancelled
     case unknown
 }
 
