@@ -72,7 +72,6 @@ public class PrivoAgeGate {
     ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
     ///   - completionHandler: closure which used to handle the result of an asynchronous operation and takes as input argument.
     ///   - errorHandler: optional parameter with default value nil. Called instead of the completionHandler when an error occurs. Takes an Error instance as input argument.
-    @available(*, renamed: "getStatus(userIdentifier:nickname:)")
     public func getStatus(userIdentifier: String?,
                           nickname: String? = nil,
                           completionHandler: @escaping (AgeGateEvent) -> Void,
@@ -106,7 +105,6 @@ public class PrivoAgeGate {
     /// - Parameters:
     ///   - data
     ///   - completionHandler: A closure to execute. Nil indicates a failure has occurred.
-    @available(*, renamed: "run(_:)")
     public func run(_ data: CheckAgeData,
                     completionHandler: @escaping (AgeGateEvent?) -> Void)
     {
@@ -151,7 +149,6 @@ public class PrivoAgeGate {
     /// - Parameters:
     ///   - data
     ///   - completionHandler: A closure to execute. Nil indicates a failure has occurred.
-    @available(*, renamed: "recheck(_:)")
     public func recheck(_ data: CheckAgeData,
                         completionHandler: @escaping (AgeGateEvent?) -> Void)
     {
@@ -194,7 +191,6 @@ public class PrivoAgeGate {
     ///   - nickname: Please use only in case of multi-user integration. Please don't use empty string "" in it.
     ///   - completionHandler: Closure which used to handle the result of an asynchronous operation.
     ///   - errorHandler: Called instead of the completionHandler when an error occurs.
-    @available(*, renamed: "linkUser(userIdentifier:agId:nickname:errorHandler:)")
     public func linkUser(userIdentifier: String,
                          agId: String,
                          nickname: String?,
