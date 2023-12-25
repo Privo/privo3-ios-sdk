@@ -324,11 +324,7 @@ class Rest: Restable {
     }
     
     func getAgeServiceSettings(serviceIdentifier: String) async throws /*(PrivoError)*/ -> AgeServiceSettings {
-        guard let url = PrivoInternal.configuration.ageGateBaseUrl.appending(.settings).withQueryParam(name: "service_identifier", value: serviceIdentifier) else {
-            // unreachable branch
-            throw PrivoError.unknown
-        }
-        
+        let url = PrivoInternal.configuration.ageGateBaseUrl.appending(.settings).withQueryParam(name: "service_identifier", value: serviceIdentifier)
         let response: AFDataResponse<AgeServiceSettings> = await session.request(url, acceptableStatusCodes: Rest.acceptableStatusCodes)
         return try trackPossibleAFErrorAndReturn(response)
     }

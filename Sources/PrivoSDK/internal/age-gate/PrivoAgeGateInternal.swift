@@ -184,7 +184,7 @@ internal class PrivoAgeGateInternal {
                     prevEvent: AgeGateEvent?,
                     recheckRequired: AgeGateInternalAction?) async throws /*(PrivoError)*/ -> AgeGateEvent {
         let state = try await getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname)
-        let redirectUrl = PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString
+        let redirectUrl = PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading").absoluteString
         let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                                 state: state,
                                                 data: data,

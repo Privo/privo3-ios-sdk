@@ -43,11 +43,11 @@ struct VerificationView : View {
 
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let verificationUrl = PrivoInternal.configuration.verificationUrl
-             .withPath("/index.html")?
-             .withQueryParam(name: "privo_state_id", value: stateId)?
-             .withQueryParam(name: "service_identifier", value: PrivoInternal.settings.serviceIdentifier)?
+             .withPath("/index.html")
+             .withQueryParam(name: "privo_state_id", value: stateId)
+             .withQueryParam(name: "service_identifier", value: PrivoInternal.settings.serviceIdentifier)
              .withPath("#/intro")
-        return .init(url: verificationUrl!,
+        return .init(url: verificationUrl,
                      showCloseIcon: false,
                      printCriteria: "/print",
                      finishCriteria: "verification-loading",
@@ -132,7 +132,7 @@ struct VerificationStateView : View {
 
 struct InternalPrivoVerification {
     
-    private let redirectUrl = PrivoInternal.configuration.verificationUrl.withPath("/#/verification-loading")!.absoluteString
+    private let redirectUrl = PrivoInternal.configuration.verificationUrl.withPath("/#/verification-loading").absoluteString
     private let api: Restable = Rest.shared
 
     func storeState(profile: UserVerificationProfile?, completion: @escaping (String?) -> Void ) -> Void {
