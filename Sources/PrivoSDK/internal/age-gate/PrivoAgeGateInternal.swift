@@ -192,7 +192,10 @@ internal class PrivoAgeGateInternal {
         let targetPage = helpers.getStatusTargetPage(prevEvent?.status, recheckRequired: recheckRequired)
         let result: AgeGateEvent? = await withCheckedContinuation { promise in
             Task.init { @MainActor [weak self] in
-                guard let self = self else { return }
+                guard let self = self else {
+                    promise.resume(returning: nil)
+                    return
+                }
                 self.app.showView(false, content: {
                     AgeGateView(ageGateData: ageGateData,
                                 targetPage: targetPage,
