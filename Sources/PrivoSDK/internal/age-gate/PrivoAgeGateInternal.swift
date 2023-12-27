@@ -149,9 +149,9 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    func recheckAgeGateByBirthDay(_ data: CheckAgeData) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
+    func recheckAgeGateByBirthDay(_ data: CheckAgeData) async throws /*(PrivoError)*/ -> AgeGateEvent {
         guard let agId = storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.nickname) else {
-            throw AgeGateError.agIdNotFound
+            throw PrivoError.incorrectInputData(AgeGateError.agIdNotFound)
         }
         let record = RecheckStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                          agId: agId,

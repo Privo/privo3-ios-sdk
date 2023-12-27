@@ -13,8 +13,10 @@ public enum PrivoError: Error {
     case networkConnectionProblem(_ error: Error?)
     
     case cancelled
+    case incorrectInputData(_ error: Error)
 }
 
+/// Could be a part of the ``PrivoError.incorrectInputData(_)`` error.
 public enum AgeGateError: Error {
     case incorrectDateOfBirht
     case incorrectAge

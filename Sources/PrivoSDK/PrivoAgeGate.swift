@@ -71,7 +71,7 @@ public class PrivoAgeGate {
     ///   - userIdentifier: external user identifier (please don't use empty string ("") as a value. It will cause an error. We support real values or nil if you don't have it)
     ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
     ///   - completionHandler: closure which used to handle the result of an asynchronous operation and takes as input argument.
-    ///   - errorHandler: optional parameter with default value nil. Called instead of the completionHandler when an error occurs. Takes an Error instance as input argument.
+    ///   - errorHandler: Called instead of the completionHandler when an error occurs. Takes an Error instance as input argument of two types errors: ``PrivoError`` or ``AgeGateError``.
     public func getStatus(userIdentifier: String?,
                           nickname: String? = nil,
                           completionHandler: @escaping (AgeGateEvent) -> Void,
@@ -81,6 +81,9 @@ public class PrivoAgeGate {
             do {
                 let result = try await getStatus(userIdentifier: userIdentifier, nickname: nickname)
                 completionHandler(result)
+            } catch let PrivoError.incorrectInputData(incorrectInputDataError) {
+                // for backward compatibility
+                errorHandler?(incorrectInputDataError)
             } catch {
                 errorHandler?(error)
             }
@@ -91,9 +94,12 @@ public class PrivoAgeGate {
     /// - Parameters:
     ///   - userIdentifier: external user identifier (please don't use empty string ("") as a value. It will cause an error. We support real values or nil if you don't have it)
     ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
+    /// - Throws: only one exception type PrivoError.
+    ///     - If cancelled throws ``PrivoError.cancelled``.
+    ///     - Throws ``PrivoError.incorrectInputData(AgeGateError)`` if the data submitted for processing is not correct.
     /// - Returns: AgeGateEvent
     public func getStatus(userIdentifier: String?,
-                          nickname: String? = nil) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
+                          nickname: String? = nil) async throws /*(PrivoError)*/ -> AgeGateEvent {
         try ageGate.helpers.checkNetwork()
         try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: nil)
         let event = await ageGate.getStatusEvent(userIdentifier, nickname: nickname)
@@ -121,8 +127,11 @@ public class PrivoAgeGate {
     
     /// The method runs the Age Gate check. If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
     /// - Parameter data:
+    /// - Throws: only one exception type PrivoError.
+    ///     - If cancelled throws ``PrivoError.cancelled``.
+    ///     - Throws ``PrivoError.incorrectInputData(AgeGateError)`` if the data submitted for processing is not correct.
     /// - Returns: AgeGateEvent
-    public func run(_ data: CheckAgeData) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
+    public func run(_ data: CheckAgeData) async throws /*(PrivoError)*/ -> AgeGateEvent {
         try await ageGate.helpers.checkRequest(data)
         let statusEvent = await ageGate.getStatusEvent(data.userIdentifier, nickname: data.nickname)
         ageGate.storage.storeInfoFromEvent(event: statusEvent)
@@ -164,8 +173,12 @@ public class PrivoAgeGate {
     
     /// The method allows rechecking data if the birth date provided by a user was updated.
     /// - Parameter data:
+    /// - Throws: only one exception type PrivoError.
+    ///     - If cancelled throws ``PrivoError.cancelled``.
+    ///     - Throws ``PrivoError.incorrectInputData(AgeGateError)`` if the data submitted for processing is not correct.
+    ///     - Could throws ``PrivoError.incorrectInputData(AgeGateError.agIdNotFound)`` (follow related description to get more information).
     /// - Returns: AgeGateEvent
-    public func recheck(_ data: CheckAgeData) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
+    public func recheck(_ data: CheckAgeData) async throws /*(PrivoError)*/ -> AgeGateEvent {
         try await ageGate.helpers.checkRequest(data)
         if (data.birthDateYYYYMMDD != nil
         ||  data.birthDateYYYYMM != nil
@@ -190,7 +203,7 @@ public class PrivoAgeGate {
     ///   - agId: Age gate identifier that you get as a response from sdk on previous steps.
     ///   - nickname: Please use only in case of multi-user integration. Please don't use empty string "" in it.
     ///   - completionHandler: Closure which used to handle the result of an asynchronous operation.
-    ///   - errorHandler: Called instead of the completionHandler when an error occurs.
+    ///   - errorHandler: Called instead of the completionHandler when an error occurs. Takes an Error instance as input argument of two types errors: ``PrivoError`` or ``AgeGateError``.
     public func linkUser(userIdentifier: String,
                          agId: String,
                          nickname: String?,
@@ -201,6 +214,9 @@ public class PrivoAgeGate {
             do {
                 let result = try await linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)
                 completionHandler(result)
+            } catch let PrivoError.incorrectInputData(incorrectInputDataError) {
+                // for backward compatibility
+                errorHandler?(incorrectInputDataError)
             } catch {
                 errorHandler?(error)
             }
@@ -214,10 +230,13 @@ public class PrivoAgeGate {
     ///   - userIdentifier: External user identifier. Please don't use empty string ("") as a value. It will cause an error. We support real values or null if you don't have it
     ///   - agId: Age gate identifier that you get as a response from sdk on previous steps.
     ///   - nickname: Please use only in case of multi-user integration. Please don't use empty string "" in it.
+    /// - Throws: only one exception type PrivoError.
+    ///     - If cancelled throws ``PrivoError.cancelled``.
+    ///     - Throws ``PrivoError.incorrectInputData(AgeGateError)`` if the data submitted for processing is not correct.
     /// - Returns: AgeGateEvent
     public func linkUser(userIdentifier: String,
                          agId: String,
-                         nickname: String?) async throws /*(PrivoError or AgeGateError)*/ -> AgeGateEvent {
+                         nickname: String?) async throws /*(PrivoError)*/ -> AgeGateEvent {
         try ageGate.helpers.checkNetwork()
         try await ageGate.helpers.checkUserData(userIdentifier: userIdentifier, nickname: nickname, agId: agId)
         let event = try await ageGate.linkUser(userIdentifier: userIdentifier, agId: agId, nickname: nickname)

@@ -39,6 +39,9 @@ final class PrivoSDKTests: XCTestCase {
         let completionExpectation = expectation(description: "completion")
         ageGate.getStatus(userIdentifier: UUID().uuidString, nickname: nil) { _ in
             completionExpectation.fulfill()
+        } errorHandler: { error in
+            XCTFail()
+            completionExpectation.fulfill()
         }
         wait(for: [completionExpectation], timeout: 5.0)
         _ = XCTWaiter.wait(for: [expectation(description: "Wait for 0.5 seconds all requests.")], timeout: 0.5)
@@ -183,8 +186,10 @@ final class PrivoSDKTests: XCTestCase {
         do {
             _ = try await ageGate.getStatus(userIdentifier: "")
         // THEN
-        } catch let ageGateError as AgeGateError {
+        } catch let PrivoError.incorrectInputData(ageGateError as AgeGateError) {
             XCTAssert(ageGateError == .notAllowedEmptyStringUserIdentifier)
+        } catch {
+            XCTFail("Unexpected type error: \(error)")
         }
     }
     
@@ -235,8 +240,10 @@ final class PrivoSDKTests: XCTestCase {
         do {
             _ = try await ageGate.run(checkAgeData)
         // THEN
-        } catch let ageGateError as AgeGateError {
+        } catch let PrivoError.incorrectInputData(ageGateError as AgeGateError) {
             XCTAssert(ageGateError == .incorrectAge)
+        } catch {
+            XCTFail("Unexpected type error: \(error)")
         }
     }
     
@@ -286,9 +293,11 @@ final class PrivoSDKTests: XCTestCase {
         // WHEN
         do {
             _ = try await ageGate.recheck(checkAgeData)
-        } catch let ageGateError as AgeGateError {
-            // THEN
+        // THEN
+        } catch let PrivoError.incorrectInputData(ageGateError as AgeGateError) {
             XCTAssert(ageGateError == .incorrectDateOfBirht)
+        } catch {
+            XCTFail("Unexpected type error: \(error)")
         }
     }
     
@@ -335,8 +344,10 @@ final class PrivoSDKTests: XCTestCase {
                 agId: "",
                 nickname: nil)
         // THEN
-        } catch let ageGateError as AgeGateError {
+        } catch let PrivoError.incorrectInputData(ageGateError as AgeGateError) {
             XCTAssert(ageGateError == .notAllowedEmptyStringAgId)
+        } catch {
+            XCTFail("Unexpected type error: \(error)")
         }
     }
 }
