@@ -9,7 +9,7 @@ extension Session {
                                           encoder: ParameterEncoder,
                                           acceptableStatusCodes: Set<Int>,
                                           emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> AFDataResponse<T> {
-        let r = request(url, method: method, parameters: parameters, encoder: encoder)  { $0.timeoutInterval = 1 }
+        let r = request(url, method: method, parameters: parameters, encoder: encoder)
             .validate(statusCode: acceptableStatusCodes)
         
         return await withTaskCancellationHandler {
@@ -28,8 +28,9 @@ extension Session {
                               encoding: ParameterEncoding = URLEncoding.default,
                               acceptableStatusCodes: Set<Int>,
                               emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> AFDataResponse<T> {
-        let r = request(url, method: method, encoding: encoding)  { $0.timeoutInterval = 1 }
+        let r = request(url, method: method, encoding: encoding)
             .validate(statusCode: acceptableStatusCodes)
+        
         return await withTaskCancellationHandler {
             return await withCheckedContinuation { promise in
                 r.responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
@@ -42,8 +43,8 @@ extension Session {
     }
     
     func request(_ url: URLConvertible, acceptableStatusCodes: Set<Int>) async -> AFDataResponse<Data?> {
-        let r = request(url)  { $0.timeoutInterval = 1 }
-                .validate(statusCode: acceptableStatusCodes)
+        let r = request(url)
+            .validate(statusCode: acceptableStatusCodes)
         
         return await withTaskCancellationHandler {
             return await withCheckedContinuation{ promise in
