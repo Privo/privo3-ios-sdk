@@ -10,7 +10,7 @@ struct VerificationConfig: Encodable {
     let siteIdentifier: String
     let displayMode = "redirect"
     let transparentBackground = true
-    let prompt: [AuthServerPrompt] = [.login]
+    let prompt: [String] = [AuthServerPrompt.login.rawValue]
 }
 
 enum AuthServerPrompt: String, Encodable {
