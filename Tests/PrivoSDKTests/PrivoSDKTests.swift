@@ -14,10 +14,11 @@ final class PrivoSDKTests: XCTestCase {
         let analyticURL = PrivoInternal.configuration.commonUrl.appending(.analytic)
         let fingerprintURL = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.fingerprint)
         let settingsURL = PrivoInternal.configuration.ageGateBaseUrl.appending(.settings)
+        let badServerResponseData = "The requested resource could not be found."
         URLSessionMock.urls = [
             statusURL: (error: nil,
-                        data: "The requested resource could not be found.".data(using: .utf8),
-                        response: HTTPURLResponse(url: statusURL, statusCode: 404, headerFields: ["Content-Length": "42"])),
+                        data: badServerResponseData.data(using: .utf8),
+                        response: HTTPURLResponse(url: statusURL, statusCode: 404, headerFields: ["Content-Length": String(badServerResponseData.count), "Content-Type": "text"])),
             analyticURL: (error: nil,
                           data: nil,
                           response: HTTPURLResponse(url: analyticURL, statusCode: 200, headerFields: ["Content-Length": "0"])),
@@ -52,6 +53,7 @@ final class PrivoSDKTests: XCTestCase {
         XCTAssertTrue( allAnalyticRequests.count == 1 )
         if let analyticEventErrorData = allAnalyticRequests.first?.analyticEventErrorData {
             XCTAssertEqual(analyticEventErrorData.errorCode, 404)
+            XCTAssertTrue(analyticEventErrorData.response?.contains(badServerResponseData) == true)
         } else {
             XCTFail("Request contains incorrect data.")
         }
