@@ -52,7 +52,7 @@ struct PrivoRegisterView: View {
         api.getServiceInfo(serviceIdentifier: serviceIdentifier) { serviceInfo in
             inProgress = false
             guard let siteId = serviceInfo?.p2siteId else { return }
-            let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))!
+            let url = PrivoInternal.configuration.lgsRegistrationUrl.withQueryParam(name: siteIdKey, value: String(siteId))
             config = .init(url: url,
                            closeIcon: closeIcon,
                            finishCriteria: "step=complete",

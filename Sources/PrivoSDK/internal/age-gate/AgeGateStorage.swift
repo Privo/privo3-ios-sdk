@@ -41,9 +41,9 @@ class AgeGateStorage: FpIdStorage {
         return "\(FP_ID_KEY)-\(PrivoInternal.settings.envType)"
     }
     
-    func storeInfoFromEvent(event: AgeGateEvent?) {
-        guard let agId = event?.agId else { return }
-        storeAgId(userIdentifier: event?.userIdentifier, nickname: event?.nickname, agId: agId)
+    func storeInfoFromEvent(event: AgeGateEvent) {
+        guard let agId = event.agId else { return }
+        storeAgId(userIdentifier: event.userIdentifier, nickname: event.nickname, agId: agId)
     }
     
     func storeAgId(userIdentifier: String?, nickname: String?, agId: String) {
@@ -86,7 +86,7 @@ class AgeGateStorage: FpIdStorage {
             return keychain.get(getFpIdKey())
         }
         set {
-            if let newValue {
+            if let newValue = newValue {
                 keychain.set(key: getFpIdKey(), value: newValue)
             } else {
                 keychain.delete(getFpIdKey())

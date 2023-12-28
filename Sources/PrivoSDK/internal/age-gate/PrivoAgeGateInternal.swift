@@ -41,7 +41,10 @@ internal class PrivoAgeGateInternal {
             countryCode: nil
         )
         
-        guard let fpId = await fpIdService.fpId else {
+        let fpId: String
+        do {
+            fpId = try await fpIdService.fpId
+        } catch {
             return undefinedAgeGateEvent
         }
         
@@ -51,8 +54,7 @@ internal class PrivoAgeGateInternal {
             agId: agId,
             extUserId: userIdentifier
         )
-        let response = await api.processStatus(data: record)
-        guard let response else {
+        guard let response = try? await api.processStatus(data: record) else {
             return undefinedAgeGateEvent
         }
         let ageGateEvent = AgeGateEvent(
@@ -66,7 +68,7 @@ internal class PrivoAgeGateInternal {
         return ageGateEvent
     }
     
-    func linkUser(userIdentifier: String, agId: String, nickname: String?) async -> AgeGateEvent {
+    func linkUser(userIdentifier: String, agId: String, nickname: String?) async throws /*(PrivoError)*/ -> AgeGateEvent {
         let entities = storage.getAgeGateStoredEntities()
         let isKnownAgId = entities.contains { $0.agId == agId }
         if (!isKnownAgId) {
@@ -82,16 +84,7 @@ internal class PrivoAgeGateInternal {
         let record = LinkUserStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                           agId: agId,
                                           extUserId: userIdentifier)
-        let response = await api.processLinkUser(data: record)
-        guard let response = response else {
-            let event = AgeGateEvent(status: AgeGateStatus.Undefined,
-                                     userIdentifier: userIdentifier,
-                                     nickname: nickname,
-                                     agId: agId,
-                                     ageRange: nil,
-                                     countryCode: nil)
-            return event
-        }
+        let response = try await api.processLinkUser(data: record)
         let event = AgeGateEvent(status: response.status.toStatus(),
                                  userIdentifier: response.extUserId,
                                  nickname: nickname,
@@ -118,21 +111,16 @@ internal class PrivoAgeGateInternal {
         }
     }
     
-    func getAgeGateState(userIdentifier: String?, niсkname: String?) async -> AgeState? {
+    func getAgeGateState(userIdentifier: String?, niсkname: String?) async throws /*(PrivoError)*/ -> AgeState {
         let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: niсkname)
-        guard let settings = try? await storage.serviceSettings.getSettings(),
-              let fpId = await fpIdService.fpId
-        else {
-            return nil
-        }
+        let settings = try await storage.serviceSettings.getSettings()
+        let fpId = try await fpIdService.fpId
         let state = AgeState(fpId: fpId, agId: agId, settings: settings)
         return state
     }
     
-    func runAgeGateByBirthDay(_ data: CheckAgeData) async -> AgeGateEvent? {
-        guard let fpId = await fpIdService.fpId else {
-            return nil
-        }
+    func runAgeGateByBirthDay(_ data: CheckAgeData) async throws /*(PrivoError)*/ -> AgeGateEvent {
+        let fpId = try await fpIdService.fpId
         let record = FpStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                     fpId: fpId,
                                     birthDate: data.birthDateYYYYMMDD,
@@ -143,11 +131,7 @@ internal class PrivoAgeGateInternal {
                                     countryCode: data.countryCode)
         do {
             let response = try await api.processBirthDate(data: record)
-            guard let response = response,
-                  let status = helpers.toStatus(response.action)
-            else {
-                return nil
-            }
+            let status = helpers.toStatus(response.action)
             let event = AgeGateEvent(status: status,
                                      userIdentifier: response.extUserId,
                                      nickname: data.nickname,
@@ -156,20 +140,19 @@ internal class PrivoAgeGateInternal {
                                      countryCode: response.countryCode)
             let runAgeGateActions: [AgeGateAction] = [.Consent, .IdentityVerify, .AgeVerify]
             guard runAgeGateActions.contains(response.action) else { return event }
-            let newEvent = await runAgeGate(data, prevEvent: event, recheckRequired: nil)
+            let newEvent = try await runAgeGate(data, prevEvent: event, recheckRequired: nil)
             return newEvent
         } catch is CustomServerErrorResponse {
             _ = await permissionService.checkCameraPermission()
-            let newEvent = await runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRequired)
+            let newEvent = try await runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRequired)
             return newEvent
-        } catch _ {
-            print("Unexpected issue in \(#function)\(#line)")
-            return nil
         }
     }
     
-    func recheckAgeGateByBirthDay(_ data: CheckAgeData) async -> AgeGateEvent? {
-        guard let agId = storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.nickname) else { return nil }
+    func recheckAgeGateByBirthDay(_ data: CheckAgeData) async throws /*(PrivoError)*/ -> AgeGateEvent {
+        guard let agId = storage.getStoredAgeGateId(userIdentifier: data.userIdentifier, nickname: data.nickname) else {
+            throw PrivoError.incorrectInputData(AgeGateError.agIdNotFound)
+        }
         let record = RecheckStatusRecord(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                          agId: agId,
                                          birthDate: data.birthDateYYYYMMDD,
@@ -179,9 +162,7 @@ internal class PrivoAgeGateInternal {
                                          countryCode: data.countryCode)
         do {
             let response = try await api.processRecheck(data: record)
-            guard let response = response, let status = helpers.toStatus(response.action) else {
-                return nil
-            }
+            let status = helpers.toStatus(response.action)
             let event = AgeGateEvent(status: status,
                                      userIdentifier: response.extUserId,
                                      nickname: data.nickname,
@@ -190,36 +171,47 @@ internal class PrivoAgeGateInternal {
                                      countryCode: response.countryCode)
             let actions: [AgeGateAction] = [.Consent, .IdentityVerify, .AgeVerify]
             guard actions.contains(response.action) else { return event }
-            let newEvent = await runAgeGate(data, prevEvent: event, recheckRequired: nil)
+            let newEvent = try await runAgeGate(data, prevEvent: event, recheckRequired: nil)
             return newEvent
         } catch is CustomServerErrorResponse {
             _ = await permissionService.checkCameraPermission()
-            let event = await runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRecheckRequired)
+            let event = try await runAgeGate(data, prevEvent: nil, recheckRequired: .AgeEstimationRecheckRequired)
             return event
-        } catch _ {
-            print("Unexpected issue in \(#function)\(#line)")
-            return nil
         }
     }
     
     func runAgeGate(_ data: CheckAgeData,
                     prevEvent: AgeGateEvent?,
-                    recheckRequired: AgeGateInternalAction?) async -> AgeGateEvent? {
-        guard let state = await getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname) else { return nil }
-        let redirectUrl = PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading")!.absoluteString
+                    recheckRequired: AgeGateInternalAction?) async throws /*(PrivoError)*/ -> AgeGateEvent {
+        let state = try await getAgeGateState(userIdentifier: data.userIdentifier, niсkname: data.nickname)
+        let redirectUrl = PrivoInternal.configuration.ageGatePublicUrl.withPath("/index.html#/age-gate-loading").absoluteString
         let ageGateData = CheckAgeStoreData(serviceIdentifier: PrivoInternal.settings.serviceIdentifier,
                                                 state: state,
                                                 data: data,
                                                 redirectUrl: redirectUrl)
         let targetPage = helpers.getStatusTargetPage(prevEvent?.status, recheckRequired: recheckRequired)
-        let result: AgeGateEvent? = await withCheckedContinuation { promise in
+        let pseudoCancelEvent = AgeGateEvent(
+            status: .Canceled,
+            userIdentifier: nil,
+            nickname: nil,
+            agId: nil,
+            ageRange: nil,
+            countryCode: nil
+        )
+        let result: AgeGateEvent = await withCheckedContinuation { promise in
             Task.init { @MainActor [weak self] in
-                guard let self = self else { return }
+                guard let self = self else {
+                    promise.resume(returning: pseudoCancelEvent)
+                    return
+                }
                 self.app.showView(false, content: {
                     AgeGateView(ageGateData: ageGateData,
                                 targetPage: targetPage,
                                 onFinish: { [weak self] events in
-                        guard let self = self else { promise.resume(returning: nil); return }
+                        guard let self = self else {
+                            promise.resume(returning: pseudoCancelEvent)
+                            return
+                        }
                         for e in events {
                             if (e.status == .IdentityVerified || e.status == .AgeVerified) {
                                  let result = await self.processStatus(userIdentifier: e.userIdentifier,
@@ -231,13 +223,19 @@ internal class PrivoAgeGateInternal {
                             }
                         }
                         if events.isEmpty {
-                            promise.resume(returning: nil)
+                            // unreachable case
+                            promise.resume(returning: pseudoCancelEvent)
                         }
                         await self.hide()
                      })
                 })
             }
         }
+        
+        if Task.isCancelled {
+            throw PrivoError.cancelled
+        }
+        
         return result
     }
     
@@ -245,8 +243,9 @@ internal class PrivoAgeGateInternal {
         do {
             try helpers.checkNetwork()
             let agId = storage.getStoredAgeGateId(userIdentifier: userIdentifier, nickname: nickname)
-            guard let settings = try await storage.serviceSettings.getSettings(),
-                  let fpId = await fpIdService.fpId
+            let settings = try await storage.serviceSettings.getSettings()
+            
+            guard let fpId = try? await fpIdService.fpId
             else { 
                 return
             }

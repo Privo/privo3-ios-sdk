@@ -10,8 +10,13 @@ import Foundation
 
 public enum PrivoError: Error {
     case noInternetConnection
+    case networkConnectionProblem(_ error: Error?)
+    
+    case cancelled
+    case incorrectInputData(_ error: Error)
 }
 
+/// Could be a part of the ``PrivoError.incorrectInputData(_)`` error.
 public enum AgeGateError: Error {
     case incorrectDateOfBirht
     case incorrectAge
@@ -19,4 +24,7 @@ public enum AgeGateError: Error {
     case notAllowedEmptyStringUserIdentifier
     case notAllowedEmptyStringNickname
     case notAllowedEmptyStringAgId
+    
+    /// Attempting to invoke a method for the first time which used agId that has not yet been generated. Try adding a call before the current one so that the method generating agId is called first.
+    case agIdNotFound
 }

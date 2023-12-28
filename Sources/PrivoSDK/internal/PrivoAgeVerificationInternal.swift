@@ -45,13 +45,6 @@ internal class PrivoAgeVerificationInternal {
         keychain.set(key: key, value: verificationIdentifier)
     }
     
-    func getLastEvent(_ userIdentifier: String?, completionHandler: @escaping (AgeVerificationEvent) -> Void) {
-        Task.init {
-            let result = await getLastEvent(userIdentifier)
-            completionHandler(result)
-        }
-    }
-    
     func getLastEvent(_ userIdentifier: String?) async -> AgeVerificationEvent {
         let key = "\(AGE_VERIFICATION_EVENT_KEY)-\(userIdentifier ?? "")"
         guard let verificationIdentifier = keychain.get(key) else { return .init(status: .Undefined, profile: nil) }
@@ -65,7 +58,7 @@ internal class PrivoAgeVerificationInternal {
     
     func runAgeVerification(_ profile: AgeVerificationProfile?,
                             completionHandler: @escaping (AgeVerificationEventInternal?) -> Void) {
-        let redirectUrl = PrivoInternal.configuration.ageVerificationPublicUrl.withPath("/index.html#/age-verification-loading")!.absoluteString
+        let redirectUrl = PrivoInternal.configuration.ageVerificationPublicUrl.withPath("/index.html#/age-verification-loading").absoluteString
         let ageVerificationData = AgeVerificationStoreData(serviceIdentifier:PrivoInternal.settings.serviceIdentifier,
                                                            redirectUrl: redirectUrl,
                                                            profile: profile)
@@ -148,11 +141,11 @@ struct AgeVerificationView : View {
 
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let ageGateUrl = PrivoInternal.configuration.ageVerificationPublicUrl
-             .withPath("/index.html")?
-             .withQueryParam(name: "privo_state_id", value: stateId)?
-             .withQueryParam(name: "service_identifier", value: PrivoInternal.settings.serviceIdentifier)?
+             .withPath("/index.html")
+             .withQueryParam(name: "privo_state_id", value: stateId)
+             .withQueryParam(name: "service_identifier", value: PrivoInternal.settings.serviceIdentifier)
              .withPath("#/intro")
-        return .init(url: ageGateUrl!,
+        return .init(url: ageGateUrl,
                      showCloseIcon: false,
                      finishCriteria: "age-verification-loading",
                      onFinish: { url in

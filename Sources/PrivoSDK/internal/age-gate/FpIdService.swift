@@ -9,7 +9,7 @@
 import Foundation
 
 protocol FpIdentifiable {
-    var fpId: String? { get async }
+    var fpId: String { get async throws }
 }
 
 class FpIdService: FpIdentifiable {
@@ -22,23 +22,20 @@ class FpIdService: FpIdentifiable {
         self.storage = storage
     }
     
-    var fpId: String? {
-        get async {
-            return await getFpId()
+    var fpId: String {
+        get async throws /*(PrivoError)*/ {
+            return try await getFpId()
         }
     }
     
-    private func getFpId() async -> String? {
+    private func getFpId() async throws /*(PrivoError)*/ -> String {
         if let fpId = storage.fpId {
             return fpId
         }
         
         let rawFpId = DeviceFingerprint()
-        let fpIdResponse = await source.generateFingerprint(fingerprint: rawFpId)
-        
-        guard let fpId = fpIdResponse?.id else {
-            return nil
-        }
+        let fpIdResponse = try await source.generateFingerprint(fingerprint: rawFpId)
+        let fpId = fpIdResponse.id
         storage.fpId = fpId
 
         return fpId
