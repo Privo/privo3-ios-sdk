@@ -1,10 +1,8 @@
 //
-//  File.swift
-//  
+//  Copyright (c) 2021 Privo Inc. and its affiliates. All rights reserved.
+//  Licensed under the Apache License, Version 2.0:
+//  http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Created by alex slobodeniuk on 08.06.2021.
-//
-
 
 internal class PrivoInternal {
     

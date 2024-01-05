@@ -1,8 +1,7 @@
 //
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 31.01.2023.
+//  Copyright (c) 2021 Privo Inc. and its affiliates. All rights reserved.
+//  Licensed under the Apache License, Version 2.0:
+//  http://www.apache.org/licenses/LICENSE-2.0
 //
 
 import Foundation

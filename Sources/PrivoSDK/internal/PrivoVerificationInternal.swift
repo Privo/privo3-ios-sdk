@@ -1,12 +1,10 @@
 //
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 30.08.2021.
+//  Copyright (c) 2021 Privo Inc. and its affiliates. All rights reserved.
+//  Licensed under the Apache License, Version 2.0:
+//  http://www.apache.org/licenses/LICENSE-2.0
 //
 
 import SwiftUI
-
 
 struct PrivoVerificationState {
     var inProgress = true

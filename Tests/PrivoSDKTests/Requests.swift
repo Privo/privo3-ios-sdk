@@ -1,14 +1,11 @@
 //
-//  File.swift
-//  
+//  Copyright (c) 2021 Privo Inc. and its affiliates. All rights reserved.
+//  Licensed under the Apache License, Version 2.0:
+//  http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Created by Andrey Yo on 21.11.2023.
-//
-
 
 import Foundation
 @testable import PrivoSDK
-
 
 fileprivate extension URLRequest {
     var data: Data? {
