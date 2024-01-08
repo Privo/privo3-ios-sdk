@@ -105,7 +105,7 @@ public class PrivoAgeGate {
     ///   - userIdentifier: external user identifier (please don't use empty string ("") as a value. It will cause an error. We support real values or nil if you don't have it)
     ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
     /// - Throws: only one exception type PrivoError.
-    ///     - If cancelled throws ``PrivoError.cancelled``.
+    ///     - Throws ``PrivoError.cancelled`` if cancelled with `Task.cancel()`.
     ///     - Throws ``PrivoError.incorrectInputData(AgeGateError)`` if the data submitted for processing is not correct.
     /// - Returns: AgeGateEvent
     public func getStatus(userIdentifier: String?,
@@ -150,7 +150,7 @@ public class PrivoAgeGate {
     /// If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
     /// - Parameter data:
     /// - Throws: only one exception type PrivoError.
-    ///     - If cancelled throws ``PrivoError.cancelled``.
+    ///     - Throws ``PrivoError.cancelled`` if cancelled with `Task.cancel()`.
     ///     - Throws ``PrivoError.incorrectInputData(AgeGateError)`` if the data submitted for processing is not correct.
     /// - Returns: AgeGateEvent
     public func run(_ data: CheckAgeData) async throws /*(PrivoError)*/ -> AgeGateEvent {
@@ -206,7 +206,7 @@ public class PrivoAgeGate {
     ///
     /// - Parameter data:
     /// - Throws: only one exception type PrivoError.
-    ///     - If cancelled throws ``PrivoError.cancelled``.
+    ///     - Throws ``PrivoError.cancelled`` if cancelled with `Task.cancel()`.
     ///     - Throws ``PrivoError.incorrectInputData(AgeGateError)`` if the data submitted for processing is not correct.
     ///     - Could throws ``PrivoError.incorrectInputData(AgeGateError.agIdNotFound)`` (follow related description to get more information).
     /// - Returns: AgeGateEvent
@@ -275,7 +275,7 @@ public class PrivoAgeGate {
     ///   - agId: Age gate identifier that you get as a response from sdk on previous steps.
     ///   - nickname: Please use only in case of multi-user integration. Please don't use empty string "" in it.
     /// - Throws: only one exception type PrivoError.
-    ///     - If cancelled throws ``PrivoError.cancelled``.
+    ///     - Throws ``PrivoError.cancelled`` if cancelled with `Task.cancel()`.
     ///     - Throws ``PrivoError.incorrectInputData(AgeGateError)`` if the data submitted for processing is not correct.
     /// - Returns: AgeGateEvent
     public func linkUser(userIdentifier: String,

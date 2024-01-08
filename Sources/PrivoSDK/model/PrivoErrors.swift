@@ -12,7 +12,27 @@ public enum PrivoError: Error {
     case noInternetConnection
     case networkConnectionProblem(_ error: Error?)
     
+    /// An error that indicates a task was cancelled with `Task.cancel()`.
+    ///
+    /// Thrown only by those methods that support cancellation and this is explicitly stated in the documentation.
+    ///
+    /// Cancellation example:
+    /// ```swift
+    /// let task = Task {
+    ///   do {
+    ///     let result = try await methodThatSupportsCancellation()
+    ///   } catch let privoError as PrivoError {
+    ///     if privoError == .cancelled {
+    ///       // handle the cancellation
+    ///     }
+    ///   }
+    /// }
+    /// ...
+    /// // later in code
+    /// task.cancel()
+    /// ```
     case cancelled
+    
     case incorrectInputData(_ error: Error)
 }
 
