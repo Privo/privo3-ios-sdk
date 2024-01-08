@@ -20,7 +20,3 @@ dependencies: [
 ## Documentation
 
 https://developer.privo.com/#doc_mobileswift-requirements
-
-## License
-
-The project is available for free use, as described by the [LICENSE](LICENSE) (Apache 2.0).
