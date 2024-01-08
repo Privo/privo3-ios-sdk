@@ -4,24 +4,24 @@ import Foundation
 ///
 /// ### Init Privo SDK Sample
 ///
-///   @main
-///   struct DemoApp: App {
-///     init() {
-///       // You can add your settings rirht here
-///       Privo.initialize(
-///         settings: PrivoSettings(
-///                     serviceIdentifier: "{{value}}",
-///                     envType: .Int,
-///                     apiKey: "{{value}}"
-///                   )
-///       )
-///     }
-///     var body: some Scene {
-///       WindowGroup {
-///         ContentView()
+///     @main
+///     struct DemoApp: App {
+///       init() {
+///         // You can add your settings rirht here
+///         Privo.initialize(
+///           settings: PrivoSettings(
+///                       serviceIdentifier: "{{value}}",
+///                       envType: .Int,
+///                       apiKey: "{{value}}"
+///                     )
+///         )
+///       }
+///       var body: some Scene {
+///         WindowGroup {
+///           ContentView()
+///         }
 ///       }
 ///     }
-///   }
 ///
 public class Privo {
     
@@ -41,13 +41,15 @@ public class Privo {
     /// Init PrivoSDK with credentials provided by PRIVO.
     ///
     /// Make sure that you have initialized the PRIVO SDK before any usage of it. It is a good idea to do this immediately after launching the application.
+    ///  ```swift
+    /// Privo.initialize( settings: PrivoSettings(serviceIdentifier: "{{value}}", envType: .Prod,  apiKey: "{{value}}"))
+    ///  ```
     ///
-    ///     Privo.initialize( settings: PrivoSettings(serviceIdentifier: "{{value}}", envType: .Prod,  apiKey: "{{value}}"))
-    ///
-    /// - Parameter settings
+    /// - Parameter settings:
     public static func initialize(settings: PrivoSettings) {
         PrivoInternal.initialize(settings: settings)
     }
+    
     public static func overrideConfiguration (configuration: PrivoConfiguration) {
         PrivoInternal.overrideConfiguration(configuration: configuration)
     }
