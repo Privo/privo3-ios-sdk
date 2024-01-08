@@ -9,6 +9,7 @@ public enum VerificationMethodType: Int, Decodable {
     case PrintForm = 7
     case PayPal = 10
 }
+
 public enum VerificationOutcome: Int, Decodable {
     case Pass = 1
     case Pending
