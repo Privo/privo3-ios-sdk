@@ -41,7 +41,7 @@ public class PrivoAgeVerification {
     /// The method allows checking the existing Age Verification status.
     /// - Parameters:
     ///   - userIdentifier: External user identifier.
-    ///   - completionHandler: Closure which used to handle the result of an asynchronous operation.
+    ///   - completionHandler: Closure that is used to handle an asynchronous operation result and takes the AgeGateEvent instance as an input argument.
     public func getStatus(_ userIdentifier: String? = nil, completionHandler: @escaping (AgeVerificationEvent) -> Void) {
         Task.init(priority: .userInitiated) {
             let event = await ageVerification.getLastEvent(userIdentifier)
@@ -52,7 +52,7 @@ public class PrivoAgeVerification {
     /// The method runs the Age Verification check and returns the status, depending on the user’s age and set by a partner configuration.
     /// - Parameters:
     ///   - profile
-    ///   - completionHandler: Closure to execute. Nil indicates a failure has occurred.
+    ///   - completionHandler: Closure to execute. Nil indicates that a failure occurred.
     public func run(_ profile: AgeVerificationProfile?, completionHandler: @escaping (AgeVerificationEvent?) -> Void) {
         Task.init {
             let event = await ageVerification.getLastEvent(profile?.userIdentifier)

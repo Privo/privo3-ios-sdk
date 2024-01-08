@@ -120,7 +120,7 @@ public class PrivoVerification {
     ///
     /// - Parameters:
     ///   - profile
-    ///   - completion: closure which used to handle the result of an asynchronous operation.
+    ///   - completion: Closure that is used to handle an asynchronous operation result and takes the AgeGateEvent instance as an input argument.
     public func showVerification(_ profile: UserVerificationProfile?,
                                  completion: (([VerificationEvent]) -> Void)?) {
         Task.init(priority: .userInitiated) { @MainActor in
