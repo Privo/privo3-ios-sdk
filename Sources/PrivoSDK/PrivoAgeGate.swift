@@ -67,6 +67,11 @@ public class PrivoAgeGate {
     }
     
     /// The method allows checking the existing Age Gate status.
+    ///
+    /// > Concurrency Note: For calling method from asynchronous code you could use a similar ``getStatus(userIdentifier:nickname:)``.
+    /// >
+    /// > See more information [about concurrency and asynchronous code in Swift](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously) .
+    ///
     /// - Parameters:
     ///   - userIdentifier: external user identifier (please don't use empty string ("") as a value. It will cause an error. We support real values or nil if you don't have it)
     ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
@@ -91,6 +96,11 @@ public class PrivoAgeGate {
     }
     
     /// The method allows checking the existing Age Gate status.
+    ///
+    /// > Concurrency Note: You can call this method from asynchronous code. It also has a similar ``getStatus(userIdentifier:nickname:completionHandler:errorHandler:)`` with a completion handler for calling from synchronous code.
+    /// >
+    /// > See more information [about concurrency and asynchronous code in Swift](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously) .
+    ///
     /// - Parameters:
     ///   - userIdentifier: external user identifier (please don't use empty string ("") as a value. It will cause an error. We support real values or nil if you don't have it)
     ///   - nickname: optional parameter with default value nil. Please, use nickname only in case of multi-user integration. Please don't use empty string "" in it.
@@ -107,7 +117,13 @@ public class PrivoAgeGate {
         return event
     }
     
-    /// The method runs the Age Gate check. If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
+    /// The method runs the Age Gate check.
+    ///
+    /// > Concurrency Note: For calling method from asynchronous code you could use a similar ``run(_:)``.
+    /// >
+    /// > See more information [about concurrency and asynchronous code in Swift](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously) .
+    ///
+    /// If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
     /// - Parameters:
     ///   - data
     ///   - completionHandler: A closure to execute. Nil indicates a failure has occurred.
@@ -125,7 +141,13 @@ public class PrivoAgeGate {
     }
     
     
-    /// The method runs the Age Gate check. If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
+    /// The method runs the Age Gate check.
+    ///
+    /// > Concurrency Note: You can call this method from asynchronous code. It also has a similar ``run(_:completionHandler:)`` with a completion handler for calling from synchronous code.
+    /// >
+    /// > See more information [about concurrency and asynchronous code in Swift](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously) .
+    ///
+    /// If the birth date is passed by a partner or filled in by a user, the method will return the status. If the birth date is not passed, a user will be navigated to the corresponding entry window and forced to fill in the birthday field.
     /// - Parameter data:
     /// - Throws: only one exception type PrivoError.
     ///     - If cancelled throws ``PrivoError.cancelled``.
@@ -155,6 +177,11 @@ public class PrivoAgeGate {
     }
     
     /// The method allows rechecking data if the birth date provided by a user was updated.
+    ///
+    /// > Concurrency Note: For calling method from asynchronous code you could use a similar ``recheck(_:)``.
+    /// >
+    /// > See more information [about concurrency and asynchronous code in Swift](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously) .
+    ///
     /// - Parameters:
     ///   - data
     ///   - completionHandler: A closure to execute. Nil indicates a failure has occurred.
@@ -172,6 +199,11 @@ public class PrivoAgeGate {
     }
     
     /// The method allows rechecking data if the birth date provided by a user was updated.
+    ///
+    /// > Concurrency Note: You can call this method from asynchronous code. It also has a similar ``recheck(_:completionHandler:)`` with a completion handler for calling from synchronous code.
+    /// >
+    /// > See more information [about concurrency and asynchronous code in Swift](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously) .
+    ///
     /// - Parameter data:
     /// - Throws: only one exception type PrivoError.
     ///     - If cancelled throws ``PrivoError.cancelled``.
@@ -196,8 +228,14 @@ public class PrivoAgeGate {
     }
     
     /// The method will link user to specified userIdentifier.
+    ///
+    /// > Concurrency Note: For calling method from asynchronous code you could use a similar ``linkUser(userIdentifier:agId:nickname:)``.
+    /// >
+    /// > See more information [about concurrency and asynchronous code in Swift](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously) .
+    ///
     /// It's used in multi-user flow, when account creation (on partner side) happens after age-gate.
     /// Please note that linkUser can be used only for users that doesn't have userIdentifier yet. You can't change userIdentifier if user already have it.
+    ///
     /// - Parameters:
     ///   - userIdentifier: External user identifier. Please don't use empty string ("") as a value. It will cause an error. We support real values or null if you don't have it
     ///   - agId: Age gate identifier that you get as a response from sdk on previous steps.
@@ -224,8 +262,14 @@ public class PrivoAgeGate {
     }
     
     /// The method will link user to specified userIdentifier.
+    ///
+    /// > Concurrency Note: You can call this method from asynchronous code. It also has a similar ``linkUser(userIdentifier:agId:nickname:completionHandler:errorHandler:)`` with a completion handler for calling from synchronous code.
+    /// >
+    /// > See more information [about concurrency and asynchronous code in Swift](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously) .
+    ///
     /// It's used in multi-user flow, when account creation (on partner side) happens after age-gate.
     /// Please note that linkUser can be used only for users that doesn't have userIdentifier yet. You can't change userIdentifier if user already have it.
+    ///
     /// - Parameters:
     ///   - userIdentifier: External user identifier. Please don't use empty string ("") as a value. It will cause an error. We support real values or null if you don't have it
     ///   - agId: Age gate identifier that you get as a response from sdk on previous steps.
