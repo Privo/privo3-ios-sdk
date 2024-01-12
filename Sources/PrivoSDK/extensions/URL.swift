@@ -1,39 +1,39 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 07.06.2021.
-//
-
 import Foundation
 
 extension URL {
     // Since iOS16 min support version use URL.appending(queryItems: [URLQueryItem]) -> URL
-    func withQueryParam(name: String, value: String?) -> URL? {
-        if var urlComponents = URLComponents(string: self.absoluteString) {
-            // Create array of existing query items
-            var queryItems: [URLQueryItem] = urlComponents.queryItems ??  []
-
-            // Create query item
-            let queryItem = URLQueryItem(name: name, value: value)
-
-            // Append the new query item in the existing query items array
-            queryItems.append(queryItem)
-
-            // Append updated query items array in the url component object
-            urlComponents.queryItems = queryItems
-
-            // Returns the url from new url components
-            return urlComponents.url
+    func withQueryParam(name: String, value: String?) -> URL {
+        let queryItem = URLQueryItem(name: name, value: value)
+        
+        if #available(iOS 16, *) {
+            return appending(queryItems: [queryItem])
         } else {
-            return nil
+            if var urlComponents = URLComponents(string: self.absoluteString),
+               var queryItems: [URLQueryItem] = urlComponents.queryItems
+            {
+                queryItems.append(queryItem)
+                urlComponents.queryItems = queryItems
+                if let updatedURL = urlComponents.url {
+                    return updatedURL
+                } else {
+                    // unreachable branch
+                    return self
+                }
+            } else {
+                // unreachable branch
+                return self
+            }
         }
-
     }
     
-    func withPath(_ value: String) -> URL?  {
+    func withPath(_ value: String) -> URL  {
         let nextString = absoluteString + value
-        return URL(string: nextString)
+        if let updatedURL = URL(string: nextString) {
+            return updatedURL
+        } else {
+            // unreachable branch
+            return self
+        }
     }
     
     mutating func append(_ pathComponents: [String]) -> URL {

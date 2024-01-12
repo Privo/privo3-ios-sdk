@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by alex slobodeniuk on 14.06.2021.
-//
-
 import SwiftUI
 
 public struct PrivoVerificationButton<Label> : View where Label : View {

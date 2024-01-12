@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 21.04.2022.
-//
-
 import Foundation
 import os.log
 
@@ -24,7 +17,7 @@ class PrivoAgeSettingsInternal {
     
     //MARK: - Internal functions
     
-    func getSettings() async throws -> AgeServiceSettings? {
+    func getSettings() async throws /*(PrivoError)*/ -> AgeServiceSettings {
         let envType = PrivoInternal.settings.envType
         guard lastSettings?.0 == PrivoInternal.settings.serviceIdentifier && lastSettings?.1 == envType else {
             let settings = try await updateSettings()
@@ -37,25 +30,12 @@ class PrivoAgeSettingsInternal {
         return settings
     }
     
-    func getSettingsT() async -> AgeServiceSettings {
-        do {
-            guard let settings = try await getSettings() else { fatalError("SHOULD BE SETTINGS OBJECT") }
-            return settings
-        } catch  {
-            fatalError("\(#function)\(#line) GET SETTINGS ERROR: \(error).")
-        }
-    }
-    
     //MARK: - Private functions
     
-    private func updateSettings() async throws -> AgeServiceSettings? {
+    private func updateSettings() async throws /*(PrivoError)*/ -> AgeServiceSettings {
         let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
         let envType = PrivoInternal.settings.envType
         let settings = try await api.getAgeServiceSettings(serviceIdentifier: serviceIdentifier)
-        guard let settings = settings else {
-            os_log("Failed to get privo service settings", log: .default, type: .error)
-            return nil
-        }
         lastSettings = (serviceIdentifier, envType, settings)
         return settings
     }

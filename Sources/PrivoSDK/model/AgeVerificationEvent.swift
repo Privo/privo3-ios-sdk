@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 13.06.2022.
-//
-
 import Foundation
 
 public struct AgeVerificationEvent : Encodable, Decodable {

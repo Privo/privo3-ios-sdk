@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 07.10.2022.
-//
-
 import Foundation
 import SwiftUI
 
@@ -64,11 +57,11 @@ struct AgeGateView : View {
     
     private func getConfig(_ stateId: String) -> WebviewConfig {
         let ageGateUrl = PrivoInternal.configuration.ageGatePublicUrl
-             .withPath("/index.html")?
-             .withQueryParam(name: "privo_age_gate_state_id", value: stateId)?
-             .withQueryParam(name: "service_identifier", value: PrivoInternal.settings.serviceIdentifier)?
+             .withPath("/index.html")
+             .withQueryParam(name: "privo_age_gate_state_id", value: stateId)
+             .withQueryParam(name: "service_identifier", value: PrivoInternal.settings.serviceIdentifier)
              .withPath("#/\(targetPage)")
-        return .init(url: ageGateUrl!,
+        return .init(url: ageGateUrl,
                      showCloseIcon: false,
                      finishCriteria: finishCriteria,
                      onFinish: { url in

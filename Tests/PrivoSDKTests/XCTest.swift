@@ -1,11 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Andrey Yo on 28.11.2023.
-//
-
-
 import Foundation
 import XCTest
 

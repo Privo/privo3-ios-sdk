@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 06.07.2021.
-//
-
 import Foundation
 
 /// Please check the Age Gate Status Description [here](https://developer.privo.com/js-sdk/ag-js-sdk-statusdescription.html).

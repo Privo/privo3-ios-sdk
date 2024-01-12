@@ -1,17 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 31.08.2021.
-//
-
-//
-//  File.swift
-//  SDKDemoApp (iOS)
-//
-//  Created by alex slobodeniuk on 10.06.2021.
-//
-
 import SwiftUI
 
 struct ActivityIndicator: UIViewRepresentable {

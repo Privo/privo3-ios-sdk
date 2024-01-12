@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 07.10.2022.
-//
-
 import Foundation
 
 internal class PrivoAgeHelpers {
@@ -56,7 +49,7 @@ internal class PrivoAgeHelpers {
         }
     }
     
-    func toStatus(_ action: AgeGateAction?) -> AgeGateStatus? {
+    func toStatus(_ action: AgeGateAction) -> AgeGateStatus {
         switch action {
             case .Allow:
                 return .Allowed
@@ -72,8 +65,6 @@ internal class PrivoAgeHelpers {
                 return .MultiUserBlocked
             case .AgeEstimationBlocked:
                 return .AgeEstimationBlocked
-            default:
-                return .Undefined
         }
     }
     
@@ -110,37 +101,39 @@ internal class PrivoAgeHelpers {
         return false
     }
     
-    func checkNetwork() throws {
+    func checkNetwork() throws /*(PrivoError)*/ {
         try URLSession.checkNetwork()
     }
     
-    func checkUserData(userIdentifier: String?, nickname: String?, agId: String?) async throws {
+    func checkUserData(userIdentifier: String?, nickname: String?, agId: String?) async throws /*(PrivoError)*/ {
         if let userIdentifier = userIdentifier, userIdentifier.isEmpty {
-            throw AgeGateError.notAllowedEmptyStringUserIdentifier
+            throw PrivoError.incorrectInputData(AgeGateError.notAllowedEmptyStringUserIdentifier)
         }
         if let nickname = nickname {
-            if nickname.isEmpty { throw AgeGateError.notAllowedEmptyStringNickname }
-            let settings = await serviceSettings.getSettingsT()
+            if nickname.isEmpty {
+                throw PrivoError.incorrectInputData(AgeGateError.notAllowedEmptyStringNickname)
+            }
+            let settings = try await serviceSettings.getSettings()
             if !settings.isMultiUserOn {
                 // we have a Nickname but isMultiUserOn not allowed in partner configuration
-                throw AgeGateError.notAllowedMultiUserUsage
+                throw PrivoError.incorrectInputData(AgeGateError.notAllowedMultiUserUsage)
             }
         }
         if let agId = agId, agId.isEmpty {
-            throw AgeGateError.notAllowedEmptyStringAgId
+            throw PrivoError.incorrectInputData(AgeGateError.notAllowedEmptyStringAgId)
         }
     }
     
-    func checkRequest(_ data: CheckAgeData) async throws {
+    func checkRequest(_ data: CheckAgeData) async throws /*(PrivoError)*/ {
         try checkNetwork()
         try await checkUserData(userIdentifier: data.userIdentifier, nickname: data.nickname, agId: nil)
         if let (date, format) = getDateAndFormat(data) {
             if !isAgeCorrect(rawDate: date, format: format) {
-                throw AgeGateError.incorrectDateOfBirht
+                throw PrivoError.incorrectInputData(AgeGateError.incorrectDateOfBirht)
             }
         }
         if let age = data.age, !isAgeIntCorrect(age) {
-            throw AgeGateError.incorrectAge
+            throw PrivoError.incorrectInputData(AgeGateError.incorrectAge)
         }
     }
     

@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 20.07.2021.
-//
-
 import UIKit
 
 struct DeviceIdentifier {

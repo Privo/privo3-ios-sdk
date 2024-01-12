@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 14.06.2022.
-//
-
 import Foundation
 
 /// ### Age Verification SDK example

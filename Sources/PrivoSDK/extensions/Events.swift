@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 06.04.2022.
-//
-
 import Foundation
 
 extension AgeGateEventInternal {

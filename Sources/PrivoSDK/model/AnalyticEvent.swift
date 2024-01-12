@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 31.08.2021.
-//
-
 import Foundation
 
 struct AnalyticEventErrorData : Encodable {

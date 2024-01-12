@@ -1,11 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 08.06.2021.
-//
-
-
 internal class PrivoInternal {
     
     //MARK: - Static properties

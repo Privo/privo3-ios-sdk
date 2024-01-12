@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 14.06.2021.
-//
-
 public enum VerificationEventType: String, Decodable {
     case verifyInitialized = "verify-initialized"
     case verifyError = "verify-error"

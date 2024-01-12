@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 07.06.2021.
-//
-
 public struct PrivoSettings: Encodable {
     
     /// Required partner identifier in PRIVO system. Must be received from the PRIVO.

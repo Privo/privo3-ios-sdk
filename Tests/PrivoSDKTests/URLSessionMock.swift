@@ -1,13 +1,4 @@
-//
-//  File.swift
-//  
-//
-//  Created by Andrey Yo on 23.11.2023.
-//
-
-
 import Foundation
-
 
 class URLSessionMock: URLProtocol {
     typealias URLResult = (error: Error?, data: Data?, response: HTTPURLResponse?)
@@ -63,15 +54,15 @@ class URLSessionMock: URLProtocol {
             return
         }
 
-        if let response {
+        if let response = response {
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         }
         
-        if let data {
+        if let data = data {
             client?.urlProtocol(self, didLoad: data)
         }
         
-        if let error {
+        if let error = error {
             client?.urlProtocol(self, didFailWithError: error)
         } else {
             client?.urlProtocolDidFinishLoading(self)

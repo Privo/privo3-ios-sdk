@@ -1,13 +1,5 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 09.06.2021.
-//
-
 import Alamofire
 import Foundation
-
 
 extension URLSession {
     class func checkNetwork() throws {

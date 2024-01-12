@@ -1,12 +1,4 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 14.07.2021.
-//
-
 import UIKit
-
 
 struct DeviceFingerprint: Decodable, Encodable {
     struct DeviceInfo: Decodable, Encodable {

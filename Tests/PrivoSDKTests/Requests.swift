@@ -1,14 +1,5 @@
-//
-//  File.swift
-//  
-//
-//  Created by Andrey Yo on 21.11.2023.
-//
-
-
 import Foundation
 @testable import PrivoSDK
-
 
 fileprivate extension URLRequest {
     var data: Data? {

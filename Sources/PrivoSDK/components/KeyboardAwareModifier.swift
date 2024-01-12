@@ -1,10 +1,3 @@
-//
-//  KeyboardAwareModifier.swift
-//  SDKDemoApp (iOS)
-//
-//  Created by alex slobodeniuk on 10.06.2021.
-//
-
 import SwiftUI
 import Combine
 

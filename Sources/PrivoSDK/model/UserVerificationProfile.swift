@@ -1,9 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 14.06.2021.
-//
 import Foundation
 
 public struct UserVerificationProfile: Encodable {

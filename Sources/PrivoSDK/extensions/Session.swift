@@ -5,55 +5,55 @@ extension Session {
     
     func request<T:Decodable,P:Encodable>(_ url: URLConvertible,
                                           method: HTTPMethod = .get,
-                                          parameters: P? = nil,
-                                          encoder: ParameterEncoder = URLEncodedFormParameterEncoder.default,
-                                          emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
-        return await withCheckedContinuation { promise in
-            request(url, method: method, parameters: parameters, encoder: encoder)
-                .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
-                promise.resume(returning: $0)
-            }
-        }
-    }
-    
-    func request<T:Decodable>(_ url: URLConvertible,
-                                   method: HTTPMethod = .get,
-                                   emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
-      return await withCheckedContinuation { promise in
-          request(url, method: method)
-              .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
-              promise.resume(returning: $0)
-          }
-      }
-    }
-    
-    func request<T:Decodable>(_ url: URLConvertible,
-                              method: HTTPMethod = .get,
-                              encoding: ParameterEncoding) async -> DataResponse<T,AFError> {
-        return await withCheckedContinuation { promise in
-            request(url, method: method, encoding: encoding)
-                .responseDecodable(of: T.self) { promise.resume(returning: $0) }
-        }
-    }
-    
-    func request(_ url: URLConvertible) async -> AFDataResponse<Data?> {
-        return await withCheckedContinuation{ promise in
-            request(url).response() { promise.resume(returning: $0) }
-        }
-    }
-    
-    func request<T:Decodable,
-                 P:Encodable>(_ url: URLConvertible,
-                              method: HTTPMethod = .get,
-                              parameter: P? = nil,
-                              encoder: ParameterEncoder = URLEncodedFormParameterEncoder.default,
-                              emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> DataResponse<T,AFError> {
-        return await withCheckedContinuation { promise in
-            request(url, method: method, parameters: parameter, encoder: encoder)
-                .responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
+                                          parameters: P?,
+                                          encoder: ParameterEncoder,
+                                          acceptableStatusCodes: Set<Int>,
+                                          emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> AFDataResponse<T> {
+        let r = request(url, method: method, parameters: parameters, encoder: encoder)
+            .validate(statusCode: acceptableStatusCodes)
+        
+        return await withTaskCancellationHandler {
+            return await withCheckedContinuation { promise in
+                r.responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
                     promise.resume(returning: $0)
                 }
+            }
+        } onCancel: {
+            r.cancel()
         }
     }
     
+    func request<T:Decodable>(_ url: URLConvertible,
+                              method: HTTPMethod = .get,
+                              encoding: ParameterEncoding = URLEncoding.default,
+                              acceptableStatusCodes: Set<Int>,
+                              emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> AFDataResponse<T> {
+        let r = request(url, method: method, encoding: encoding)
+            .validate(statusCode: acceptableStatusCodes)
+        
+        return await withTaskCancellationHandler {
+            return await withCheckedContinuation { promise in
+                r.responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
+                    promise.resume(returning: $0)
+                }
+            }
+        } onCancel: {
+            r.cancel()
+        }
+    }
+    
+    func request(_ url: URLConvertible, acceptableStatusCodes: Set<Int>) async -> AFDataResponse<Data?> {
+        let r = request(url)
+            .validate(statusCode: acceptableStatusCodes)
+        
+        return await withTaskCancellationHandler {
+            return await withCheckedContinuation{ promise in
+                r.response() {
+                    promise.resume(returning: $0)
+                }
+            }
+        } onCancel: {
+            r.cancel()
+        }
+    }
 }

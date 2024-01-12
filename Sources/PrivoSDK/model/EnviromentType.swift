@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 07.06.2021.
-//
-
 public enum EnviromentType: Int, Equatable, CaseIterable, Encodable {
     case Local = 0
     case Dev

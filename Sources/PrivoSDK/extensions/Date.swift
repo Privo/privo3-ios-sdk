@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by alex slobodeniuk on 03.11.2021.
-//
-
 import Foundation
 
 extension Date {
