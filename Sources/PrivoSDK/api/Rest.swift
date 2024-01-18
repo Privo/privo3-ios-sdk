@@ -20,6 +20,8 @@ extension URLComponentConstants {
     static let v1_0: URLComponentConstants = "v1.0"
     static let fingerprint: URLComponentConstants = "fp"
     static let settings: URLComponentConstants = "settings"
+    static let account: URLComponentConstants = "account"
+    static let parent: URLComponentConstants = "parent"
 }
 
 extension URL {
@@ -48,6 +50,7 @@ protocol Restable {
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse
     func trackCustomError(_ errorDescr: String)
     func sendAnalyticEvent(_ event: AnalyticEvent)
+    func registerParentAndChild(_ parentChildPair: ParentChildPair) async throws -> RegisterResponse
 }
 
 class Rest: Restable {
@@ -335,6 +338,18 @@ class Rest: Restable {
             method: .post,
             parameters:
             fingerprint,
+            encoder: JSONParameterEncoder.default,
+            acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        return try trackPossibleAFErrorAndReturn(response)
+    }
+    
+    func registerParentAndChild(_ parentChildPair: ParentChildPair) async throws /*(PrivoError)*/ -> RegisterResponse {
+        let url = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.account).appending(.parent)
+        let response: AFDataResponse<RegisterResponse> = await session.request(
+            url,
+            method: .post,
+            parameters: parentChildPair,
             encoder: JSONParameterEncoder.default,
             acceptableStatusCodes: Rest.acceptableStatusCodes
         )

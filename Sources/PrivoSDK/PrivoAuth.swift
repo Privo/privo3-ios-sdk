@@ -217,4 +217,7 @@ public class PrivoAuth {
         userDefaults.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
     
+    public func register() async throws {
+    }
+    
 }
