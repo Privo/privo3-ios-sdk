@@ -7,9 +7,10 @@ extension Session {
                                           method: HTTPMethod = .get,
                                           parameters: P?,
                                           encoder: ParameterEncoder,
+                                          headers: HTTPHeaders? = nil,
                                           acceptableStatusCodes: Set<Int>,
                                           emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> AFDataResponse<T> {
-        let r = request(url, method: method, parameters: parameters, encoder: encoder)
+        let r = request(url, method: method, parameters: parameters, encoder: encoder, headers: headers)
             .validate(statusCode: acceptableStatusCodes)
         
         return await withTaskCancellationHandler {
