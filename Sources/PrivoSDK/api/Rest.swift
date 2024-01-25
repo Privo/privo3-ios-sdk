@@ -14,14 +14,16 @@ struct URLComponentConstants: ExpressibleByStringLiteral, RawRepresentable {
 }
 
 extension URLComponentConstants {
-    static let analytic: URLComponentConstants = "metrics"
-    static let status: URLComponentConstants = "status"
-    static let api: URLComponentConstants = "api"
-    static let v1_0: URLComponentConstants = "v1.0"
-    static let fingerprint: URLComponentConstants = "fp"
-    static let settings: URLComponentConstants = "settings"
-    static let account: URLComponentConstants = "account"
-    static let parent: URLComponentConstants = "parent"
+    static let analytic: Self = "metrics"
+    static let status: Self = "status"
+    static let api: Self = "api"
+    static let v1_0: Self = "v1.0"
+    static let fingerprint: Self = "fp"
+    static let settings: Self = "settings"
+    static let account: Self = "account"
+    static let parent: Self = "parent"
+    static let oauth: Self = "oauth"
+    static let token: Self = "token"
 }
 
 extension URL {
@@ -50,7 +52,8 @@ protocol Restable {
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse
     func trackCustomError(_ errorDescr: String)
     func sendAnalyticEvent(_ event: AnalyticEvent)
-    func registerParentAndChild(_ parentChildPair: ParentChildPair) async throws -> RegisterResponse
+    func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse
+    func getP3Token(_ clientId: String, _ clientSecret: String) async throws -> TokenResponse
 }
 
 class Rest: Restable {
@@ -344,8 +347,25 @@ class Rest: Restable {
         return try trackPossibleAFErrorAndReturn(response)
     }
     
-    func registerParentAndChild(_ parentChildPair: ParentChildPair) async throws /*(PrivoError)*/ -> RegisterResponse {
-        let url = PrivoInternal.configuration.authBaseUrl.appending(.api).appending(.v1_0).appending(.account).appending(.parent)
+    func getP3Token(_ clientId: String, _ clientSecret: String) async throws /*(PrivoError)*/ -> TokenResponse {
+        let clientData = OAuthToken(client_id: clientId, client_secret: clientSecret)
+        
+        let url = PrivoInternal.configuration.privohubUrl
+            .appending(.oauth)
+            .appending(.token)
+            .withQueryItems(clientData.toQueryItems())
+        
+        let response: AFDataResponse<TokenResponse> = await
+        session.request(
+            url,
+            method: .post,
+            acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        
+        return try trackPossibleAFErrorAndReturn(response)
+    }
+    
+    func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws /*(PrivoError)*/ -> RegisterResponse {
         let response: AFDataResponse<RegisterResponse> = await session.request(
             url,
             method: .post,
