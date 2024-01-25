@@ -10,6 +10,14 @@ extension URLSession {
     }
 }
 
+extension JSONParameterEncoder {
+    static var convertToSnakeCase: JSONParameterEncoder {
+        let jsonEncoder = JSONEncoder()
+        jsonEncoder.keyEncodingStrategy = .convertToSnakeCase
+        return JSONParameterEncoder(encoder: jsonEncoder)
+    }
+}
+
 struct BodyStringEncoding: ParameterEncoding {
 
     //MARK: - Private properties
