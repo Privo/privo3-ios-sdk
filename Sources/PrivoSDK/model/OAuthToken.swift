@@ -2,7 +2,7 @@ import Foundation
 
 struct OAuthToken: Codable {
     var grant_type: String = "client_credentials"
-    var scope: String = "openid profile user_profile TRUST"
+    var scope: String = "openid profile user_profile update_password_link TRUST"
     let client_id: String
     let client_secret: String
 }
