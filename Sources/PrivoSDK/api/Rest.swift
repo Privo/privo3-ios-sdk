@@ -367,11 +367,13 @@ class Rest: Restable {
     
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws /*(PrivoError)*/ -> RegisterResponse {
         let url = PrivoInternal.configuration.svcUrl.appending(.api).appending(.v1_0).appending(.account).appending(.parent)
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
         let response: AFDataResponse<RegisterResponse> = await session.request(
             url,
             method: .post,
             parameters: parentChildPair,
             encoder: JSONParameterEncoder.convertToSnakeCase,
+            decoder: jsonDecoder,
             headers: HTTPHeaders(arrayLiteral: .init(name: "Authorization", value: "Bearer \(token)")),
             acceptableStatusCodes: Rest.acceptableStatusCodes
         )

@@ -18,6 +18,13 @@ extension JSONParameterEncoder {
     }
 }
 
+extension JSONDecoder {
+    convenience init(keyDecodingStrategy: KeyDecodingStrategy) {
+        self.init()
+        self.keyDecodingStrategy = keyDecodingStrategy
+    }
+}
+
 struct BodyStringEncoding: ParameterEncoding {
 
     //MARK: - Private properties
