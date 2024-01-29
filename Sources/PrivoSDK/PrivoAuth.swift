@@ -217,7 +217,20 @@ public class PrivoAuth {
         userDefaults.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
     
-    public func register() async throws {
+    @discardableResult
+    public func register(child: Child, parentEmail: String, with clientCredentials: ClientCredentials) async throws -> URL {
+        let p3TokenResponse = try await api.getP3Token(clientCredentials.id, clientCredentials.secret)
+        let p3Token = p3TokenResponse.access_token
+        
+        let parentChildPair = ParentChildPair(
+            roleIdentifier: RoleIdentifier.parentStandard.rawValue,
+            email: parentEmail,
+            minorRegistrations: [
+                .init(child: child)
+            ])
+        let response = try await api.registerParentAndChild(parentChildPair, p3Token)
+        
+        let updatePasswordLink = URL(string: response.to.updatePasswordLink) ?? URL(fileURLWithPath: "")
+        return updatePasswordLink
     }
-    
 }
