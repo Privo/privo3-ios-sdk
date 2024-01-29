@@ -72,7 +72,12 @@ class Rest: Restable {
     private static let storageComponent = "storage"
     private static let putComponent = "put"
     private static let sessionID = "session_id"
-    private static let acceptableStatusCodes: Set<Int> = [200, 204, 205]
+    private static let acceptableStatusCodes: Set<Int> = [
+        200,
+        204,
+        205,
+        208, // register parent-child pair if parent was already registered
+    ]
     private static let emptyResponsesCodes: Set<Int> = acceptableStatusCodes
     
     private let urlConfig: URLSessionConfiguration
