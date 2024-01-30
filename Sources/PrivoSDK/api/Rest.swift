@@ -371,7 +371,7 @@ class Rest: Restable {
     }
     
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws /*(PrivoError)*/ -> RegisterResponse {
-        let url = PrivoInternal.configuration.svcUrl.appending(.api).appending(.v1_0).appending(.account).appending(.parent)
+        let url = PrivoInternal.configuration.gatewayUrl.appending(.api).appending(.v1_0).appending(.account).appending(.parent)
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
         let response: AFDataResponse<RegisterResponse> = await session.request(
             url,
