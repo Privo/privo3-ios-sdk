@@ -233,4 +233,21 @@ public class PrivoAuth {
         let updatePasswordLink = URL(string: response.to.updatePasswordLink) ?? URL(fileURLWithPath: "")
         return updatePasswordLink
     }
+    
+    public func showUpdatePassword(_ updatePasswordLink: URL,
+                                   _ completion: ((String?) -> Void)?) {
+        Task.init(priority: .userInitiated) { @MainActor in
+            let authDialog = AuthDialog()
+            app.showView(false) {
+                PrivoPopupWebView(url: updatePasswordLink,
+                onClose: {
+                    authDialog.hide()
+                },
+                onFinish: {
+                    authDialog.hide()
+                    completion?(nil)
+                })
+            }
+        }
+    }
 }
