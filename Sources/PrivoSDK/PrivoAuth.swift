@@ -218,7 +218,7 @@ public class PrivoAuth {
     }
     
     @discardableResult
-    public func register(child: Child, parentEmail: String, with clientCredentials: ClientCredentials) async throws -> URL {
+    public func register(child: Child, parentEmail: String, with clientCredentials: ClientCredentials) async throws /*(PrivoError)*/ -> URL {
         let p3TokenResponse = try await api.getP3Token(clientCredentials.id, clientCredentials.secret)
         let p3Token = p3TokenResponse.access_token
         
