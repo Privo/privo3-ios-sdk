@@ -114,11 +114,13 @@ class Rest: Restable {
     }
     
     func trackCustomError(_ errorDescr: String) {
-        let settings = PrivoInternal.settings;
-        let data = AnalyticEventErrorData(errorMessage: errorDescr, response: nil, errorCode: nil, privoSettings: settings)
+        let settings = PrivoInternal.settings
+        // avoid to send credentials
+        let sendingSettings = PrivoSettings(serviceIdentifier: settings.serviceIdentifier, envType: settings.envType, apiKey: settings.apiKey)
+        let data = AnalyticEventErrorData(errorMessage: errorDescr, response: nil, errorCode: nil, privoSettings: sendingSettings)
         if let jsonData = try? JSONEncoder().encode(data) {
             let jsonString = String(decoding: jsonData, as: UTF8.self)
-            let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
+            let event = AnalyticEvent(serviceIdentifier: sendingSettings.serviceIdentifier, data: jsonString)
             sendAnalyticEvent(event)
         }
     }
