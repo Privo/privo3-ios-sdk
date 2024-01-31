@@ -5,12 +5,12 @@ enum RoleIdentifier: String {
     case childDefault = "DEFAULT_CHILD"
 }
 
-struct ParentChildPair: Codable {
+struct ParentChildPair: Encodable {
     let roleIdentifier: String
     let email: String
     let minorRegistrations: [MinorRegistration]
     
-    struct MinorRegistration: Codable {
+    struct MinorRegistration: Encodable {
         let userName: String
         let firstName: String
         let lastName: String?
@@ -36,7 +36,7 @@ struct ParentChildPair: Codable {
         }
     }
     
-    struct Attribute: Codable {
+    struct Attribute: Encodable {
         let name: String
         let value: String
         

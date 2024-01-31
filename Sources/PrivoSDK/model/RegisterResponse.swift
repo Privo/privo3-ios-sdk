@@ -1,9 +1,9 @@
 import Foundation
 
-struct RegisterResponse: Codable {
+struct RegisterResponse: Decodable {
     let to: To
 
-    struct To: Codable {
+    struct To: Decodable {
         let updatePasswordLink: String
     }
 }
