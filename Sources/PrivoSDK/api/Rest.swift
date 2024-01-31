@@ -356,7 +356,6 @@ class Rest: Restable {
         let clientData = OAuthToken(client_id: clientId, client_secret: clientSecret)
         let url = PrivoInternal.configuration.gatewayUrl
             .appending(.token)
-            //.withQueryItems(clientData.toQueryItems())
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
         let response: AFDataResponse<TokenResponse> = await session.request(
             url,

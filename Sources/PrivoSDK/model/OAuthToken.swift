@@ -13,22 +13,3 @@ struct TokenResponse: Decodable {
     let expiresIn: Int
     let scope: String
 }
-
-extension OAuthToken {
-    func toQueryItems() -> [URLQueryItem] {
-        let mirror = Mirror(reflecting: self)
-        var items: [URLQueryItem] = []
-        
-        for (key, value) in mirror.children {
-            if let key = key,
-               let stringValue = value as? String,
-               let codingKey = CodingKeys(stringValue: key)
-            {
-                let queryItem = URLQueryItem(name: codingKey.stringValue, value: stringValue)
-                items.append(queryItem)
-            }
-        }
-
-        return items
-    }
-}
