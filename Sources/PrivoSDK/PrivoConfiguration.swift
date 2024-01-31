@@ -32,7 +32,7 @@ public class PrivoConfiguration {
                 ageGatePublicUrl: URL? = nil,
                 ageVerificationBaseUrl: URL? = nil,
                 ageVerificationPublicUrl: URL? = nil,
-                svcUrl: URL? = nil,
+                gatewayUrl: URL? = nil,
                 tokenStorageKey: String? = nil,
                 privoServiceKey: String? = nil) {
         self.type = type
@@ -46,7 +46,7 @@ public class PrivoConfiguration {
         self.ageGatePublicUrl = ageGatePublicUrl ?? defaultValues.ageGatePublicUrl
         self.ageVerificationBaseUrl = ageVerificationBaseUrl ?? defaultValues.ageVerificationBaseUrl
         self.ageVerificationPublicUrl = ageVerificationPublicUrl ?? defaultValues.ageVerificationPublicUrl
-        self.gatewayUrl = svcUrl ?? defaultValues.gatewayUrl
+        self.gatewayUrl = gatewayUrl ?? defaultValues.gatewayUrl
         self.tokenStorageKey = tokenStorageKey ?? defaultValues.tokenStorageKey
         self.privoServiceKey = tokenStorageKey ?? defaultValues.tokenStorageKey
         self.urlPrefix = defaultValues.urlPrefix
