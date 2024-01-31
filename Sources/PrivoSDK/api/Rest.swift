@@ -53,7 +53,7 @@ protocol Restable {
     func trackCustomError(_ errorDescr: String)
     func sendAnalyticEvent(_ event: AnalyticEvent)
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse
-    func getP3Token(_ clientId: String, _ clientSecret: String) async throws -> TokenResponse
+    func getGWToken(_ clientId: String, _ clientSecret: String) async throws -> TokenResponse
 }
 
 class Rest: Restable {
@@ -352,21 +352,22 @@ class Rest: Restable {
         return try trackPossibleAFErrorAndReturn(response)
     }
     
-    func getP3Token(_ clientId: String, _ clientSecret: String) async throws /*(PrivoError)*/ -> TokenResponse {
+    func getGWToken(_ clientId: String, _ clientSecret: String) async throws /*(PrivoError)*/ -> TokenResponse {
         let clientData = OAuthToken(client_id: clientId, client_secret: clientSecret)
-        
-        let url = PrivoInternal.configuration.privohubUrl
-            .appending(.oauth)
+        let url = PrivoInternal.configuration.gatewayUrl
             .appending(.token)
-            .withQueryItems(clientData.toQueryItems())
-        
-        let response: AFDataResponse<TokenResponse> = await
-        session.request(
+            //.withQueryItems(clientData.toQueryItems())
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
+        let response: AFDataResponse<TokenResponse> = await session.request(
             url,
             method: .post,
+            parameters:
+            clientData,
+            encoder: URLEncodedFormParameterEncoder.default,
+            decoder: jsonDecoder,
+            headers: HTTPHeaders(arrayLiteral: .init(name: "Content-Type", value: "application/x-www-form-urlencoded")),
             acceptableStatusCodes: Rest.acceptableStatusCodes
         )
-        
         return try trackPossibleAFErrorAndReturn(response)
     }
     
