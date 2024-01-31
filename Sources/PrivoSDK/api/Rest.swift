@@ -53,7 +53,7 @@ protocol Restable {
     func trackCustomError(_ errorDescr: String)
     func sendAnalyticEvent(_ event: AnalyticEvent)
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse
-    func getGWToken(_ clientId: String, _ clientSecret: String) async throws -> TokenResponse
+    func getGWToken() async throws -> TokenResponse
 }
 
 class Rest: Restable {
@@ -352,8 +352,12 @@ class Rest: Restable {
         return try trackPossibleAFErrorAndReturn(response)
     }
     
-    func getGWToken(_ clientId: String, _ clientSecret: String) async throws /*(PrivoError)*/ -> TokenResponse {
-        let clientData = OAuthToken(client_id: clientId, client_secret: clientSecret)
+    func getGWToken() async throws /*(PrivoError)*/ -> TokenResponse {
+        guard let clientCredentials = PrivoInternal.settings.clientCredentials
+        else {
+            throw PrivoError.notInitialized(PrivoSettingsError.clientCredentialsNotFound)
+        }
+        let clientData = OAuthToken(client_id: clientCredentials.id, client_secret: clientCredentials.secret)
         let url = PrivoInternal.configuration.gatewayUrl
             .appending(.token)
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
