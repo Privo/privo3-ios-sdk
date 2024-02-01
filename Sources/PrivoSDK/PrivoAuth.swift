@@ -230,7 +230,6 @@ public class PrivoAuth {
             ])
         let response = try await api.registerParentAndChild(parentChildPair, gwToken)
         
-        let updatePasswordLink = URL(string: response.to.updatePasswordLink) ?? URL(fileURLWithPath: "")
-        return updatePasswordLink
+        return response.to.updatePasswordLink
     }
 }

@@ -4,6 +4,6 @@ struct RegisterResponse: Decodable {
     let to: To
 
     struct To: Decodable {
-        let updatePasswordLink: String
+        let updatePasswordLink: URL
     }
 }
