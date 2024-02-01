@@ -20,10 +20,6 @@ extension URLComponentConstants {
     static let v1_0: Self = "v1.0"
     static let fingerprint: Self = "fp"
     static let settings: Self = "settings"
-    static let account: Self = "account"
-    static let parent: Self = "parent"
-    static let oauth: Self = "oauth"
-    static let token: Self = "token"
 }
 
 extension URL {
@@ -361,7 +357,7 @@ class Rest: Restable {
         }
         let clientData = OAuthToken(client_id: clientCredentials.id, client_secret: clientCredentials.secret)
         let url = PrivoInternal.configuration.gatewayUrl
-            .appending(.token)
+            .appending("token")
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
         let response: AFDataResponse<TokenResponse> = await session.request(
             url,
@@ -380,8 +376,8 @@ class Rest: Restable {
         let url = PrivoInternal.configuration.gatewayUrl
             .appending(.api)
             .appending(.v1_0)
-            .appending(.account)
-            .appending(.parent)
+            .appending("account")
+            .appending("parent")
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
         let response: AFDataResponse<RegisterResponse> = await session.request(
             url,
