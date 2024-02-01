@@ -20,7 +20,7 @@ struct ParentChildPair: Encodable {
         let sendCongratulationsEmail: Bool
         let attributes: [Attribute]
         
-        init(child: Child) {
+        init(child: ChildData) {
             self.firstName = child.firstname
             self.lastName = child.lastname
             self.userName = child.username

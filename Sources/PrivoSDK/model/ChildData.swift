@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Child {
+public struct ChildData {
     public let birthdate: Date
     public let username: String
     public let displayname: String

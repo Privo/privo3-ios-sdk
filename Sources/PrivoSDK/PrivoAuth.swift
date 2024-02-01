@@ -218,7 +218,7 @@ public class PrivoAuth {
     }
     
     @discardableResult
-    public func register(child: Child, parentEmail: String) async throws /*(PrivoError)*/ -> URL {
+    public func register(child: ChildData, parentEmail: String) async throws /*(PrivoError)*/ -> URL {
         let gwTokenResponse = try await api.getGWToken()
         let gwToken = gwTokenResponse.accessToken
         
