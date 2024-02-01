@@ -1,13 +1,13 @@
 import Foundation
 
 public struct ChildData {
-    public let birthdate: Date
+    public let birthdate: BirthDatePrecision
     public let username: String
     public let displayname: String
     public let firstname: String
     public let lastname: String?
     
-    public init(birthdate: Date,
+    public init(birthdate: BirthDatePrecision,
                 username: String,
                 displayname: String? = nil,
                 firstname: String,

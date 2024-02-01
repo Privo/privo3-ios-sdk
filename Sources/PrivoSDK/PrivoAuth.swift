@@ -226,7 +226,7 @@ public class PrivoAuth {
             roleIdentifier: RoleIdentifier.parentStandard.rawValue,
             email: parentEmail,
             minorRegistrations: [
-                .init(child: child)
+                try .init(child: child)
             ])
         let response = try await api.registerParentAndChild(parentChildPair, gwToken)
         
