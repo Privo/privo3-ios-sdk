@@ -13,12 +13,30 @@ public struct PrivoSettings: Encodable {
     /// Optional parameter that is used in the identity verification module. *Can be nil.*
     public let apiKey: String?
     
-    public init(serviceIdentifier: String, envType: EnviromentType, apiKey: String? = nil) {
+    public let clientCredentials: ClientCredentials?
+    
+    public init(serviceIdentifier: String,
+                envType: EnviromentType,
+                apiKey: String? = nil,
+                clientCredentials: ClientCredentials? = nil
+    ) {
         self.serviceIdentifier = serviceIdentifier
         self.envType = envType
         self.apiKey = apiKey
+        self.clientCredentials = clientCredentials
+    }
+}
+
+public struct ClientCredentials: Encodable {
+    public let id: String
+    public let secret: String
+    
+    public init(id: String, secret: String) {
+        self.id = id
+        self.secret = secret
     }
 }
 
 // conforms Decodable for test purposes
 extension PrivoSettings: Decodable {}
+extension ClientCredentials: Decodable {}

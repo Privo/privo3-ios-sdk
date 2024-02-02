@@ -217,4 +217,19 @@ public class PrivoAuth {
         userDefaults.removeObject(forKey: PrivoInternal.configuration.tokenStorageKey)
     }
     
+    @discardableResult
+    public func register(child: ChildData, parentEmail: String) async throws /*(PrivoError)*/ -> URL {
+        let gwTokenResponse = try await api.getGWToken()
+        let gwToken = gwTokenResponse.accessToken
+        
+        let parentChildPair = ParentChildPair(
+            roleIdentifier: RoleIdentifier.parentStandard.rawValue,
+            email: parentEmail,
+            minorRegistrations: [
+                try .init(child: child)
+            ])
+        let response = try await api.registerParentAndChild(parentChildPair, gwToken)
+        
+        return response.to.updatePasswordLink
+    }
 }

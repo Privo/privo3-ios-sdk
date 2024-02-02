@@ -4,26 +4,7 @@ extension URL {
     // Since iOS16 min support version use URL.appending(queryItems: [URLQueryItem]) -> URL
     func withQueryParam(name: String, value: String?) -> URL {
         let queryItem = URLQueryItem(name: name, value: value)
-        
-        if #available(iOS 16, *) {
-            return appending(queryItems: [queryItem])
-        } else {
-            if var urlComponents = URLComponents(string: self.absoluteString),
-               var queryItems: [URLQueryItem] = urlComponents.queryItems
-            {
-                queryItems.append(queryItem)
-                urlComponents.queryItems = queryItems
-                if let updatedURL = urlComponents.url {
-                    return updatedURL
-                } else {
-                    // unreachable branch
-                    return self
-                }
-            } else {
-                // unreachable branch
-                return self
-            }
-        }
+        return self.withQueryItems([queryItem])
     }
     
     func withPath(_ value: String) -> URL  {
@@ -43,6 +24,28 @@ extension URL {
     
     func urlComponent(resolvingAgainstBaseURL: Bool = true) -> URLComponents {
         return URLComponents(url: self, resolvingAgainstBaseURL: resolvingAgainstBaseURL)!
+    }
+    
+    func withQueryItems(_ queryItems: [URLQueryItem]) -> URL {
+        if #available(iOS 16, *) {
+            return appending(queryItems: queryItems)
+        } else {
+            if var urlComponents = URLComponents(string: self.absoluteString),
+               var existingQueryItems: [URLQueryItem] = urlComponents.queryItems
+            {
+                existingQueryItems.append(contentsOf: queryItems)
+                urlComponents.queryItems = existingQueryItems
+                if let updatedURL = urlComponents.url {
+                    return updatedURL
+                } else {
+                    // unreachable branch
+                    return self
+                }
+            } else {
+                // unreachable branch
+                return self
+            }
+        }
     }
     
 }
