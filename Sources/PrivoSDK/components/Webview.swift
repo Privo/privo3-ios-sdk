@@ -291,7 +291,6 @@ struct Webview: UIViewRepresentable {
  */
 
 func notify(isEqualFalse script: String, in webview: WKWebView?, _ completion: @escaping ()->Void) {
-    print("andreyishere: notifyOfDisapperance")
     guard let webView = webview else {
         return
     }
