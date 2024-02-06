@@ -238,7 +238,7 @@ public class PrivoAuth {
         Task.init(priority: .userInitiated) { @MainActor in
             let authDialog = AuthDialog()
             app.showView(false) {
-                PrivoPopupWebView(url: updatePasswordLink,
+                UpdatePasswordView(url: updatePasswordLink,
                 onClose: {
                     authDialog.hide()
                 },

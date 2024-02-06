@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PrivoPopupWebView: View {
+struct UpdatePasswordView: View {
     
     let url: URL
     let onClose: (() -> Void)
@@ -22,7 +22,8 @@ struct PrivoPopupWebView: View {
         self.onClose = onClose
         self._config = State(initialValue: WebviewConfig(url: url,
             closeIcon: closeIcon,
-            finishCriteria: "step=complete",
+            scriptUrlTrigger: "about:blank",
+            script: "document.querySelector(\"[ng-show='step == steps.COMPLETE']\").classList.contains(\"ng-hide\")",
             onFinish: { _ in onFinish?() },
             onClose: { onClose() }
         ))
