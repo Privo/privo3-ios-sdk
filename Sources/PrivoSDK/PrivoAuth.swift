@@ -233,14 +233,15 @@ public class PrivoAuth {
         return response.to.updatePasswordLink
     }
     
-    public func showUpdatePassword(_ updatePasswordLink: URL,
-                                   _ completion: ((String?) -> Void)?) {
+    public func showUpdatePassword(link updatePasswordLink: URL,
+                                   _ completion: ((PrivoError?) -> Void)?) {
         Task.init(priority: .userInitiated) { @MainActor in
             let authDialog = AuthDialog()
             app.showView(false) {
                 UpdatePasswordView(url: updatePasswordLink,
                 onClose: {
                     authDialog.hide()
+                    completion?(.cancelled)
                 },
                 onFinish: {
                     authDialog.hide()
