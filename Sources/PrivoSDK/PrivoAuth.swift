@@ -218,20 +218,19 @@ public class PrivoAuth {
     }
     
     @discardableResult
-    public func register(child: Child, parentEmail: String, with clientCredentials: ClientCredentials) async throws -> URL {
-        let p3TokenResponse = try await api.getP3Token(clientCredentials.id, clientCredentials.secret)
-        let p3Token = p3TokenResponse.access_token
+    public func register(child: ChildData, parentEmail: String) async throws /*(PrivoError)*/ -> URL {
+        let gwTokenResponse = try await api.getGWToken()
+        let gwToken = gwTokenResponse.accessToken
         
         let parentChildPair = ParentChildPair(
             roleIdentifier: RoleIdentifier.parentStandard.rawValue,
             email: parentEmail,
             minorRegistrations: [
-                .init(child: child)
+                try .init(child: child)
             ])
-        let response = try await api.registerParentAndChild(parentChildPair, p3Token)
+        let response = try await api.registerParentAndChild(parentChildPair, gwToken)
         
-        let updatePasswordLink = URL(string: response.to.updatePasswordLink) ?? URL(fileURLWithPath: "")
-        return updatePasswordLink
+        return response.to.updatePasswordLink
     }
     
     public func showUpdatePassword(_ updatePasswordLink: URL,

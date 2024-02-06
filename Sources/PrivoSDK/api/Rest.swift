@@ -20,10 +20,6 @@ extension URLComponentConstants {
     static let v1_0: Self = "v1.0"
     static let fingerprint: Self = "fp"
     static let settings: Self = "settings"
-    static let account: Self = "account"
-    static let parent: Self = "parent"
-    static let oauth: Self = "oauth"
-    static let token: Self = "token"
 }
 
 extension URL {
@@ -53,7 +49,7 @@ protocol Restable {
     func trackCustomError(_ errorDescr: String)
     func sendAnalyticEvent(_ event: AnalyticEvent)
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse
-    func getP3Token(_ clientId: String, _ clientSecret: String) async throws -> TokenResponse
+    func getGWToken() async throws -> TokenResponse
 }
 
 class Rest: Restable {
@@ -114,11 +110,13 @@ class Rest: Restable {
     }
     
     func trackCustomError(_ errorDescr: String) {
-        let settings = PrivoInternal.settings;
-        let data = AnalyticEventErrorData(errorMessage: errorDescr, response: nil, errorCode: nil, privoSettings: settings)
+        let settings = PrivoInternal.settings
+        // avoid to send credentials
+        let sendingSettings = PrivoSettings(serviceIdentifier: settings.serviceIdentifier, envType: settings.envType, apiKey: settings.apiKey)
+        let data = AnalyticEventErrorData(errorMessage: errorDescr, response: nil, errorCode: nil, privoSettings: sendingSettings)
         if let jsonData = try? JSONEncoder().encode(data) {
             let jsonString = String(decoding: jsonData, as: UTF8.self)
-            let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
+            let event = AnalyticEvent(serviceIdentifier: sendingSettings.serviceIdentifier, data: jsonString)
             sendAnalyticEvent(event)
         }
     }
@@ -352,26 +350,34 @@ class Rest: Restable {
         return try trackPossibleAFErrorAndReturn(response)
     }
     
-    func getP3Token(_ clientId: String, _ clientSecret: String) async throws /*(PrivoError)*/ -> TokenResponse {
-        let clientData = OAuthToken(client_id: clientId, client_secret: clientSecret)
-        
-        let url = PrivoInternal.configuration.privohubUrl
-            .appending(.oauth)
-            .appending(.token)
-            .withQueryItems(clientData.toQueryItems())
-        
-        let response: AFDataResponse<TokenResponse> = await
-        session.request(
+    func getGWToken() async throws /*(PrivoError)*/ -> TokenResponse {
+        guard let clientCredentials = PrivoInternal.settings.clientCredentials
+        else {
+            throw PrivoError.notInitialized(PrivoSettingsError.clientCredentialsNotFound)
+        }
+        let clientData = OAuthToken(client_id: clientCredentials.id, client_secret: clientCredentials.secret)
+        let url = PrivoInternal.configuration.gatewayUrl
+            .appending("token")
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
+        let response: AFDataResponse<TokenResponse> = await session.request(
             url,
             method: .post,
+            parameters:
+            clientData,
+            encoder: URLEncodedFormParameterEncoder.default,
+            decoder: jsonDecoder,
+            headers: HTTPHeaders(arrayLiteral: .init(name: "Content-Type", value: "application/x-www-form-urlencoded")),
             acceptableStatusCodes: Rest.acceptableStatusCodes
         )
-        
         return try trackPossibleAFErrorAndReturn(response)
     }
     
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws /*(PrivoError)*/ -> RegisterResponse {
-        let url = PrivoInternal.configuration.svcUrl.appending(.api).appending(.v1_0).appending(.account).appending(.parent)
+        let url = PrivoInternal.configuration.gatewayUrl
+            .appending(.api)
+            .appending(.v1_0)
+            .appending("account")
+            .appending("parent")
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
         let response: AFDataResponse<RegisterResponse> = await session.request(
             url,
