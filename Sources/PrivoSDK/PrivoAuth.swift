@@ -233,20 +233,26 @@ public class PrivoAuth {
         return response.to.updatePasswordLink
     }
     
-    public func showUpdatePassword(link updatePasswordLink: URL,
-                                   _ completion: ((PrivoError?) -> Void)?) {
-        Task.init(priority: .userInitiated) { @MainActor in
-            let authDialog = AuthDialog()
-            app.showView(false) {
-                UpdatePasswordView(url: updatePasswordLink,
-                onClose: {
-                    authDialog.hide()
-                    completion?(.cancelled)
-                },
-                onFinish: {
-                    authDialog.hide()
-                    completion?(nil)
-                })
+    @MainActor
+    public func showUpdatePassword(link updatePasswordLink: URL) async throws /*(PrivoError)*/ {
+        let authDialog = AuthDialog()
+        return try await withCheckedThrowingContinuation { promise in
+            Task.init(priority: .userInitiated) { @MainActor in
+                app.showView(false) {
+                    UpdatePasswordView(url: updatePasswordLink,
+                        onClose: {
+                            Task { @MainActor in
+                                authDialog.hide()
+                                promise.resume(throwing: PrivoError.cancelled)
+                            }
+                        },
+                       onFinish: {
+                            Task { @MainActor in
+                                authDialog.hide()
+                                promise.resume(returning: ())
+                            }
+                        })
+                }
             }
         }
     }
