@@ -14,12 +14,12 @@ struct URLComponentConstants: ExpressibleByStringLiteral, RawRepresentable {
 }
 
 extension URLComponentConstants {
-    static let analytic: URLComponentConstants = "metrics"
-    static let status: URLComponentConstants = "status"
-    static let api: URLComponentConstants = "api"
-    static let v1_0: URLComponentConstants = "v1.0"
-    static let fingerprint: URLComponentConstants = "fp"
-    static let settings: URLComponentConstants = "settings"
+    static let analytic: Self = "metrics"
+    static let status: Self = "status"
+    static let api: Self = "api"
+    static let v1_0: Self = "v1.0"
+    static let fingerprint: Self = "fp"
+    static let settings: Self = "settings"
 }
 
 extension URL {
@@ -48,6 +48,8 @@ protocol Restable {
     func processRecheck(data: RecheckStatusRecord) async throws -> AgeGateActionResponse
     func trackCustomError(_ errorDescr: String)
     func sendAnalyticEvent(_ event: AnalyticEvent)
+    func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse
+    func getGWToken() async throws -> TokenResponse
 }
 
 class Rest: Restable {
@@ -66,7 +68,12 @@ class Rest: Restable {
     private static let storageComponent = "storage"
     private static let putComponent = "put"
     private static let sessionID = "session_id"
-    private static let acceptableStatusCodes: Set<Int> = [200, 204, 205]
+    private static let acceptableStatusCodes: Set<Int> = [
+        200,
+        204,
+        205,
+        208, // register parent-child pair if parent was already registered
+    ]
     private static let emptyResponsesCodes: Set<Int> = acceptableStatusCodes
     
     private let urlConfig: URLSessionConfiguration
@@ -103,11 +110,13 @@ class Rest: Restable {
     }
     
     func trackCustomError(_ errorDescr: String) {
-        let settings = PrivoInternal.settings;
-        let data = AnalyticEventErrorData(errorMessage: errorDescr, response: nil, errorCode: nil, privoSettings: settings)
+        let settings = PrivoInternal.settings
+        // avoid to send credentials
+        let sendingSettings = PrivoSettings(serviceIdentifier: settings.serviceIdentifier, envType: settings.envType, apiKey: settings.apiKey)
+        let data = AnalyticEventErrorData(errorMessage: errorDescr, response: nil, errorCode: nil, privoSettings: sendingSettings)
         if let jsonData = try? JSONEncoder().encode(data) {
             let jsonString = String(decoding: jsonData, as: UTF8.self)
-            let event = AnalyticEvent(serviceIdentifier: PrivoInternal.settings.serviceIdentifier, data: jsonString)
+            let event = AnalyticEvent(serviceIdentifier: sendingSettings.serviceIdentifier, data: jsonString)
             sendAnalyticEvent(event)
         }
     }
@@ -336,6 +345,47 @@ class Rest: Restable {
             parameters:
             fingerprint,
             encoder: JSONParameterEncoder.default,
+            acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        return try trackPossibleAFErrorAndReturn(response)
+    }
+    
+    func getGWToken() async throws /*(PrivoError)*/ -> TokenResponse {
+        guard let clientCredentials = PrivoInternal.settings.clientCredentials
+        else {
+            throw PrivoError.notInitialized(PrivoSettingsError.clientCredentialsNotFound)
+        }
+        let clientData = OAuthToken(client_id: clientCredentials.id, client_secret: clientCredentials.secret)
+        let url = PrivoInternal.configuration.gatewayUrl
+            .appending("token")
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
+        let response: AFDataResponse<TokenResponse> = await session.request(
+            url,
+            method: .post,
+            parameters:
+            clientData,
+            encoder: URLEncodedFormParameterEncoder.default,
+            decoder: jsonDecoder,
+            headers: HTTPHeaders(arrayLiteral: .init(name: "Content-Type", value: "application/x-www-form-urlencoded")),
+            acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        return try trackPossibleAFErrorAndReturn(response)
+    }
+    
+    func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws /*(PrivoError)*/ -> RegisterResponse {
+        let url = PrivoInternal.configuration.gatewayUrl
+            .appending(.api)
+            .appending(.v1_0)
+            .appending("account")
+            .appending("parent")
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
+        let response: AFDataResponse<RegisterResponse> = await session.request(
+            url,
+            method: .post,
+            parameters: parentChildPair,
+            encoder: JSONParameterEncoder.convertToSnakeCase,
+            decoder: jsonDecoder,
+            headers: HTTPHeaders(arrayLiteral: .init(name: "Authorization", value: "Bearer \(token)")),
             acceptableStatusCodes: Rest.acceptableStatusCodes
         )
         return try trackPossibleAFErrorAndReturn(response)

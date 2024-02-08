@@ -16,6 +16,7 @@ public class PrivoConfiguration {
     let ageGatePublicUrl: URL
     let ageVerificationBaseUrl: URL
     let ageVerificationPublicUrl: URL
+    let gatewayUrl: URL
     let tokenStorageKey: String
     let privoServiceKey: String
     
@@ -31,6 +32,7 @@ public class PrivoConfiguration {
                 ageGatePublicUrl: URL? = nil,
                 ageVerificationBaseUrl: URL? = nil,
                 ageVerificationPublicUrl: URL? = nil,
+                gatewayUrl: URL? = nil,
                 tokenStorageKey: String? = nil,
                 privoServiceKey: String? = nil) {
         self.type = type
@@ -44,6 +46,7 @@ public class PrivoConfiguration {
         self.ageGatePublicUrl = ageGatePublicUrl ?? defaultValues.ageGatePublicUrl
         self.ageVerificationBaseUrl = ageVerificationBaseUrl ?? defaultValues.ageVerificationBaseUrl
         self.ageVerificationPublicUrl = ageVerificationPublicUrl ?? defaultValues.ageVerificationPublicUrl
+        self.gatewayUrl = gatewayUrl ?? defaultValues.gatewayUrl
         self.tokenStorageKey = tokenStorageKey ?? defaultValues.tokenStorageKey
         self.privoServiceKey = tokenStorageKey ?? defaultValues.tokenStorageKey
         self.urlPrefix = defaultValues.urlPrefix
@@ -68,6 +71,7 @@ public class PrivoConfiguration {
             self.ageGatePublicUrl = URL(string: "https://age-dev.privo.com/gate")!
             self.ageVerificationBaseUrl = URL(string: "https://ageverification-dev.privo.com/api/v1.0")!
             self.ageVerificationPublicUrl = URL(string: "https://age-dev.privo.com/verification")!
+            self.gatewayUrl = URL(string: "https://api-gw-svc-dev.privo.com")!
             self.tokenStorageKey = "privo-token-local"
         case .Dev:
             self.urlPrefix = "-dev"
@@ -81,6 +85,7 @@ public class PrivoConfiguration {
             self.ageGatePublicUrl = URL(string: "https://age-dev.privo.com/gate")!
             self.ageVerificationBaseUrl = URL(string: "https://ageverification-dev.privo.com/api/v1.0")!
             self.ageVerificationPublicUrl = URL(string: "https://age-dev.privo.com/verification")!
+            self.gatewayUrl = URL(string: "https://api-gw-svc-dev.privo.com")!
             self.tokenStorageKey = "privo-token-dev"
         case .Int:
             self.urlPrefix = "-int"
@@ -94,6 +99,7 @@ public class PrivoConfiguration {
             self.ageGatePublicUrl = URL(string: "https://age-int.privo.com/gate")!
             self.ageVerificationBaseUrl = URL(string: "https://ageverification-int.privo.com/api/v1.0")!
             self.ageVerificationPublicUrl = URL(string: "https://age-int.privo.com/verification")!
+            self.gatewayUrl = URL(string: "https://api-gw-svc-int.privo.com")!
             self.tokenStorageKey = "privo-token-int"
         case .Test:
             self.urlPrefix = "-test"
@@ -107,6 +113,7 @@ public class PrivoConfiguration {
             self.ageGatePublicUrl = URL(string: "https://age-test.privo.com/gate")!
             self.ageVerificationBaseUrl = URL(string: "https://ageverification-test.privo.com/api/v1.0")!
             self.ageVerificationPublicUrl = URL(string: "https://age-test.privo.com/verification")!
+            self.gatewayUrl = URL(string: "https://api-gw-svc-test.privo.com")!
             self.tokenStorageKey = "privo-token-test"
         case .Prod:
             self.urlPrefix = ""
@@ -120,6 +127,7 @@ public class PrivoConfiguration {
             self.ageGatePublicUrl = URL(string: "https://age.privo.com/gate")!
             self.ageVerificationBaseUrl = URL(string: "https://ageverification.privo.com/api/v1.0")!
             self.ageVerificationPublicUrl = URL(string: "https://age.privo.com/verification")!
+            self.gatewayUrl = URL(string: "https://api-gw-svc.privo.com")!
             self.tokenStorageKey = "privo-token"
         }
     }

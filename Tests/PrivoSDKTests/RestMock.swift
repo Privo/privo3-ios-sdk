@@ -33,8 +33,6 @@ extension AgeGateStatusResponse {
     )
 }
 
-
-
 class RestMock: Restable {
     func addObjectToTMPStorage<T>(value: T, completionHandler: ((String?) -> Void)?) where T : Encodable {
         completionHandler?("")
@@ -87,4 +85,12 @@ class RestMock: Restable {
     func trackCustomError(_ errorDescr: String) {}
     
     func sendAnalyticEvent(_ event: AnalyticEvent) {}
+    
+    func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse {
+        return .init(to: .init(updatePasswordLink: URL(string: "https://privo.com")!))
+    }
+    
+    func getGWToken() async throws -> TokenResponse {
+        return .init(accessToken: "accesstoken", tokenType: "Bearer", expiresIn: 5999, scope: "update_password_link")
+    }
 }
