@@ -114,6 +114,14 @@ public class PrivoAuth {
         }
     }
     
+    public struct RegisterResponse: Codable {
+        var resetPasswordLink: URL
+        
+        init(resetPasswordLink: URL) {
+            self.resetPasswordLink = resetPasswordLink
+        }
+    }
+    
     //MARK: - Private properties
     
     private let app: UIApplication
@@ -218,7 +226,7 @@ public class PrivoAuth {
     }
     
     @discardableResult
-    public func register(child: ChildData, parentEmail: String) async throws /*(PrivoError)*/ -> URL {
+    public func register(child: ChildData, parentEmail: String) async throws /*(PrivoError)*/ -> RegisterResponse {
         let gwTokenResponse = try await api.getGWToken()
         let gwToken = gwTokenResponse.accessToken
         
@@ -230,16 +238,16 @@ public class PrivoAuth {
             ])
         let response = try await api.registerParentAndChild(parentChildPair, gwToken)
         
-        return response.to.updatePasswordLink
+        return .init(resetPasswordLink: response.to.updatePasswordLink)
     }
     
     @MainActor
-    public func showUpdatePassword(link updatePasswordLink: URL) async throws /*(PrivoError)*/ {
+    public func showUpdatePassword(registerResponse: RegisterResponse) async throws /*(PrivoError)*/ {
         let authDialog = AuthDialog()
         return try await withCheckedThrowingContinuation { promise in
             Task.init(priority: .userInitiated) { @MainActor in
                 app.showView(false) {
-                    UpdatePasswordView(url: updatePasswordLink,
+                    UpdatePasswordView(url: registerResponse.resetPasswordLink,
                         onClose: {
                             Task { @MainActor in
                                 authDialog.hide()
