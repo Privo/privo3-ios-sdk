@@ -5,6 +5,8 @@ struct WebviewConfig {
     let url: URL
     var closeIcon: Image?
     var showCloseIcon = true
+    var scriptUrlTrigger: String?
+    var script: String?
     var printCriteria: String?
     var finishCriteria: String?
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
@@ -49,6 +51,8 @@ struct Webview: UIViewRepresentable {
         coordinator.onFinish = config.onFinish
         coordinator.printCriteria = config.printCriteria
         coordinator.onFinish = config.onFinish
+        coordinator.scriptUrlTrigger = config.scriptUrlTrigger
+        coordinator.script = config.script
         return coordinator
     }
 
@@ -123,6 +127,8 @@ struct Webview: UIViewRepresentable {
         
         var printCriteria: String?
         var finishCriteria: String?
+        var scriptUrlTrigger: String?
+        var script: String?
         var onLoad: (() -> Void)?
         var onFinish: ((String) -> Void)?
         
@@ -140,11 +146,19 @@ struct Webview: UIViewRepresentable {
                 decisionHandler(result)
             }
             if let url = navigationAction.request.url?.absoluteString,
-               let finishCriteria = finishCriteria,
                let onFinish = onFinish {
-                if  url.contains(finishCriteria) {
+                if let finishCriteria = finishCriteria,
+                   url.contains(finishCriteria)
+                {
                     onFinish(url)
                     return
+                } else if let scriptUrlTrigger = scriptUrlTrigger,
+                          let script = script,
+                          scriptUrlTrigger == url
+                {
+                    notify(isEqualFalse: script, in: webView) {
+                        onFinish(url)
+                    }
                 }
             }
             if let url = navigationAction.request.url,
@@ -276,4 +290,23 @@ struct Webview: UIViewRepresentable {
     }
  */
 
+func notify(isEqualFalse script: String, in webview: WKWebView?, _ completion: @escaping ()->Void) {
+    guard let webView = webview else {
+        return
+    }
+    
+    webView.evaluateJavaScript(script) { [weak webview] (result, error) in
+        if let result = result as? Bool {
+            if result {
+                DispatchQueue.main.asyncAfter(deadline: .now()+1) {
+                    notify(isEqualFalse: script, in: webview, completion)
+                }
+            } else {
+                completion()
+            }
+        } else {
+            completion()
+        }
+    }
+}
 
