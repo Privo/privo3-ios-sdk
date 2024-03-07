@@ -9,10 +9,11 @@ struct WebviewConfig {
     var script: String?
     var printCriteria: String?
     var finishCriteria: String?
-    var onPrivoEvent: (([String : AnyObject]?) -> Void)?;
+    var onPrivoEvent: (([String : AnyObject]?) -> Void)?
     var onFinish: ((String) -> Void)?
     var onClose: (() -> Void)?
 }
+
 class WebViewModel: ObservableObject {
     
     let permissionService: PrivoCameraPermissionServiceType
@@ -20,8 +21,8 @@ class WebViewModel: ObservableObject {
     init(permissionService: PrivoCameraPermissionServiceType) {
         self.permissionService = permissionService
     }
-    
 }
+
 struct Webview: UIViewRepresentable {
     
     //MARK: - Internal properties

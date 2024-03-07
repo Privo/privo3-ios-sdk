@@ -27,7 +27,7 @@ struct UpdatePasswordView: View {
             scriptUrlTrigger: "about:blank",
             script: "document.querySelector(\"[ng-show='step == steps.COMPLETE']\").classList.contains(\"ng-hide\")",
             onFinish: { _ in onFinish?() },
-            onClose: { onClose() }
+            onClose: onClose
         ))
     }
     
