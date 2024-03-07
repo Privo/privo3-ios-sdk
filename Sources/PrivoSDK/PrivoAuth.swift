@@ -246,7 +246,7 @@ public class PrivoAuth {
         let authDialog = AuthDialog()
         return try await withCheckedThrowingContinuation { promise in
             Task.init(priority: .userInitiated) { @MainActor in
-                app.showView(false) {
+                app.showView(presentationStyle: .overFullScreen, true) {
                     UpdatePasswordView(url: registerResponse.resetPasswordLink,
                         onClose: {
                             Task { @MainActor in

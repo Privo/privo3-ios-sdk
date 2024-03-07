@@ -13,6 +13,7 @@ struct UpdatePasswordView: View {
     private var config: WebviewConfig
 
     private var closeIcon: Image?
+    private let backgroundColor: Color = .white
     
     public init(url: URL,
                 onClose: @escaping () -> Void,
@@ -30,6 +31,29 @@ struct UpdatePasswordView: View {
     }
     
     public var body: some View {
-        ModalWebView(isPresented: self.$isPresented, config: config)
+        ZStack {
+            Color.black
+                .edgesIgnoringSafeArea(.all)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .opacity(isPresented ? 0.4 : 0)
+                .allowsHitTesting(isPresented)
+                .transition(.opacity)
+                .animation(.easeOut(duration: 0.3), value: isPresented)
+            
+            VStack(spacing: 0) {
+                Spacer()
+                VStack(spacing: 0) {
+                    TopRoundedCornerRectangleShape(radius: 8)
+                        .fill(backgroundColor)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 26) // Sometimes, the background color may not be transparent, and applying a white background may not be visible. In this case, the header color will not match the background color. Let's make the header height moderate and not too narrow, so that in this case, the overall appearance of the pop-up widget does not look bad.
+                    
+                    ModalWebView(isPresented: $isPresented, config: config)
+                        .background(backgroundColor)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 500)
+                }.transition(.slide)
+            }.edgesIgnoringSafeArea(.bottom)
+        }
     }
 }
