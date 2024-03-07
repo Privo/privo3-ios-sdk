@@ -8,6 +8,9 @@ struct UpdatePasswordView: View {
     
     @State
     private var isPresented: Bool = true
+    
+    @State
+    private var isPresentedAnimation: Bool = false
 
     @State
     private var config: WebviewConfig
@@ -37,10 +40,10 @@ struct UpdatePasswordView: View {
             Color.black
                 .edgesIgnoringSafeArea(.all)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .opacity(isPresented ? 0.4 : 0)
-                .allowsHitTesting(isPresented)
+                .opacity(isPresentedAnimation ? 0.4 : 0)
+                .allowsHitTesting(isPresentedAnimation)
                 .transition(.opacity)
-                .animation(.easeOut(duration: 0.3), value: isPresented)
+                .animation(.easeOut(duration: 0.3), value: isPresentedAnimation)
             
             VStack(spacing: 0) {
                 Spacer()
@@ -55,8 +58,14 @@ struct UpdatePasswordView: View {
                         .background(backgroundColor)
                         .frame(maxWidth: .infinity)
                         .frame(height: 500)
-                }.transition(.slide)
+                }
             }.edgesIgnoringSafeArea(.bottom)
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now()+0.5) {
+                    isPresentedAnimation = isPresented
+                }
+            }
+            //since iOS14 use onChange (for isPresented variable) to updated isPresentedAnimation back
         }
     }
 }
