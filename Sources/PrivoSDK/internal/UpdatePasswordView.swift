@@ -15,10 +15,11 @@ struct UpdatePasswordView: View {
     private var closeIcon: Image?
     private let backgroundColor: Color = .white
     
-    public init(url: URL,
+    public init(url url_: URL,
                 onClose: @escaping () -> Void,
                 onFinish: (() -> Void)? = nil) {
-        self.url = url
+        // It's even better to add &mode=SIMPLE to the URL to hide the potential header and footer.
+        self.url = url_.withQueryParam(name: "mode", value: "SIMPLE")
         self.onFinish = onFinish
         self.onClose = onClose
         self._config = State(initialValue: WebviewConfig(url: url,
