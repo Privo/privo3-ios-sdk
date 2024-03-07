@@ -23,7 +23,8 @@ struct UpdatePasswordView: View {
         self.onFinish = onFinish
         self.onClose = onClose
         self._config = State(initialValue: WebviewConfig(url: url,
-            closeIcon: closeIcon,
+            closeIcon: nil,
+            showCloseIcon: false,
             scriptUrlTrigger: "about:blank",
             script: "document.querySelector(\"[ng-show='step == steps.COMPLETE']\").classList.contains(\"ng-hide\")",
             onFinish: { _ in onFinish?() },
