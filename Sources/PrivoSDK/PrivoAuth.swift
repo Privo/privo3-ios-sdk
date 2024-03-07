@@ -237,8 +237,24 @@ public class PrivoAuth {
                 try .init(child: child)
             ])
         let response = try await api.registerParentAndChild(parentChildPair, gwToken)
+        var resetPasswordLink = response.to.updatePasswordLink
         
-        return .init(resetPasswordLink: response.to.updatePasswordLink)
+        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
+        if let serviceInfo = await api.getServiceInfo(serviceIdentifier: serviceIdentifier),
+           let siteId = serviceInfo.p2siteId
+        {
+            var components = resetPasswordLink.urlComponent()
+            let queryItemsOld = components.queryItems ?? []
+            let queryItemsNoSiteId = queryItemsOld.filter {
+                $0.name.lowercased() != "siteid"
+            }
+            let queryItemsUpdated = queryItemsNoSiteId + [URLQueryItem(name: "siteId", value: String(siteId))]
+            components.queryItems = queryItemsUpdated
+            
+            resetPasswordLink = components.url ?? resetPasswordLink
+        }
+        
+        return .init(resetPasswordLink: resetPasswordLink)
     }
     
     @MainActor

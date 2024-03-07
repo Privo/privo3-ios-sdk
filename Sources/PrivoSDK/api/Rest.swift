@@ -50,6 +50,7 @@ protocol Restable {
     func sendAnalyticEvent(_ event: AnalyticEvent)
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse
     func getGWToken() async throws -> TokenResponse
+    func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo?
 }
 
 class Rest: Restable {
