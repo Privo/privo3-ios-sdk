@@ -10,9 +10,8 @@ struct ModalWebView: View {
     private var isLoading: Bool = true
     
     let config: WebviewConfig
-  
+    
     var body: some View {
-      return
         LoadingView(isShowing: $isLoading) {
             VStack() {
               if (self.config.showCloseIcon) {
