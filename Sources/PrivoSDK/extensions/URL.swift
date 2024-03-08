@@ -1,10 +1,14 @@
 import Foundation
 
 extension URL {
-    // Since iOS16 min support version use URL.appending(queryItems: [URLQueryItem]) -> URL
-    func withQueryParam(name: String, value: String?) -> URL {
+    func withQueryParam(replace: Bool = false,
+                        name: String, value: String?) -> URL {
         let queryItem = URLQueryItem(name: name, value: value)
-        return self.withQueryItems([queryItem])
+        if replace {
+            return self.reassigningQueryItems([queryItem])
+        } else {
+            return self.appendingQueryItems([queryItem])
+        }
     }
     
     func withPath(_ value: String) -> URL  {
@@ -46,10 +50,30 @@ extension URL {
             }
         }
     }
+    
+    func reassigningQueryItems(_ queryItems: [URLQueryItem]) -> URL {
+        var queryItemsHashMap: [String: String] = [:]
+        queryItems.forEach {
+            queryItemsHashMap[$0.name.lowercased()] = $0.value
+        }
+        
+        if var urlComponents = URLComponents(string: self.absoluteString) {
+            let queryItemsOld = urlComponents.queryItems ?? []
+            let queryItemsFiltered = queryItemsOld.filter {
+                queryItemsHashMap[$0.name.lowercased()] == nil
+            }
+            let queryItemsUpdated = queryItemsFiltered + queryItems
+            urlComponents.queryItems = queryItemsUpdated
+            
+            if let updatedURL = urlComponents.url {
+                return updatedURL
             } else {
                 // unreachable branch
                 return self
             }
+            
+        } else {
+            return self
         }
     }
     
