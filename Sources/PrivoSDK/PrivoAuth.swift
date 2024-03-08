@@ -243,15 +243,7 @@ public class PrivoAuth {
         if let serviceInfo = await api.getServiceInfo(serviceIdentifier: serviceIdentifier),
            let siteId = serviceInfo.p2siteId
         {
-            var components = resetPasswordLink.urlComponent()
-            let queryItemsOld = components.queryItems ?? []
-            let queryItemsNoSiteId = queryItemsOld.filter {
-                $0.name.lowercased() != "siteid"
-            }
-            let queryItemsUpdated = queryItemsNoSiteId + [URLQueryItem(name: "siteId", value: String(siteId))]
-            components.queryItems = queryItemsUpdated
-            
-            resetPasswordLink = components.url ?? resetPasswordLink
+            resetPasswordLink = resetPasswordLink.withQueryParam(replace: true, name: "siteId", value: String(siteId))
         }
         
         return .init(resetPasswordLink: resetPasswordLink)
