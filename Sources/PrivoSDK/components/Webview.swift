@@ -12,6 +12,7 @@ struct WebviewConfig {
     var onPrivoEvent: (([String : AnyObject]?) -> Void)?
     var onFinish: ((String) -> Void)?
     var onClose: (() -> Void)?
+    var onFailedContent: (() -> Void)?
 }
 
 class WebViewModel: ObservableObject {
@@ -51,9 +52,9 @@ struct Webview: UIViewRepresentable {
         coordinator.finishCriteria = config.finishCriteria
         coordinator.onFinish = config.onFinish
         coordinator.printCriteria = config.printCriteria
-        coordinator.onFinish = config.onFinish
         coordinator.scriptUrlTrigger = config.scriptUrlTrigger
         coordinator.script = config.script
+        coordinator.onFailedContent = config.onFailedContent
         return coordinator
     }
 
@@ -100,6 +101,7 @@ struct Webview: UIViewRepresentable {
     
     class ContentController: WKUserContentController, WKScriptMessageHandler {
         let onPrivoEvent: (([String : AnyObject]?) -> Void)?
+        
         init(_ onPrivoEvent: @escaping ([String : AnyObject]?) -> Void) {
             self.onPrivoEvent = onPrivoEvent
             super.init()
@@ -109,13 +111,13 @@ struct Webview: UIViewRepresentable {
             onPrivoEvent = nil
             super.init(coder: coder)
         }
+        
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard let dict = message.body as? [String : AnyObject] else {
                 onPrivoEvent?(nil)
                 return
             }
             onPrivoEvent?(dict)
-            
         }
     }
     
@@ -130,8 +132,8 @@ struct Webview: UIViewRepresentable {
         var finishCriteria: String?
         var scriptUrlTrigger: String?
         var script: String?
-        var onLoad: (() -> Void)?
         var onFinish: ((String) -> Void)?
+        var onFailedContent: (() -> Void)?
         
         // let fileManager = FileManager()
         // var lastFileDestinationURL: URL?
@@ -179,6 +181,12 @@ struct Webview: UIViewRepresentable {
                     return
                 }
             }
+            if let url = navigationAction.request.url?.absoluteString,
+               url.hasSuffix("404.html")
+            {
+                onFailedContent?()
+            }
+               
         }
         
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

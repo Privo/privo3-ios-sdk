@@ -255,7 +255,7 @@ public class PrivoAuth {
         return try await withCheckedThrowingContinuation { promise in
             Task.init(priority: .userInitiated) { @MainActor in
                 app.showView(presentationStyle: .overFullScreen, true) {
-                    UpdatePasswordView(url: registerResponse.resetPasswordLink,
+                    UpdatePasswordView(.init(url: registerResponse.resetPasswordLink,
                         onClose: {
                             Task { @MainActor in
                                 authDialog.hide()
@@ -267,7 +267,7 @@ public class PrivoAuth {
                                 authDialog.hide()
                                 promise.resume(returning: ())
                             }
-                        })
+                        }))
                 }
             }
         }
