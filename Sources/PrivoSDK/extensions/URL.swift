@@ -26,13 +26,13 @@ extension URL {
         return URLComponents(url: self, resolvingAgainstBaseURL: resolvingAgainstBaseURL)!
     }
     
-    func withQueryItems(_ queryItems: [URLQueryItem]) -> URL {
+    // Since iOS16 min support version use URL.appending(queryItems: [URLQueryItem]) -> URL
+    func appendingQueryItems(_ queryItems: [URLQueryItem]) -> URL {
         if #available(iOS 16, *) {
             return appending(queryItems: queryItems)
         } else {
-            if var urlComponents = URLComponents(string: self.absoluteString),
-               var existingQueryItems: [URLQueryItem] = urlComponents.queryItems
-            {
+            if var urlComponents = URLComponents(string: self.absoluteString) {
+                var existingQueryItems: [URLQueryItem] = urlComponents.queryItems ?? []
                 existingQueryItems.append(contentsOf: queryItems)
                 urlComponents.queryItems = existingQueryItems
                 if let updatedURL = urlComponents.url {
@@ -41,6 +41,11 @@ extension URL {
                     // unreachable branch
                     return self
                 }
+            } else {
+                return self
+            }
+        }
+    }
             } else {
                 // unreachable branch
                 return self
