@@ -46,17 +46,24 @@ internal struct CheckAgeStoreData: Encodable {
     init(serviceIdentifier: String,
                      state: AgeState,
                      data: CheckAgeData,
-                     redirectUrl: String?) {
+                     redirectUrl: String?,
+                     event: AgeGateEvent?
+    ) {
+        // TODO: check additional cases: differents and nonnil
+        let agId: String? = state.agId ?? event?.agId
+        let userIdentifier: String? = data.userIdentifier ?? event?.userIdentifier
+        let nickname: String? = data.nickname ?? event?.nickname
+        
         self.init(serviceIdentifier: serviceIdentifier,
              settings: state.settings,
-             userIdentifier: data.userIdentifier,
-             nickname: data.nickname,
+             userIdentifier: userIdentifier,
+             nickname: nickname,
              countryCode: data.countryCode,
              birthDateYYYYMMDD: data.birthDateYYYYMMDD,
              birthDateYYYYMM: data.birthDateYYYYMM,
              birthDateYYYY: data.birthDateYYYY,
              redirectUrl: redirectUrl,
-             agId: state.agId,
+             agId: agId,
              fpId: state.fpId,
              age: data.age)
     }
