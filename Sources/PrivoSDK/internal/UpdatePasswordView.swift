@@ -34,18 +34,11 @@ struct UpdatePasswordView: View {
             
             VStack(spacing: 0) {
                 Spacer()
-                VStack(spacing: 0) {
-                    Rectangle()
-                        .fill(backgroundColor)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 26) // Sometimes, the background color may not be transparent, and applying a white background may not be visible. In this case, the header color will not match the background color. Let's make the header height moderate and not too narrow, so that in this case, the overall appearance of the pop-up widget does not look bad.
-                        .cornerRadiusTop(8)
-                    
-                    ModalWebView(isPresented: $vm.isPresented, config: vm.config)
-                        .background(backgroundColor)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 500)
-                }
+                ModalWebView(isPresented: $vm.isPresented, config: vm.config)
+                    .background(backgroundColor)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 520)
+                    .cornerRadiusTop(8)
             }.edgesIgnoringSafeArea(.bottom)
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now()+0.5) {
