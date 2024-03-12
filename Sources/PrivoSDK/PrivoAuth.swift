@@ -226,13 +226,13 @@ public class PrivoAuth {
     }
     
     @discardableResult
-    public func register(child: ChildData, parentEmail: String) async throws /*(PrivoError)*/ -> RegisterResponse {
+    public func register(child: ChildData, parent: ParentData) async throws /*(PrivoError)*/ -> RegisterResponse {
         let gwTokenResponse = try await api.getGWToken()
         let gwToken = gwTokenResponse.accessToken
         
         let parentChildPair = ParentChildPair(
-            roleIdentifier: RoleIdentifier.parentStandard.rawValue,
-            email: parentEmail,
+            roleIdentifier: parent.roleIdentifier,
+            email: parent.email,
             minorRegistrations: [
                 try .init(child: child)
             ])
