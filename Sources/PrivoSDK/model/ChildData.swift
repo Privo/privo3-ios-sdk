@@ -1,18 +1,21 @@
 import Foundation
 
 public struct ChildData {
-    public let birthdate: BirthDatePrecision
-    public let username: String
-    public let displayname: String
-    public let firstname: String
-    public let lastname: String?
+    let roleIdentifier: String
+    let birthdate: BirthDatePrecision
+    let username: String
+    let displayname: String
+    let firstname: String
+    let lastname: String?
     
-    public init(birthdate: BirthDatePrecision,
+    public init(roleIdentifier: String,
+                birthdate: BirthDatePrecision,
                 username: String,
                 displayname: String? = nil,
                 firstname: String,
                 lastname: String? = nil
     ) {
+        self.roleIdentifier = roleIdentifier
         self.username = username
         if let displayname = displayname {
             self.displayname = displayname

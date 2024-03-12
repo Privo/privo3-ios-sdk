@@ -1,10 +1,5 @@
 import Foundation
 
-enum RoleIdentifier: String {
-    case parentStandard = "STANDARD_PARENT_1"
-    case childDefault = "DEFAULT_CHILD"
-}
-
 struct ParentChildPair: Encodable {
     let roleIdentifier: String
     let email: String
@@ -21,6 +16,7 @@ struct ParentChildPair: Encodable {
         let attributes: [Attribute]
         
         init(child: ChildData) throws /* (PrivoError) */ {
+            self.roleIdentifier = child.roleIdentifier
             self.firstName = child.firstname
             self.lastName = child.lastname
             self.userName = child.username
@@ -32,7 +28,6 @@ struct ParentChildPair: Encodable {
             }
             self.birthDateYYYYMMDD = dateFormatter.string(from: childBirthdate)
             self.sendParentEmail = true
-            self.roleIdentifier = RoleIdentifier.childDefault.rawValue
             self.sendCongratulationsEmail = true
             self.attributes = [
                 .displayName(child.displayname)
