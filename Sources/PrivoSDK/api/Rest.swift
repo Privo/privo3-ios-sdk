@@ -404,7 +404,7 @@ class Rest: Restable {
         let response: AFDataResponse<AccountInfoResponse> = await session.request(
             url,
             method: .get,
-            parameters: accountIdentifier,
+            parameters: AccountIdentifierRequest(accountIdentifier),
             encoder: URLEncodedFormParameterEncoder.default,
             decoder: jsonDecoder,
             headers: HTTPHeaders(arrayLiteral:
@@ -414,7 +414,6 @@ class Rest: Restable {
            acceptableStatusCodes: Rest.acceptableStatusCodes
         )
         return try trackPossibleAFErrorAndReturn(response)
-        
     }
     
     func consentResend(requesterSid: String, approverSid: String, email: String, _ token: String) async throws {
