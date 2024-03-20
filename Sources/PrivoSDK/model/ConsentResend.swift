@@ -7,8 +7,8 @@ struct ConsentResendRequest: Encodable {
 }
 
 struct ConsentResendResponse: Decodable {
-    let status: Status
+    let status: ConsentResendStatus
 }
 
-struct Status: Decodable {
+struct ConsentResendStatus: Decodable {
 }

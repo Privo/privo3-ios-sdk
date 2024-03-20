@@ -273,7 +273,7 @@ public class PrivoAuth {
         }
     }
     
-    public func consentResend(_ requester: AccountIdentifier, _ approver: AccountIdentifier, email: String) async throws {
+    public func consentResend(requester: AccountIdentifier, approver: AccountIdentifier, approverEmail: String) async throws /* (PrivoError) */ {
         
         let gwTokenResponse = try await api.getGWToken()
         let gwToken = gwTokenResponse.accessToken
@@ -281,6 +281,6 @@ public class PrivoAuth {
         async let requesterSid = api.getUserIdentifier(requester, gwToken).sid
         async let approverSid = api.getUserIdentifier(approver, gwToken).sid
                 
-        try await api.consentResend(requesterSid: requesterSid, approverSid: approverSid, email: email, gwToken)
+        try await api.consentResend(requesterSid: requesterSid, approverSid: approverSid, email: approverEmail, gwToken)
     }
 }
