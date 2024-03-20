@@ -51,6 +51,7 @@ protocol Restable {
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse
     func getGWToken() async throws -> TokenResponse
     func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo?
+    func getUserIdentifier(_ accountIdentifier: AccountIdentifier,  _ token: String) async throws -> AccountInfoResponse
 }
 
 class Rest: Restable {
@@ -390,6 +391,29 @@ class Rest: Restable {
             acceptableStatusCodes: Rest.acceptableStatusCodes
         )
         return try trackPossibleAFErrorAndReturn(response)
+    }
+    
+    func getUserIdentifier(_ accountIdentifier: AccountIdentifier,  _ token: String) async throws -> AccountInfoResponse {
+        let url = PrivoInternal.configuration.gatewayUrl
+            .appending(.api)
+            .appending(.v1_0)
+            .appending("account")
+            .appending("lookup")
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
+        let response: AFDataResponse<AccountInfoResponse> = await session.request(
+            url,
+            method: .get,
+            parameters: accountIdentifier,
+            encoder: URLEncodedFormParameterEncoder.default,
+            decoder: jsonDecoder,
+            headers: HTTPHeaders(arrayLiteral:
+                    .init(name: "accept", value: "application/json"),
+                    .init(name: "Authorization", value: "Bearer \(token)")
+            ),
+           acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        return try trackPossibleAFErrorAndReturn(response)
+        
     }
     
     //MARK: - Private functions
