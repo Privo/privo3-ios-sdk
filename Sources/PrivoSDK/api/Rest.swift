@@ -52,6 +52,7 @@ protocol Restable {
     func getGWToken() async throws -> TokenResponse
     func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo?
     func getUserIdentifier(_ accountIdentifier: AccountIdentifier,  _ token: String) async throws -> AccountInfoResponse
+    func consentResend(requesterSid: String, approverSid: String, email: String, _ token: String) async throws
 }
 
 class Rest: Restable {
@@ -414,6 +415,30 @@ class Rest: Restable {
         )
         return try trackPossibleAFErrorAndReturn(response)
         
+    }
+    
+    func consentResend(requesterSid: String, approverSid: String, email: String, _ token: String) async throws {
+        let url = PrivoInternal.configuration.gatewayUrl
+            .appending(.api)
+            .appending(.v1_0)
+            .appending("consent")
+            .appending("resend")
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
+        let consentResendRequest: ConsentResendRequest = .init(requesterServiceId: requesterSid, approverServiceId: approverSid, email: email)
+        let response: AFDataResponse<ConsentResendResponse> = await session.request(
+            url,
+            method: .post,
+            parameters: consentResendRequest,
+            encoder: JSONParameterEncoder.convertToSnakeCase,
+            decoder: jsonDecoder,
+            headers: HTTPHeaders(arrayLiteral:
+                    .init(name: "accept", value: "application/json"),
+                    .init(name: "Content-Type", value: " application/json"),
+                    .init(name: "Authorization", value: "Bearer \(token)")
+            ),
+           acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        let _ = try trackPossibleAFErrorAndReturn(response)
     }
     
     //MARK: - Private functions
