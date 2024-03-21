@@ -226,19 +226,27 @@ public class PrivoAuth {
     }
     
     @discardableResult
-    public func register(child: ChildData, parentEmail: String) async throws /*(PrivoError)*/ -> RegisterResponse {
+    public func register(child: ChildData, parent: ParentData) async throws /*(PrivoError)*/ -> RegisterResponse {
         let gwTokenResponse = try await api.getGWToken()
         let gwToken = gwTokenResponse.accessToken
         
         let parentChildPair = ParentChildPair(
-            roleIdentifier: RoleIdentifier.parentStandard.rawValue,
-            email: parentEmail,
+            roleIdentifier: parent.roleIdentifier,
+            email: parent.email,
             minorRegistrations: [
                 try .init(child: child)
             ])
         let response = try await api.registerParentAndChild(parentChildPair, gwToken)
+        var resetPasswordLink = response.to.updatePasswordLink
         
-        return .init(resetPasswordLink: response.to.updatePasswordLink)
+        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
+        if let serviceInfo = await api.getServiceInfo(serviceIdentifier: serviceIdentifier),
+           let siteId = serviceInfo.p2siteId
+        {
+            resetPasswordLink = resetPasswordLink.withQueryParam(replace: true, name: "siteId", value: String(siteId))
+        }
+        
+        return .init(resetPasswordLink: resetPasswordLink)
     }
     
     @MainActor
@@ -246,8 +254,8 @@ public class PrivoAuth {
         let authDialog = AuthDialog()
         return try await withCheckedThrowingContinuation { promise in
             Task.init(priority: .userInitiated) { @MainActor in
-                app.showView(false) {
-                    UpdatePasswordView(url: registerResponse.resetPasswordLink,
+                app.showView(presentationStyle: .overFullScreen, true) {
+                    UpdatePasswordView(.init(url: registerResponse.resetPasswordLink,
                         onClose: {
                             Task { @MainActor in
                                 authDialog.hide()
@@ -259,7 +267,7 @@ public class PrivoAuth {
                                 authDialog.hide()
                                 promise.resume(returning: ())
                             }
-                        })
+                        }))
                 }
             }
         }
