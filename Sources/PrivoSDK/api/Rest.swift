@@ -371,7 +371,10 @@ class Rest: Restable {
             clientData,
             encoder: URLEncodedFormParameterEncoder.default,
             decoder: jsonDecoder,
-            headers: HTTPHeaders(arrayLiteral: .init(name: "Content-Type", value: "application/x-www-form-urlencoded")),
+            headers: HTTPHeaders(arrayLiteral:
+                    .init(name: "Content-Type", value: "application/x-www-form-urlencoded"),
+                    .init(name: "Accept", value: "application/json")
+            ),
             acceptableStatusCodes: Rest.acceptableStatusCodes
         )
         return try trackPossibleAFErrorAndReturn(response)
@@ -410,7 +413,7 @@ class Rest: Restable {
             encoder: URLEncodedFormParameterEncoder.default,
             decoder: jsonDecoder,
             headers: HTTPHeaders(arrayLiteral:
-                    .init(name: "accept", value: "application/json"),
+                    .init(name: "Accept", value: "application/json"),
                     .init(name: "Authorization", value: "Bearer \(token)")
             ),
            acceptableStatusCodes: Rest.acceptableStatusCodes
@@ -428,7 +431,7 @@ class Rest: Restable {
             method: .post,
             decoder: jsonDecoder,
             headers: HTTPHeaders(arrayLiteral:
-                    .init(name: "accept", value: "application/json"),
+                    .init(name: "Accept", value: "application/json"),
                     .init(name: "Authorization", value: "Bearer \(token)")
             ),
            acceptableStatusCodes: Rest.acceptableStatusCodes
@@ -451,7 +454,7 @@ class Rest: Restable {
             encoder: JSONParameterEncoder.convertToSnakeCase,
             decoder: jsonDecoder,
             headers: HTTPHeaders(arrayLiteral:
-                    .init(name: "accept", value: "application/json"),
+                    .init(name: "Accept", value: "application/json"),
                     .init(name: "Content-Type", value: " application/json"),
                     .init(name: "Authorization", value: "Bearer \(token)")
             ),
