@@ -5,7 +5,7 @@ public struct UserInfo {
     public let lastName: String?
     public let gender: String?
     public let email: String?
-    public let birthdate: String?
+    public let birthdate: Date?
     public let displayName: String?
     public let roleIdentifier: String
     public let permissions: [Permission]
@@ -45,7 +45,13 @@ struct UserInfoResponse: Decodable {
             lastName: lastName,
             gender: gender,
             email: email,
-            birthdate: birthdate,
+            birthdate: {
+                if let birthdate = birthdate {
+                    return DateFormatter(format: "yyyy-MM-dd").date(from: birthdate)
+                } else {
+                    return nil
+                }
+            }(),
             displayName: displayName,
             roleIdentifier: roleIdentifier,
             permissions: permissions.map(\.permission),
