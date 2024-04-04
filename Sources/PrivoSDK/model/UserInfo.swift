@@ -7,6 +7,7 @@ public struct UserInfo {
     public let email: String?
     public let birthdate: String?
     public let displayName: String?
+    public let roleIdentifier: String
     public let permissions: [Permission]
     
     public struct Permission {
@@ -22,6 +23,7 @@ struct UserInfoResponse: Decodable {
     let gender: String?
     let email: String?
     let birthdate: String?
+    let roleIdentifier: String
     let permissions: [Permission]
     let displayName: String?
     struct Permission: Decodable {
@@ -45,7 +47,8 @@ struct UserInfoResponse: Decodable {
             email: email,
             birthdate: birthdate,
             displayName: displayName,
-            permissions: permissions.map(\.permission)
+            roleIdentifier: roleIdentifier,
+            permissions: permissions.map(\.permission),
         )
     }
 }
