@@ -7,6 +7,13 @@ public struct UserInfo {
     public let email: String?
     public let birthdate: String?
     public let displayName: String?
+    public let permissions: [Permission]
+    
+    public struct Permission {
+        public let consentDate: Date
+        public let on: Bool
+        public let featureIdentifier: String
+    }
 }
 
 struct UserInfoResponse: Decodable {
@@ -18,7 +25,16 @@ struct UserInfoResponse: Decodable {
     let permissions: [Permission]
     let displayName: String?
     struct Permission: Decodable {
+        let consentDate: Int
+        let on: Bool
         let featureIdentifier: String
+        
+        var permission: UserInfo.Permission {
+            .init(consentDate: Date(timeIntervalSince1970:  TimeInterval(consentDate)),
+                  on: on,
+                  featureIdentifier: featureIdentifier
+            )
+        }
     }
     
     var userinfo: UserInfo {
@@ -28,7 +44,8 @@ struct UserInfoResponse: Decodable {
             gender: gender,
             email: email,
             birthdate: birthdate,
-            displayName: displayName
+            displayName: displayName,
+            permissions: permissions.map(\.permission)
         )
     }
 }
