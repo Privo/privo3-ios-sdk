@@ -1,7 +1,7 @@
 import Foundation
 
 public struct UserInfo {
-    public let givenName: String?
+    public let firstName: String?
     public let lastName: String?
     public let gender: String?
     public let email: String?
@@ -41,7 +41,7 @@ struct UserInfoResponse: Decodable {
     
     var userinfo: UserInfo {
         return .init(
-            givenName: givenName,
+            firstName: givenName,
             lastName: lastName,
             gender: gender,
             email: email,
@@ -54,7 +54,7 @@ struct UserInfoResponse: Decodable {
             }(),
             displayName: displayName,
             roleIdentifier: roleIdentifier,
-            permissions: permissions.map(\.permission),
+            permissions: permissions.map(\.permission)
         )
     }
 }
