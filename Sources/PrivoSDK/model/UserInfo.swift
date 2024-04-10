@@ -11,9 +11,17 @@ public struct UserInfo {
     public let permissions: [Permission]
     
     public struct Permission {
+        
+        public enum Category: String {
+            case standard
+            case optional
+        }
+        
         public let consentDate: Date
         public let on: Bool
         public let featureIdentifier: String
+        public let category: Category
+        public let active: Bool
     }
 }
 
@@ -27,14 +35,52 @@ struct UserInfoResponse: Decodable {
     let permissions: [Permission]
     let displayName: String?
     struct Permission: Decodable {
+        
+        enum Category: String, Decodable {
+            case standard
+            case optional
+            
+            init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let stringValue = try container.decode(String.self)
+
+                switch stringValue.lowercased() {
+                case Self.standard.rawValue.lowercased():
+                    self = .standard
+                case Self.optional.rawValue.lowercased():
+                    self = .optional
+                default:
+                    throw DecodingError.dataCorrupted(
+                        DecodingError.Context(
+                            codingPath: decoder.codingPath,
+                            debugDescription: "Cannot initialize Category from invalid String value \(stringValue)"
+                        )
+                    )
+                }
+            }
+            
+            var toPublic: UserInfo.Permission.Category {
+                switch self {
+                case .standard:
+                    return UserInfo.Permission.Category.standard
+                case .optional:
+                    return UserInfo.Permission.Category.optional
+                }
+            }
+        }
+        
         let consentDate: Int
         let on: Bool
         let featureIdentifier: String
+        let category: Category
+        let active: Bool
         
         var permission: UserInfo.Permission {
             .init(consentDate: Date(timeIntervalSince1970:  TimeInterval(consentDate)),
                   on: on,
-                  featureIdentifier: featureIdentifier
+                  featureIdentifier: featureIdentifier,
+                  category: category.toPublic,
+                  active: active
             )
         }
     }
