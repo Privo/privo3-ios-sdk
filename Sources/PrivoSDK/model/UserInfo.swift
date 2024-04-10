@@ -59,7 +59,7 @@ struct UserInfoResponse: Decodable {
                 }
             }
             
-            var toPublic: UserInfo.Permission.Category {
+            var `public`: UserInfo.Permission.Category {
                 switch self {
                 case .standard:
                     return UserInfo.Permission.Category.standard
@@ -75,17 +75,17 @@ struct UserInfoResponse: Decodable {
         let category: Category
         let active: Bool
         
-        var permission: UserInfo.Permission {
+        var `public`: UserInfo.Permission {
             .init(consentDate: Date(timeIntervalSince1970:  TimeInterval(consentDate)),
                   on: on,
                   featureIdentifier: featureIdentifier,
-                  category: category.toPublic,
+                  category: category.public,
                   active: active
             )
         }
     }
     
-    var userinfo: UserInfo {
+    var `public`: UserInfo {
         return .init(
             firstName: givenName,
             lastName: lastName,
@@ -100,7 +100,7 @@ struct UserInfoResponse: Decodable {
             }(),
             displayName: displayName,
             roleIdentifier: roleIdentifier,
-            permissions: permissions.map(\.permission)
+            permissions: permissions.map(\.public)
         )
     }
 }

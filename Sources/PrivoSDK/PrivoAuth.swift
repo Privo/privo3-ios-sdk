@@ -289,6 +289,6 @@ public class PrivoAuth {
         let gwToken = try await api.getGWToken().accessToken
         let sid = try await api.getUserIdentifier(accountIdentifier, gwToken).sid
         
-        return try await api.getUserInfo(sid: sid, gwToken).userinfo
+        return try await api.getUserInfo(sid: sid, gwToken).public
     }
 }
