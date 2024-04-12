@@ -9,6 +9,12 @@ public struct UserInfo {
     public let displayName: String?
     public let roleIdentifier: String
     public let permissions: [Permission]
+    public let consentRequests: [ConsentRequest]
+    
+    public struct ConsentRequest {
+        let status: String
+        let consentDate: Date
+    }
     
     public struct Permission {
         
@@ -33,7 +39,18 @@ struct UserInfoResponse: Decodable {
     let birthdate: String?
     let roleIdentifier: String
     let permissions: [Permission]
+    let consentRequests: [ConsentRequest]
     let displayName: String?
+    
+    struct ConsentRequest: Decodable {
+        let status: String
+        let consentDate: Int
+        
+        var `public`: UserInfo.ConsentRequest {
+            .init(status: status, consentDate: Date(timeIntervalSince1970:  TimeInterval(consentDate)))
+        }
+    }
+    
     struct Permission: Decodable {
         
         enum Category: String, Decodable {
@@ -100,7 +117,8 @@ struct UserInfoResponse: Decodable {
             }(),
             displayName: displayName,
             roleIdentifier: roleIdentifier,
-            permissions: permissions.map(\.public)
+            permissions: permissions.map(\.public),
+            consentRequests: consentRequests.map(\.public)
         )
     }
 }
