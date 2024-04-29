@@ -12,8 +12,17 @@ public struct UserInfo {
     public let consentRequests: [ConsentRequest]
     
     public struct ConsentRequest {
-        let status: String
-        let consentDate: Date
+        
+        public enum Status: String {
+            case approved
+            case denied
+            case expired
+            case pending
+            case postponed
+        }
+        
+        public let status: Status
+        public let consentDate: Date
     }
     
     public struct Permission {
@@ -43,11 +52,60 @@ struct UserInfoResponse: Decodable {
     let displayName: String?
     
     struct ConsentRequest: Decodable {
-        let status: String
+        
+        enum Status: String, Decodable {
+            case approved
+            case denied
+            case expired
+            case pending
+            case postponed
+            
+            init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let stringValue = try container.decode(String.self)
+
+                switch stringValue.lowercased() {
+                case Self.approved.rawValue.lowercased():
+                    self = .approved
+                case Self.denied.rawValue.lowercased():
+                    self = .denied
+                case Self.expired.rawValue.lowercased():
+                    self = .expired
+                case Self.pending.rawValue.lowercased():
+                    self = .pending
+                case Self.postponed.rawValue.lowercased():
+                    self = .postponed
+                default:
+                    throw DecodingError.dataCorrupted(
+                        DecodingError.Context(
+                            codingPath: decoder.codingPath,
+                            debugDescription: "Cannot initialize Status from invalid String value \(stringValue)"
+                        )
+                    )
+                }
+            }
+            
+            var `public`: UserInfo.ConsentRequest.Status {
+                switch self {
+                case .approved:
+                    return .approved
+                case .denied:
+                    return .denied
+                case .expired:
+                    return .expired
+                case .pending:
+                    return .pending
+                case .postponed:
+                    return .postponed
+                }
+            }
+        }
+        
+        let status: Status
         let consentDate: Int
         
         var `public`: UserInfo.ConsentRequest {
-            .init(status: status, consentDate: Date(timeIntervalSince1970:  TimeInterval(consentDate)))
+            .init(status: status.public, consentDate: Date(timeIntervalSince1970:  TimeInterval(consentDate)))
         }
     }
     
@@ -79,9 +137,9 @@ struct UserInfoResponse: Decodable {
             var `public`: UserInfo.Permission.Category {
                 switch self {
                 case .standard:
-                    return UserInfo.Permission.Category.standard
+                    return .standard
                 case .optional:
-                    return UserInfo.Permission.Category.optional
+                    return .optional
                 }
             }
         }
