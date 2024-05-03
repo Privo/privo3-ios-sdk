@@ -28,14 +28,16 @@ extension Session {
     func request<T:Decodable>(_ url: URLConvertible,
                               method: HTTPMethod = .get,
                               encoding: ParameterEncoding = URLEncoding.default,
+                              decoder: JSONDecoder = JSONDecoder(),
+                              headers: HTTPHeaders? = nil,
                               acceptableStatusCodes: Set<Int>,
                               emptyResponseCodes: Set<Int> = DecodableResponseSerializer<Int>.defaultEmptyResponseCodes) async -> AFDataResponse<T> {
-        let r = request(url, method: method, encoding: encoding)
+        let r = request(url, method: method, encoding: encoding, headers: headers)
             .validate(statusCode: acceptableStatusCodes)
         
         return await withTaskCancellationHandler {
             return await withCheckedContinuation { promise in
-                r.responseDecodable(of: T.self, emptyResponseCodes: emptyResponseCodes) {
+                r.responseDecodable(of: T.self, decoder: decoder, emptyResponseCodes: emptyResponseCodes) {
                     promise.resume(returning: $0)
                 }
             }

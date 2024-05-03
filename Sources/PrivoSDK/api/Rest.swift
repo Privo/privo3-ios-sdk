@@ -53,6 +53,8 @@ protocol Restable {
     func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo?
     func getUserIdentifier(_ accountIdentifier: AccountIdentifier,  _ token: String) async throws -> AccountInfoResponse
     func consentResend(requesterSid: String, approverSid: String, email: String, _ token: String) async throws
+    
+    func getUserInfo(sid: String, _ token: String) async throws -> UserInfoResponse
 }
 
 class Rest: Restable {
@@ -369,7 +371,10 @@ class Rest: Restable {
             clientData,
             encoder: URLEncodedFormParameterEncoder.default,
             decoder: jsonDecoder,
-            headers: HTTPHeaders(arrayLiteral: .init(name: "Content-Type", value: "application/x-www-form-urlencoded")),
+            headers: HTTPHeaders(arrayLiteral:
+                    .init(name: "Content-Type", value: "application/x-www-form-urlencoded"),
+                    .init(name: "Accept", value: "application/json")
+            ),
             acceptableStatusCodes: Rest.acceptableStatusCodes
         )
         return try trackPossibleAFErrorAndReturn(response)
@@ -408,7 +413,25 @@ class Rest: Restable {
             encoder: URLEncodedFormParameterEncoder.default,
             decoder: jsonDecoder,
             headers: HTTPHeaders(arrayLiteral:
-                    .init(name: "accept", value: "application/json"),
+                    .init(name: "Accept", value: "application/json"),
+                    .init(name: "Authorization", value: "Bearer \(token)")
+            ),
+           acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        return try trackPossibleAFErrorAndReturn(response)
+    }
+    func getUserInfo(sid: String, _ token: String) async throws -> UserInfoResponse {
+        let url = PrivoInternal.configuration.gatewayUrl
+            .appending("userinfo")
+            .withQueryParam(name: "service_id", value: sid)
+        
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
+        let response: AFDataResponse<UserInfoResponse> = await session.request(
+            url,
+            method: .post,
+            decoder: jsonDecoder,
+            headers: HTTPHeaders(arrayLiteral:
+                    .init(name: "Accept", value: "application/json"),
                     .init(name: "Authorization", value: "Bearer \(token)")
             ),
            acceptableStatusCodes: Rest.acceptableStatusCodes
@@ -431,7 +454,7 @@ class Rest: Restable {
             encoder: JSONParameterEncoder.convertToSnakeCase,
             decoder: jsonDecoder,
             headers: HTTPHeaders(arrayLiteral:
-                    .init(name: "accept", value: "application/json"),
+                    .init(name: "Accept", value: "application/json"),
                     .init(name: "Content-Type", value: " application/json"),
                     .init(name: "Authorization", value: "Bearer \(token)")
             ),
