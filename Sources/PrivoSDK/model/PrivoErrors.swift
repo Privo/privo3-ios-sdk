@@ -1,7 +1,9 @@
 import Foundation
 
 public enum PrivoError: Error {
+    
     case noInternetConnection
+    
     case networkConnectionProblem(_ error: Error?)
     
     /// An error that indicates a task was cancelled with `Task.cancel()`.
@@ -28,6 +30,8 @@ public enum PrivoError: Error {
     case incorrectInputData(_ error: Error)
     
     case notInitialized(_ error: Error)
+    
+    case incorrectAdminConsoleConfiguration(_ error: Error)
 }
 
 /// Could be a part of the ``PrivoError.incorrectInputData(_)`` error.
@@ -45,4 +49,8 @@ public enum AgeGateError: Error {
 
 public enum PrivoSettingsError: Error {
     case clientCredentialsNotFound
+}
+
+public enum AdminConsoleConfigurationError: Error {
+    case updatePasswordLinkNotFound
 }
