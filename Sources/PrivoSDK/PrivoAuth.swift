@@ -243,12 +243,9 @@ public class PrivoAuth {
         // look through all childs for parent account and find which child update password link we need
         
         guard var resetPasswordLink = response.to.connectedProfiles.first(where: { $0.serviceId == childSid })?.updatePasswordLink else {
-            throw PrivoError.networkConnectionProblem( DecodingError.dataCorrupted(
-                DecodingError.Context(
-                    codingPath: [],
-                    debugDescription: "updatePasswordLink for sid \(childSid) not found"
-                )
-            ))
+            throw PrivoError.incorrectAdminConsoleConfiguration(
+                AdminConsoleConfigurationError.updatePasswordLinkNotFound
+            )
         }
         
         let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
