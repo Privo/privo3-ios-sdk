@@ -237,7 +237,16 @@ public class PrivoAuth {
                 try .init(child: child)
             ])
         let response = try await api.registerParentAndChild(parentChildPair, gwToken)
-        var resetPasswordLink = response.to.updatePasswordLink
+        
+        let childSid = try await api.getUserIdentifier(.userName(child.username), gwToken).sid
+        
+        // look through all childs for parent account and find which child update password link we need
+        
+        guard var resetPasswordLink = response.to.connectedProfiles.first(where: { $0.serviceId == childSid })?.updatePasswordLink else {
+            throw PrivoError.incorrectAdminConsoleConfiguration(
+                AdminConsoleConfigurationError.updatePasswordLinkNotFound
+            )
+        }
         
         let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
         if let serviceInfo = await api.getServiceInfo(serviceIdentifier: serviceIdentifier),
