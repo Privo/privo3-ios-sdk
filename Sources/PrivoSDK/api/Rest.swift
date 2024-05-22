@@ -50,6 +50,7 @@ protocol Restable {
     func sendAnalyticEvent(_ event: AnalyticEvent)
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws -> RegisterResponse
     func getGWToken() async throws -> TokenResponse
+    func getGWToken(_ authcode: String) async throws  -> TokenResponse
     func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo?
     func getUserIdentifier(_ accountIdentifier: AccountIdentifier,  _ token: String) async throws -> AccountInfoResponse
     func consentResend(requesterSid: String, approverSid: String, email: String, _ token: String) async throws
@@ -379,6 +380,32 @@ class Rest: Restable {
         )
         return try trackPossibleAFErrorAndReturn(response)
     }
+    
+    func getGWToken(_ authcode: String) async throws /*(PrivoError)*/ -> TokenResponse {
+        guard let clientCredentials = PrivoInternal.settings.clientCredentials
+        else {
+            throw PrivoError.notInitialized(PrivoSettingsError.clientCredentialsNotFound)
+        }
+        let clientData = OAuthCode(code: authcode)
+        let url = PrivoInternal.configuration.gatewayUrl
+            .appending("token")
+        let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
+        let response: AFDataResponse<TokenResponse> = await session.request(
+            url,
+            method: .post,
+            parameters:
+            clientData,
+            encoder: URLEncodedFormParameterEncoder.default,
+            decoder: jsonDecoder,
+            headers: HTTPHeaders(arrayLiteral:
+                    .init(name: "Content-Type", value: "application/x-www-form-urlencoded"),
+                    .init(name: "Accept", value: "application/json")
+            ),
+            acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        return try trackPossibleAFErrorAndReturn(response)
+    }
+
     
     func registerParentAndChild(_ parentChildPair: ParentChildPair, _ token: String) async throws /*(PrivoError)*/ -> RegisterResponse {
         let url = PrivoInternal.configuration.gatewayUrl
