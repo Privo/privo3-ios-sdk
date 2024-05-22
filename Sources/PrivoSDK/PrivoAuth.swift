@@ -300,4 +300,9 @@ public class PrivoAuth {
         
         return try await api.getUserInfo(sid: sid, gwToken).public
     }
+    
+    public func userinfo(authcode: String) async throws /* (PrivoError) */ -> UserInfo {
+        let gwToken = try await api.getGWToken(authcode).accessToken
+        return try await api.getUserInfo(sid: nil, gwToken).public
+    }
 }

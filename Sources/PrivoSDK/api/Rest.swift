@@ -55,7 +55,7 @@ protocol Restable {
     func getUserIdentifier(_ accountIdentifier: AccountIdentifier,  _ token: String) async throws -> AccountInfoResponse
     func consentResend(requesterSid: String, approverSid: String, email: String, _ token: String) async throws
     
-    func getUserInfo(sid: String, _ token: String) async throws -> UserInfoResponse
+    func getUserInfo(sid: String?, _ token: String) async throws -> UserInfoResponse
 }
 
 class Rest: Restable {
@@ -447,10 +447,19 @@ class Rest: Restable {
         )
         return try trackPossibleAFErrorAndReturn(response)
     }
-    func getUserInfo(sid: String, _ token: String) async throws -> UserInfoResponse {
         let url = PrivoInternal.configuration.gatewayUrl
             .appending("userinfo")
             .withQueryParam(name: "service_id", value: sid)
+    
+    func getUserInfo(sid: String?, _ token: String) async throws -> UserInfoResponse {
+        let userinfoUrl = PrivoInternal.configuration.gatewayUrl
+            .appending("userinfo")
+        let url: URL
+        if let sid {
+            url = userinfoUrl.withQueryParam(name: "service_id", value: sid)
+        } else {
+            url = userinfoUrl
+        }
         
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
         let response: AFDataResponse<UserInfoResponse> = await session.request(
