@@ -361,7 +361,7 @@ class Rest: Restable {
         else {
             throw PrivoError.notInitialized(PrivoSettingsError.clientCredentialsNotFound)
         }
-        let clientData = OAuthToken(client_id: clientCredentials.id, client_secret: clientCredentials.secret)
+        let clientData = OAuthClientCredentials(client_id: clientCredentials.id, client_secret: clientCredentials.secret)
         let url = PrivoInternal.configuration.gatewayUrl
             .appending("token")
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
@@ -386,7 +386,7 @@ class Rest: Restable {
         else {
             throw PrivoError.notInitialized(PrivoSettingsError.clientCredentialsNotFound)
         }
-        let clientData = OAuthCode(code: authcode, client_id: clientCredentials.id, client_secret: clientCredentials.secret)
+        let clientData = OAuthAuthorizationCode(code: authcode, client_id: clientCredentials.id, client_secret: clientCredentials.secret)
         let url = PrivoInternal.configuration.gatewayUrl
             .appending("token")
         let jsonDecoder = JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase)
