@@ -447,9 +447,6 @@ class Rest: Restable {
         )
         return try trackPossibleAFErrorAndReturn(response)
     }
-        let url = PrivoInternal.configuration.gatewayUrl
-            .appending("userinfo")
-            .withQueryParam(name: "service_id", value: sid)
     
     func getUserInfo(sid: String?, _ token: String) async throws -> UserInfoResponse {
         let userinfoUrl = PrivoInternal.configuration.gatewayUrl
