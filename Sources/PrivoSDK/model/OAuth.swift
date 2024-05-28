@@ -13,6 +13,7 @@ struct OAuthAuthorizationCode: Encodable {
     let code: String
     let client_id: String
     let client_secret: String
+    let redirect_uri: String = "https://my\(PrivoInternal.configuration.urlPrefix).privo.com/openid_connect_login"
 }
 
 struct TokenResponse: Decodable {
