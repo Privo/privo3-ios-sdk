@@ -151,6 +151,7 @@ struct Webview: UIViewRepresentable {
             if let url = navigationAction.request.url?.absoluteString,
                let onFinish = onFinish {
                 if let finishCriteria = finishCriteria,
+                   !url.contains("api/v1.0/redirect?target_url"), // redirect check is not a finish criteria in all possible cases 
                    url.contains(finishCriteria)
                 {
                     onFinish(url)
