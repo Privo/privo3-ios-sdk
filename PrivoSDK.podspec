@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name          = 'PrivoSDK'
-    spec.version       = '${RELEASE_VERSION}'
+    spec.version       = '2.33.0'
     spec.license       = { :type => 'Copyright (c) Privo' }
     spec.homepage      = 'https://github.com/Privo/privo3-ios-sdk'
     spec.authors       = { 'Privo' => '' }
