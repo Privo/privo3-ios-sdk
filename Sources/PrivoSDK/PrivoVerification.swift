@@ -147,7 +147,7 @@ public class PrivoVerification {
     ///   - externalUserId user identificator provided by partner
     ///   - completion: Closure that is used to handle an asynchronous operation result and takes the UserLimits instance as an input argument.
     
-    func getUserLimits(externalUserId: String, completionHandler: @escaping (UserLimits?) -> Void) {
+    public func getUserLimits(externalUserId: String, completionHandler: @escaping (UserLimits?) -> Void) {
         verification.getUserLimits(externalUserId: externalUserId, completionHandler: completionHandler)
     }
 }
