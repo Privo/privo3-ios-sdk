@@ -8,9 +8,9 @@
 import Foundation
 
 public struct UserLimits: Decodable, Encodable, Hashable {
-    let isOverLimit: Bool
-    let limitYype: LimitType
-    let retryAfter: Int?
+    public let isOverLimit: Bool
+    public let limitYype: LimitType
+    public let retryAfter: Int?
 }
 
 public enum LimitType: String, Codable {
