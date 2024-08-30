@@ -13,7 +13,7 @@ public struct UserLimits: Decodable, Encodable, Hashable {
     let retryAfter: Int?
 }
 
-enum LimitType: String, Codable {
+public enum LimitType: String, Codable {
     case IV
     case Auth
 }

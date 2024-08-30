@@ -146,7 +146,7 @@ class InternalPrivoVerification {
     
 
     
-    func getUserLimits (externalUserId: String, completionHandler: @escaping (UserLimits?) -> Void) {
+    public func getUserLimits (externalUserId: String, completionHandler: @escaping (UserLimits?) -> Void) {
         let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
         if let sessionIdentifier = userSessions[externalUserId] {
             api.checkUserLimits(serviceIdentifier: serviceIdentifier, sessionIdentifier: sessionIdentifier, limitType: LimitType.IV, completionHandler: completionHandler)
