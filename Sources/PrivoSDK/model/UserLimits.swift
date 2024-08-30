@@ -9,7 +9,7 @@ import Foundation
 
 public struct UserLimits: Decodable, Encodable, Hashable {
     public let isOverLimit: Bool
-    public let limitYype: LimitType
+    public let limitType: LimitType
     public let retryAfter: Int?
 }
 
