@@ -6,3 +6,8 @@
 //
 
 import Foundation
+
+
+public struct UserSessionRequest: Decodable, Encodable, Hashable {
+    let ext_user_id: String
+}

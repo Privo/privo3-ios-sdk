@@ -35,8 +35,9 @@ extension URL {
 protocol Restable {
     func addObjectToTMPStorage<T: Encodable>(value: T, completionHandler: ((String?) -> Void)?)
     func getObjectFromTMPStorage<T: Decodable>(key: String, completionHandler: @escaping (T?) -> Void)
-    func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void)
-    
+    func createUserSession(serviceIdentifier: String, externalUserId: String, completionHandler: @escaping (String?) -> Void)
+    func checkUserLimits(serviceIdentifier: String, sessionIdentifier: String, limitType: LimitType, completionHandler: @escaping (UserLimits?) -> Void)
+    func getServiceInfo(serviceIdentifier: String, completionHandler: @escaping (ServiceInfo?) -> Void)    
     func processStatus(data: StatusRecord) async throws -> AgeGateStatusResponse
     func generateFingerprint(fingerprint: DeviceFingerprint) async throws -> DeviceFingerprintResponse
     func getAuthSessionId() async -> String?
@@ -105,6 +106,22 @@ class Rest: Restable {
         Task.init {
             let result = await addObjectToTMPStorage(value: value)
             completionHandler?(result)
+        }
+    }
+    
+
+    
+    func createUserSession(serviceIdentifier: String, externalUserId: String, completionHandler: @escaping (String?) -> Void) {
+        Task.init {
+            let result = await createUserSession(serviceIdentifier: serviceIdentifier, externalUserId: externalUserId)
+            completionHandler(result)
+        }
+    }
+    
+    func checkUserLimits(serviceIdentifier: String, sessionIdentifier: String, limitType: LimitType, completionHandler: @escaping (UserLimits?) -> Void) {
+        Task.init {
+            let result = await checkUserLimits(serviceIdentifier: serviceIdentifier, sessionIdentifier: sessionIdentifier, limitType: limitType)
+            completionHandler(result)
         }
     }
     
@@ -193,6 +210,32 @@ class Rest: Restable {
         trackPossibleAFError(response.error, response.debugDescription)
         return response.value
     }
+    func createUserSession(serviceIdentifier: String, externalUserId: String) async -> String? {
+        var commonServiceURL = PrivoInternal.configuration.commonUrl
+        commonServiceURL = commonServiceURL.append([serviceIdentifier, "user-sessions"])
+        let response: AFDataResponse<String> = await session.request(
+            commonServiceURL,
+            method: .post,
+            parameters: UserSessionRequest(ext_user_id: externalUserId),
+            encoder: JSONParameterEncoder.default,
+            acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        trackPossibleAFError(response.error, response.debugDescription)
+        return response.value
+    }
+    func checkUserLimits(serviceIdentifier: String, sessionIdentifier: String, limitType: LimitType) async -> UserLimits? {
+        var commonServiceURL = PrivoInternal.configuration.commonUrl
+        commonServiceURL = commonServiceURL.append([serviceIdentifier, "user-sessions", sessionIdentifier, limitType.rawValue])
+        let response: AFDataResponse<UserLimits> = await session.request(
+            commonServiceURL,
+            method: .post,
+            encoding: JSONEncoding.default,
+            decoder: JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase),
+            acceptableStatusCodes: Rest.acceptableStatusCodes
+        )
+        trackPossibleAFError(response.error, response.debugDescription)
+        return response.value
+    }
     
     func addValueToTMPStorage(value: String, ttl: Int? = nil) async -> String? {
         var tmpStorageURL = PrivoInternal.configuration.commonUrl
@@ -235,6 +278,19 @@ class Rest: Restable {
         trackPossibleAFError(result.error, result.debugDescription)
         return result.value
     }
+    
+    /*
+     func getServiceInfo(serviceIdentifier: String) async -> ServiceInfo? {
+         var url = PrivoInternal.configuration.authBaseUrl
+         url = url.append(["api", "v1.0", "info", "svc"])
+         var urlComponent = url.urlComponent()
+         urlComponent.queryItems = [.init(name: "service_identifier", value: serviceIdentifier)]
+         url = urlComponent.url ?? url
+         let result: AFDataResponse<ServiceInfo> = await session.request(url, acceptableStatusCodes: Rest.acceptableStatusCodes)
+         trackPossibleAFError(result.error, result.debugDescription)
+         return result.value
+     }
+     */
     
     func getAuthSessionId() async -> String? {
         var url = PrivoInternal.configuration.authBaseUrl
