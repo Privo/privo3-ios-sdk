@@ -135,4 +135,19 @@ public class PrivoVerification {
             }
         }
     }
+    
+    
+    /// Used to show PRIVO Verification Modal Dialog
+    ///
+    ///       Privo.verification.getUserLimits(externalUserId: String) {
+    ///         (limits: [UserLimits]) in
+    ///       }
+    ///
+    /// - Parameters:
+    ///   - externalUserId user identificator provided by partner
+    ///   - completion: Closure that is used to handle an asynchronous operation result and takes the UserLimits instance as an input argument.
+    
+    public func getUserLimits(externalUserId: String, completionHandler: @escaping (UserLimits?) -> Void) {
+        verification.getUserLimits(externalUserId: externalUserId, completionHandler: completionHandler)
+    }
 }

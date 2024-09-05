@@ -122,10 +122,12 @@ struct VerificationStateView : View {
     }
 }
 
-struct InternalPrivoVerification {
+class InternalPrivoVerification {
     
     private let redirectUrl = PrivoInternal.configuration.verificationUrl.withPath("/#/verification-loading").absoluteString
     private let api: Restable = Rest.shared
+    
+    private var userSessions: [String: String] = [:]
 
     func storeState(profile: UserVerificationProfile?, completion: @escaping (String?) -> Void ) -> Void {
         guard let apiKey = PrivoInternal.settings.apiKey else { return }
@@ -140,6 +142,26 @@ struct InternalPrivoVerification {
             .init(event: .verifyInitialized, result: nil, data: nil, errorCode: nil, errorMessage: nil),
             .init(event: .verifyCancel, result: nil, data: nil, errorCode: nil, errorMessage: nil)
         ]
+    }
+    
+
+    
+    func getUserLimits (externalUserId: String, completionHandler: @escaping (UserLimits?) -> Void) {
+        let serviceIdentifier = PrivoInternal.settings.serviceIdentifier
+        if let sessionIdentifier = userSessions[externalUserId] {
+            api.checkUserLimits(serviceIdentifier: serviceIdentifier, sessionIdentifier: sessionIdentifier, limitType: LimitType.IV, completionHandler: completionHandler)
+        } else {
+            api.createUserSession(serviceIdentifier: serviceIdentifier, externalUserId: externalUserId) { [weak self] sessionIdentifier in
+                if let sessionIdentifier = sessionIdentifier {
+                    self?.userSessions[externalUserId] = sessionIdentifier
+                    self?.api.checkUserLimits(serviceIdentifier: serviceIdentifier, sessionIdentifier: sessionIdentifier, limitType: LimitType.IV, completionHandler: completionHandler)
+                } else {
+                    completionHandler(nil)
+                }
+            }
+        }
+        
+    
     }
     
 }
