@@ -6,6 +6,7 @@ internal struct AgeServiceSettings: Encodable, Decodable {
     let isProvideUserId: Bool
     let isShowStatusUi: Bool
     let poolAgeGateStatusInterval: Int
+    let referer: String?
     let verificationApiKey: String?
     let p2SiteId: Int?
     let logoUrl: String?
